@@ -1,5 +1,7 @@
 # Environment variables
 alembic
+.idea
+.venv
 .env
 .env.local
 .env.production
