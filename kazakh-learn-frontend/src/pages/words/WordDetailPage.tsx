@@ -1,4 +1,4 @@
-// src/pages/words/WordDetailPage.tsx - SEQUENTIAL ID NAVIGATION
+// src/pages/words/WordDetailPage.tsx - ENHANCED with navigation panel for non-existent words
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,7 +15,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   EyeIcon,
-  AcademicCapIcon
+  AcademicCapIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { 
   HeartIcon as HeartSolidIcon, 
@@ -166,6 +167,208 @@ const WordImageDisplay: React.FC<WordImageDisplayProps> = ({
   );
 };
 
+// ✅ NEW: Reusable Navigation Panel Component
+interface NavigationPanelProps {
+  navigationInfo: any;
+  wordId: number;
+  navigateToPrevious: () => void;
+  navigateToNext: () => void;
+  onBackToWords: () => void;
+  onShare?: () => void;
+  showShareButton?: boolean;
+}
+
+const NavigationPanel: React.FC<NavigationPanelProps> = ({
+  navigationInfo,
+  wordId,
+  navigateToPrevious,
+  navigateToNext,
+  onBackToWords,
+  onShare,
+  showShareButton = true
+}) => {
+  const { t } = useTranslation('wordDetail');
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={onBackToWords}
+          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span>{t('navigation.backToWords')}</span>
+        </button>
+
+        <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+          <span>|</span>
+          <span>Sequential Navigation</span>
+          <span>(ID: {wordId})</span>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        {/* Sequential Navigation Controls */}
+        {navigationInfo && (
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={navigateToPrevious}
+              disabled={!navigationInfo.hasPrevious || navigationInfo.isLoadingPrevious}
+              className={`p-2 rounded-md transition-colors ${
+                navigationInfo.hasPrevious && !navigationInfo.isLoadingPrevious
+                  ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
+                  : 'text-gray-300 cursor-not-allowed'
+              }`}
+              title={navigationInfo.hasPrevious 
+                ? `Previous: ${navigationInfo.previousWord?.kazakh_word} (ID: ${navigationInfo.previousWordId})`
+                : 'No previous word'
+              }
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </button>
+
+            <div className="px-3 py-1 bg-gray-100 rounded-md text-sm text-gray-600 min-w-[80px] text-center">
+              ID: {wordId}
+            </div>
+
+            <button
+              onClick={navigateToNext}
+              disabled={navigationInfo.isLoadingNext}
+              className={`p-2 rounded-md transition-colors ${
+                !navigationInfo.isLoadingNext
+                  ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
+                  : 'text-gray-300 cursor-not-allowed'
+              }`}
+              title={navigationInfo.nextWord 
+                ? `Next: ${navigationInfo.nextWord.kazakh_word} (ID: ${navigationInfo.nextWordId})`
+                : `Try ID: ${navigationInfo.nextWordId}`
+              }
+            >
+              {navigationInfo.isLoadingNext ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              ) : (
+                <ChevronRightIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        )}
+
+        {showShareButton && onShare && (
+          <>
+            <div className="h-4 w-px bg-gray-300" />
+            <button
+              onClick={onShare}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              title={t('actions.shareWord')}
+            >
+              <ShareIcon className="h-5 w-5" />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ✅ NEW: Sequential Navigation Preview Component
+interface NavigationPreviewProps {
+  navigationInfo: any;
+  navigateToPrevious: () => void;
+  navigateToNext: () => void;
+}
+
+const NavigationPreview: React.FC<NavigationPreviewProps> = ({
+  navigationInfo,
+  navigateToPrevious,
+  navigateToNext
+}) => {
+  if (!navigationInfo || (!navigationInfo.hasPrevious && navigationInfo.isLoadingNext)) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gray-50 rounded-lg p-4">
+      <div className="grid grid-cols-2 gap-4">
+        {/* Previous Word Preview */}
+        <div className={`${!navigationInfo.hasPrevious ? 'opacity-30' : ''}`}>
+          {navigationInfo.hasPrevious && navigationInfo.previousWord ? (
+            <button
+              onClick={navigateToPrevious}
+              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
+            >
+              {/* <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+                <ChevronLeftIcon className="h-4 w-4" />
+                <span>Previous (ID: {navigationInfo.previousWordId})</span>
+              </div> */}
+              <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                {navigationInfo.previousWord.kazakh_word}
+              </div>
+              <div className="text-sm text-gray-600 truncate">
+                {navigationInfo.previousWord.translations?.[0]?.translation}
+              </div>
+            </button>
+          ) : (
+            <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100">
+              <div className="flex items-center space-x-2 text-sm text-gray-400 mb-1">
+                <ChevronLeftIcon className="h-4 w-4" />
+                <span>No Previous Word</span>
+              </div>
+              <div className="text-gray-400">
+                First word or word not found
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Next Word Preview */}
+        <div className={`${navigationInfo.isLoadingNext ? 'opacity-50' : ''}`}>
+          {navigationInfo.nextWord ? (
+            <button
+              onClick={navigateToNext}
+              className="w-full text-right p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
+            >
+              {/* <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
+                <span>Next (ID: {navigationInfo.nextWordId})</span>
+                <ChevronRightIcon className="h-4 w-4" />
+              </div> */}
+              <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                {navigationInfo.nextWord.kazakh_word}
+              </div>
+              <div className="text-sm text-gray-600 truncate">
+                {navigationInfo.nextWord.translations?.[0]?.translation}
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={navigateToNext}
+              disabled={navigationInfo.isLoadingNext}
+              className={`w-full p-3 rounded-lg border border-gray-200 transition-all text-right ${
+                navigationInfo.isLoadingNext 
+                  ? 'bg-gray-100 cursor-not-allowed' 
+                  : 'hover:border-gray-300 hover:bg-white cursor-pointer'
+              }`}
+            >
+              <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
+                <span>
+                  {navigationInfo.isLoadingNext ? 'Loading...' : `Try ID: ${navigationInfo.nextWordId}`}
+                </span>
+                {navigationInfo.isLoadingNext ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                ) : (
+                  <ChevronRightIcon className="h-4 w-4" />
+                )}
+              </div>
+              <div className="text-gray-400">
+                {navigationInfo.isLoadingNext ? 'Checking if word exists...' : 'Click to try next ID'}
+              </div>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const WordDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -196,7 +399,7 @@ const WordDetailPage: React.FC = () => {
     enabled: !!wordId,
   });
 
-  // ✅ NEW: Load adjacent words for sequential navigation
+  // Load adjacent words for sequential navigation
   const { data: previousWord, isLoading: isLoadingPrevious } = useQuery({
     queryKey: ['word', wordId - 1, user?.main_language?.language_code],
     queryFn: async () => {
@@ -209,7 +412,7 @@ const WordDetailPage: React.FC = () => {
       }
     },
     enabled: !!wordId && wordId > 1,
-    retry: false, // Don't retry if word doesn't exist
+    retry: false,
   });
 
   const { data: nextWord, isLoading: isLoadingNext } = useQuery({
@@ -224,7 +427,7 @@ const WordDetailPage: React.FC = () => {
       }
     },
     enabled: !!wordId,
-    retry: false, // Don't retry if word doesn't exist
+    retry: false,
   });
 
   // Use the audio player hook
@@ -233,14 +436,14 @@ const WordDetailPage: React.FC = () => {
     word
   });
 
-  // ✅ NEW: Update navigation context when adjacent words load
+  // Update navigation context when adjacent words load
   useEffect(() => {
     if (wordId) {
       console.log('🚀 Setting up sequential navigation context');
       const context: SequentialNavigationContext = {
         currentWordId: wordId,
         previousWordId: wordId > 1 ? wordId - 1 : null,
-        nextWordId: wordId + 1, // Always try next ID
+        nextWordId: wordId + 1,
         previousWord: previousWord || null,
         nextWord: nextWord || null,
         isLoadingPrevious,
@@ -258,7 +461,7 @@ const WordDetailPage: React.FC = () => {
     }
   }, [wordId, previousWord, nextWord, isLoadingPrevious, isLoadingNext]);
 
-  // ✅ NEW: Sequential keyboard navigation
+  // Sequential keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!navigationContext) return;
@@ -284,7 +487,7 @@ const WordDetailPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigationContext, navigate]);
 
-  // ✅ NEW: Simple sequential navigation
+  // Simple sequential navigation functions
   const navigateToPrevious = () => {
     if (navigationContext?.previousWordId) {
       console.log(`⬅️ Button: navigating to word ${navigationContext.previousWordId}`);
@@ -299,16 +502,16 @@ const WordDetailPage: React.FC = () => {
     }
   };
 
-  // ✅ NEW: Get navigation information for UI
+  // Get navigation information for UI
   const getNavigationInfo = () => {
     if (!navigationContext) return null;
 
     const hasPrevious = !!navigationContext.previousWordId && !!navigationContext.previousWord;
-    const hasNext = !!navigationContext.nextWord; // We try next even if we don't know if it exists yet
+    const hasNext = !!navigationContext.nextWord;
 
     return {
       hasPrevious,
-      hasNext: !isLoadingNext, // Show next button unless we're still loading
+      hasNext: !isLoadingNext,
       previousWord: navigationContext.previousWord,
       nextWord: navigationContext.nextWord,
       currentWordId: navigationContext.currentWordId,
@@ -319,71 +522,6 @@ const WordDetailPage: React.FC = () => {
       isLoadingNext: navigationContext.isLoadingNext,
     };
   };
-
-  // Debug Navigation Component
-  // const DebugNavigationInfo: React.FC = () => {
-  //   const navigationInfo = getNavigationInfo();
-    
-  //   return (
-  //     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-  //       <h4 className="font-bold text-blue-800 mb-2">🔢 Sequential Navigation Debug</h4>
-  //       <div className="text-sm space-y-1">
-  //         <div><strong>Current Word ID:</strong> {wordId}</div>
-  //         <div><strong>Previous Word ID:</strong> {navigationContext?.previousWordId || 'None'}</div>
-  //         <div><strong>Next Word ID:</strong> {navigationContext?.nextWordId || 'None'}</div>
-          
-  //         <div className="mt-2 space-y-1">
-  //           <div><strong>API Calls:</strong></div>
-  //           <div>• Previous: GET /words/{navigationContext?.previousWordId || 'N/A'}?language_code={user?.main_language?.language_code}</div>
-  //           <div>• Current: GET /words/{wordId}?language_code={user?.main_language?.language_code}</div>
-  //           <div>• Next: GET /words/{navigationContext?.nextWordId || 'N/A'}?language_code={user?.main_language?.language_code}</div>
-  //         </div>
-          
-  //         <div className="mt-2 space-y-1">
-  //           <div><strong>Word Status:</strong></div>
-  //           <div>• Previous exists: {navigationContext?.previousWord ? '✅ Yes' : '❌ No'}</div>
-  //           <div>• Next exists: {navigationContext?.nextWord ? '✅ Yes' : (isLoadingNext ? '🔄 Loading' : '❌ No')}</div>
-  //           <div>• Loading previous: {navigationContext?.isLoadingPrevious ? '🔄 Yes' : '✅ No'}</div>
-  //           <div>• Loading next: {navigationContext?.isLoadingNext ? '🔄 Yes' : '✅ No'}</div>
-  //         </div>
-          
-  //         <div className="mt-2 space-y-1">
-  //           <div><strong>Navigation Info:</strong></div>
-  //           {navigationInfo ? (
-  //             <>
-  //               <div>• Can go previous: {navigationInfo.hasPrevious ? '✅' : '❌'}</div>
-  //               <div>• Can go next: {navigationInfo.hasNext ? '✅' : '❌'}</div>
-  //               <div>• Context: {navigationInfo.contextLabel}</div>
-  //             </>
-  //           ) : (
-  //             <div>• Navigation info: ❌ Not available</div>
-  //           )}
-  //         </div>
-  //       </div>
-        
-  //       {/* Test Navigation Buttons */}
-  //       <div className="mt-3 flex space-x-2">
-  //         <button
-  //           onClick={navigateToPrevious}
-  //           disabled={!navigationContext?.previousWordId}
-  //           className={`px-3 py-1 rounded text-xs ${
-  //             navigationContext?.previousWordId 
-  //               ? 'bg-blue-500 text-white' 
-  //               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-  //           }`}
-  //         >
-  //           Test Previous (ID: {navigationContext?.previousWordId || 'N/A'})
-  //         </button>
-  //         <button
-  //           onClick={navigateToNext}
-  //           className="px-3 py-1 bg-green-500 text-white rounded text-xs"
-  //         >
-  //           Test Next (ID: {navigationContext?.nextWordId || 'N/A'})
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // };
 
   // Mutations (keeping existing code)
   const addToLearningMutation = useMutation({
@@ -415,7 +553,7 @@ const WordDetailPage: React.FC = () => {
     onError: () => toast.error(t('messages.progressUpdateError')),
   });
 
-  // Event handlers (keeping existing code)
+  // Event handlers
   const handleToggleLearning = () => {
     if (progress) {
       removeFromLearningMutation.mutate([wordId]);
@@ -476,7 +614,7 @@ const WordDetailPage: React.FC = () => {
     }
   };
 
-  // Utility functions (keeping existing code)
+  // Utility functions
   const getDifficultyColor = (level: number) => {
     const colors = {
       1: 'bg-green-100 text-green-800',
@@ -521,121 +659,135 @@ const WordDetailPage: React.FC = () => {
     return difficultyLabels[difficulty] || difficulty;
   };
 
+  // Get navigation info for components
+  const navigationInfo = getNavigationInfo();
+
   // Loading state
   if (wordLoading) {
-    return <LoadingSpinner fullScreen text={t('loading.wordDetails')} />;
-  }
-
-  // Error state
-  if (wordError || !word) {
     return (
-      <div className="text-center py-12">
-        <div className="text-6xl mb-4">😕</div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('errors.wordNotFound')}</h2>
-        <p className="text-gray-600 mb-6">
-          {t('errors.wordNotFoundDescription')}
-        </p>
-        <button
-          onClick={() => navigate('/app/words')}
-          className="btn-primary"
-        >
-          {t('actions.browseWords')}
-        </button>
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Show navigation panel even while loading */}
+        <NavigationPanel
+          navigationInfo={navigationInfo}
+          wordId={wordId}
+          navigateToPrevious={navigateToPrevious}
+          navigateToNext={navigateToNext}
+          onBackToWords={() => navigate('/app/words')}
+          showShareButton={false}
+        />
+        
+        {/* Sequential Keyboard Hint */}
+        <div className="text-center text-xs text-gray-500">
+          Use ← → arrow keys to navigate by word ID • Current: {wordId} • 
+          Previous: {navigationContext?.previousWordId || 'None'} • 
+          Next: {navigationContext?.nextWordId || 'None'}
+        </div>
+
+        <LoadingSpinner fullScreen text={t('loading.wordDetails')} />
       </div>
     );
   }
 
-  const navigationInfo = getNavigationInfo();
+  // ✅ ENHANCED: Error state with navigation panel
+  if (wordError || !word) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* ✅ Navigation panel for non-existent words */}
+        <NavigationPanel
+          navigationInfo={navigationInfo}
+          wordId={wordId}
+          navigateToPrevious={navigateToPrevious}
+          navigateToNext={navigateToNext}
+          onBackToWords={() => navigate('/app/words')}
+          showShareButton={false}
+        />
+
+        {/* ✅ Sequential Keyboard Hint */}
+        <div className="text-center text-xs text-gray-500">
+          Use ← → arrow keys to navigate by word ID 
+        </div>
+
+        {/* ✅ Enhanced Error Message */}
+        <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+          <div className="p-8 bg-gradient-to-r from-red-50 to-orange-50 text-center">
+            <div className="flex justify-center mb-4">
+              <ExclamationTriangleIcon className="h-16 w-16 text-red-400" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {t('errors.wordNotFound')}
+            </h2>
+            <p className="text-gray-500 mb-6">
+              {t('errors.wordNotFoundDescription')}
+            </p>
+
+            {/* Quick Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => navigate('/app/words')}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+                <span>{t('actions.browseWords')}</span>
+              </button>
+
+              {/* Try adjacent words */}
+              <div className="flex items-center space-x-2">
+                {navigationInfo?.hasPrevious && (
+                  <button
+                    onClick={navigateToPrevious}
+                    className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4" />
+                    <span>Try ID {navigationInfo.previousWordId}</span>
+                  </button>
+                )}
+                
+                {!navigationInfo?.isLoadingNext && (
+                  <button
+                    onClick={navigateToNext}
+                    className="px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span>Try ID {navigationInfo?.nextWordId}</span>
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ✅ Navigation Preview for non-existent words */}
+        <NavigationPreview
+          navigationInfo={navigationInfo}
+          navigateToPrevious={navigateToPrevious}
+          navigateToNext={navigateToNext}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Navigation Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/app/words')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeftIcon className="h-5 w-5" />
-            <span>{t('navigation.backToWords')}</span>
-          </button>
+      <NavigationPanel
+        navigationInfo={navigationInfo}
+        wordId={wordId}
+        navigateToPrevious={navigateToPrevious}
+        navigateToNext={navigateToNext}
+        onBackToWords={() => navigate('/app/words')}
+        onShare={handleShare}
+        showShareButton={true}
+      />
 
-          <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-            <span>|</span>
-            <span>Sequential Navigation</span>
-            <span>(ID: {wordId})</span>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {/* ✅ NEW: Sequential Navigation Controls */}
-          {navigationInfo && (
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={navigateToPrevious}
-                disabled={!navigationInfo.hasPrevious || navigationInfo.isLoadingPrevious}
-                className={`p-2 rounded-md transition-colors ${
-                  navigationInfo.hasPrevious && !navigationInfo.isLoadingPrevious
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
-                    : 'text-gray-300 cursor-not-allowed'
-                }`}
-                title={navigationInfo.hasPrevious 
-                  ? `Previous: ${navigationInfo.previousWord?.kazakh_word} (ID: ${navigationInfo.previousWordId})`
-                  : 'No previous word'
-                }
-              >
-                <ChevronLeftIcon className="h-5 w-5" />
-              </button>
-
-              <div className="px-3 py-1 bg-gray-100 rounded-md text-sm text-gray-600 min-w-[80px] text-center">
-                ID: {wordId}
-              </div>
-
-              <button
-                onClick={navigateToNext}
-                disabled={navigationInfo.isLoadingNext}
-                className={`p-2 rounded-md transition-colors ${
-                  !navigationInfo.isLoadingNext
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
-                    : 'text-gray-300 cursor-not-allowed'
-                }`}
-                title={navigationInfo.nextWord 
-                  ? `Next: ${navigationInfo.nextWord.kazakh_word} (ID: ${navigationInfo.nextWordId})`
-                  : `Try ID: ${navigationInfo.nextWordId}`
-                }
-              >
-                {navigationInfo.isLoadingNext ? (
-                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                ) : (
-                  <ChevronRightIcon className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-          )}
-
-          <div className="h-4 w-px bg-gray-300" />
-
-          <button
-            onClick={handleShare}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            title={t('actions.shareWord')}
-          >
-            <ShareIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* ✅ NEW: Sequential Keyboard Hint */}
+      {/* Sequential Keyboard Hint */}
       <div className="text-center text-xs text-gray-500">
         Use ← → arrow keys to navigate by word ID • Current: {wordId} • 
         Previous: {navigationContext?.previousWordId || 'None'} • 
         Next: {navigationContext?.nextWordId || 'None'}
       </div>
 
-      {/* ✅ DEBUG COMPONENT - Remove this in production */}
-      {/* {process.env.NODE_ENV === 'development' && <DebugNavigationInfo />} */}
-
-      {/* Main Word Card - Same as before */}
+      {/* Main Word Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {/* Header with Gradient Background & Image */}
         <div className="p-8 bg-gradient-to-r from-blue-50 to-purple-50">
@@ -1070,88 +1222,12 @@ const WordDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ NEW: Sequential Navigation Preview Cards */}
-      {navigationInfo && (navigationInfo.hasPrevious || !navigationInfo.isLoadingNext) && (
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Previous Word Preview */}
-            <div className={`${!navigationInfo.hasPrevious ? 'opacity-30' : ''}`}>
-              {navigationInfo.hasPrevious && navigationInfo.previousWord ? (
-                <button
-                  onClick={navigateToPrevious}
-                  className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
-                >
-                  <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
-                    <ChevronLeftIcon className="h-4 w-4" />
-                    <span>Previous (ID: {navigationInfo.previousWordId})</span>
-                  </div>
-                  <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-                    {navigationInfo.previousWord.kazakh_word}
-                  </div>
-                  <div className="text-sm text-gray-600 truncate">
-                    {navigationInfo.previousWord.translations?.[0]?.translation}
-                  </div>
-                </button>
-              ) : (
-                <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100">
-                  <div className="flex items-center space-x-2 text-sm text-gray-400 mb-1">
-                    <ChevronLeftIcon className="h-4 w-4" />
-                    <span>No Previous Word</span>
-                  </div>
-                  <div className="text-gray-400">
-                    First word or word not found
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Next Word Preview */}
-            <div className={`${navigationInfo.isLoadingNext ? 'opacity-50' : ''}`}>
-              {navigationInfo.nextWord ? (
-                <button
-                  onClick={navigateToNext}
-                  className="w-full text-right p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
-                >
-                  <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
-                    <span>Next (ID: {navigationInfo.nextWordId})</span>
-                    <ChevronRightIcon className="h-4 w-4" />
-                  </div>
-                  <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-                    {navigationInfo.nextWord.kazakh_word}
-                  </div>
-                  <div className="text-sm text-gray-600 truncate">
-                    {navigationInfo.nextWord.translations?.[0]?.translation}
-                  </div>
-                </button>
-              ) : (
-                <button
-                  onClick={navigateToNext}
-                  disabled={navigationInfo.isLoadingNext}
-                  className={`w-full p-3 rounded-lg border border-gray-200 transition-all text-right ${
-                    navigationInfo.isLoadingNext 
-                      ? 'bg-gray-100 cursor-not-allowed' 
-                      : 'hover:border-gray-300 hover:bg-white cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
-                    <span>
-                      {navigationInfo.isLoadingNext ? 'Loading...' : `Try ID: ${navigationInfo.nextWordId}`}
-                    </span>
-                    {navigationInfo.isLoadingNext ? (
-                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                    ) : (
-                      <ChevronRightIcon className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div className="text-gray-400">
-                    {navigationInfo.isLoadingNext ? 'Checking if word exists...' : 'Click to try next ID'}
-                  </div>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Sequential Navigation Preview Cards */}
+      <NavigationPreview
+        navigationInfo={navigationInfo}
+        navigateToPrevious={navigateToPrevious}
+        navigateToNext={navigateToNext}
+      />
     </div>
   );
 };
