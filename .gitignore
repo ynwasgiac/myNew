@@ -1,0 +1,6 @@
+# Environment variables
+alembic
+.env
+.env.local
+.env.production
+.env.staging
