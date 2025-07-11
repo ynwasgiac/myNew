@@ -1,4 +1,4 @@
-// src/pages/words/WordDetailPage.tsx - Updated to use useAudioPlayer hook
+// src/pages/words/WordDetailPage.tsx - SEQUENTIAL ID NAVIGATION
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,18 +27,19 @@ import { wordsAPI, learningAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
-import type { KazakhWord, UserWordProgress, WordFilters, KazakhWordSummary, WordSound } from '../../types/api';
+import type { KazakhWord, UserWordProgress, WordSound } from '../../types/api';
 
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
-// Navigation context interface
-interface NavigationContext {
-  words: KazakhWordSummary[];
-  currentIndex: number;
-  totalCount: number;
-  filters?: WordFilters;
-  searchTerm?: string;
-  source?: 'browse' | 'search' | 'category' | 'learning';
+// Sequential navigation context interface
+interface SequentialNavigationContext {
+  currentWordId: number;
+  previousWordId: number | null;
+  nextWordId: number | null;
+  previousWord: KazakhWord | null;
+  nextWord: KazakhWord | null;
+  isLoadingPrevious: boolean;
+  isLoadingNext: boolean;
 }
 
 // Smart Image Display Component with Fallback System
@@ -177,8 +178,7 @@ const WordDetailPage: React.FC = () => {
   // Component state
   const [activeTab, setActiveTab] = useState<'overview' | 'examples' | 'progress'>('overview');
   const [notes, setNotes] = useState('');
-  const [navigationContext, setNavigationContext] = useState<NavigationContext | null>(null);
-  const [isLoadingNavigation, setIsLoadingNavigation] = useState(false);
+  const [navigationContext, setNavigationContext] = useState<SequentialNavigationContext | null>(null);
 
   // API Queries
   const { data: word, isLoading: wordLoading, error: wordError } = useQuery({
@@ -196,91 +196,69 @@ const WordDetailPage: React.FC = () => {
     enabled: !!wordId,
   });
 
+  // ✅ NEW: Load adjacent words for sequential navigation
+  const { data: previousWord, isLoading: isLoadingPrevious } = useQuery({
+    queryKey: ['word', wordId - 1, user?.main_language?.language_code],
+    queryFn: async () => {
+      try {
+        console.log(`🔍 Loading previous word: ${wordId - 1}`);
+        return await wordsAPI.getWord(wordId - 1, user?.main_language?.language_code);
+      } catch (error) {
+        console.log(`❌ Previous word ${wordId - 1} not found`);
+        return null;
+      }
+    },
+    enabled: !!wordId && wordId > 1,
+    retry: false, // Don't retry if word doesn't exist
+  });
+
+  const { data: nextWord, isLoading: isLoadingNext } = useQuery({
+    queryKey: ['word', wordId + 1, user?.main_language?.language_code],
+    queryFn: async () => {
+      try {
+        console.log(`🔍 Loading next word: ${wordId + 1}`);
+        return await wordsAPI.getWord(wordId + 1, user?.main_language?.language_code);
+      } catch (error) {
+        console.log(`❌ Next word ${wordId + 1} not found`);
+        return null;
+      }
+    },
+    enabled: !!wordId,
+    retry: false, // Don't retry if word doesn't exist
+  });
+
   // Use the audio player hook
   const { wordSounds, playAudio, playIndividualSound, hasAudio } = useAudioPlayer({
     wordId,
     word
   });
 
-  // Initialize navigation context from URL state or parameters
+  // ✅ NEW: Update navigation context when adjacent words load
   useEffect(() => {
-    const state = location.state as any;
-    const urlParams = new URLSearchParams(location.search);
-    
-    if (state?.navigationContext) {
-      setNavigationContext(state.navigationContext);
-    } else {
-      // Build context from URL parameters
-      const filters: WordFilters = {
-        language_code: user?.main_language?.language_code || 'en',
-        page_size: 100,  // ✅ Use page_size instead of limit
-        page: 1          // ✅ Use page instead of skip
+    if (wordId) {
+      console.log('🚀 Setting up sequential navigation context');
+      const context: SequentialNavigationContext = {
+        currentWordId: wordId,
+        previousWordId: wordId > 1 ? wordId - 1 : null,
+        nextWordId: wordId + 1, // Always try next ID
+        previousWord: previousWord || null,
+        nextWord: nextWord || null,
+        isLoadingPrevious,
+        isLoadingNext,
       };
-      // OR if you want to get all words without pagination:
-      // const filters: WordFilters = {
-      //   language_code: user?.main_language?.language_code || 'en',
-      //   page_size: 50,   // Maximum allowed per page
-      //   page: 1
-      // };
-
-      const categoryId = urlParams.get('category');
-      const wordTypeId = urlParams.get('wordType');
-      const difficultyId = urlParams.get('difficulty');
-      const searchTerm = urlParams.get('search');
-
-      if (categoryId) filters.category_id = parseInt(categoryId);
-      if (wordTypeId) filters.word_type_id = parseInt(wordTypeId);
-      if (difficultyId) filters.difficulty_level_id = parseInt(difficultyId);
-
-      if (searchTerm || Object.keys(filters).length > 2) {
-        loadNavigationContext(filters, searchTerm || undefined);
-      }
-    }
-  }, [location, user?.main_language?.language_code, wordId]);
-
-  // Load navigation context for prev/next functionality
-  const loadNavigationContext = async (filters: WordFilters, searchTerm?: string) => {
-    setIsLoadingNavigation(true);
-    try {
-      let words: KazakhWordSummary[];
-      let source: NavigationContext['source'] = 'browse';
-
-      if (searchTerm) {
-        words = await wordsAPI.searchWords(searchTerm, filters.language_code, 100);
-        source = 'search';
-      } else if (filters.category_id) {
-        words = await wordsAPI.getWordsByCategory(
-          filters.category_id,
-          filters.language_code,
-          0,
-          100
-        );
-        source = 'category';
-      } else {
-        words = await wordsAPI.getWords({ ...filters, limit: 100 });
-        source = 'browse';
-      }
-
-      const currentIndex = words.findIndex(w => w.id === wordId);
       
-      if (currentIndex !== -1) {
-        setNavigationContext({
-          words,
-          currentIndex,
-          totalCount: words.length,
-          filters,
-          searchTerm,
-          source
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load navigation context:', error);
-    } finally {
-      setIsLoadingNavigation(false);
+      setNavigationContext(context);
+      console.log('✅ Navigation context updated:', {
+        current: wordId,
+        previous: context.previousWordId,
+        next: context.nextWordId,
+        hasPrevious: !!previousWord,
+        hasNext: !!nextWord
+      });
     }
-  };
+  }, [wordId, previousWord, nextWord, isLoadingPrevious, isLoadingNext]);
 
-  // Keyboard navigation support
+  // ✅ NEW: Sequential keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!navigationContext) return;
@@ -288,11 +266,16 @@ const WordDetailPage: React.FC = () => {
       // Ignore if user is typing in input/textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (e.key === 'ArrowLeft' && navigationContext.currentIndex > 0) {
-        navigateToWord(navigationContext.words[navigationContext.currentIndex - 1].id);
-      } else if (e.key === 'ArrowRight' && navigationContext.currentIndex < navigationContext.words.length - 1) {
-        navigateToWord(navigationContext.words[navigationContext.currentIndex + 1].id);
+      if (e.key === 'ArrowLeft' && navigationContext.previousWordId) {
+        e.preventDefault();
+        console.log(`⬅️ Keyboard: navigating to word ${navigationContext.previousWordId}`);
+        navigate(`/app/words/${navigationContext.previousWordId}`);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        console.log(`➡️ Keyboard: navigating to word ${navigationContext.nextWordId}`);
+        navigate(`/app/words/${navigationContext.nextWordId}`);
       } else if (e.key === 'Escape') {
+        e.preventDefault();
         navigate('/app/words');
       }
     };
@@ -301,77 +284,108 @@ const WordDetailPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigationContext, navigate]);
 
-  // Navigate to another word while preserving context
-  const navigateToWord = (newWordId: number) => {
-    if (!navigationContext) return;
-
-    const urlParams = new URLSearchParams();
-    
-    if (navigationContext.searchTerm) {
-      urlParams.set('search', navigationContext.searchTerm);
+  // ✅ NEW: Simple sequential navigation
+  const navigateToPrevious = () => {
+    if (navigationContext?.previousWordId) {
+      console.log(`⬅️ Button: navigating to word ${navigationContext.previousWordId}`);
+      navigate(`/app/words/${navigationContext.previousWordId}`);
     }
-    if (navigationContext.filters?.category_id) {
-      urlParams.set('category', navigationContext.filters.category_id.toString());
-    }
-    if (navigationContext.filters?.word_type_id) {
-      urlParams.set('wordType', navigationContext.filters.word_type_id.toString());
-    }
-    if (navigationContext.filters?.difficulty_level_id) {
-      urlParams.set('difficulty', navigationContext.filters.difficulty_level_id.toString());
-    }
-
-    const queryString = urlParams.toString();
-    const url = `/app/words/${newWordId}${queryString ? `?${queryString}` : ''}`;
-
-    const newIndex = navigationContext.words.findIndex(w => w.id === newWordId);
-    const updatedContext = {
-      ...navigationContext,
-      currentIndex: newIndex
-    };
-
-    navigate(url, { 
-      state: { navigationContext: updatedContext },
-      replace: false 
-    });
   };
 
-  // Get navigation information for UI
+  const navigateToNext = () => {
+    if (navigationContext?.nextWordId) {
+      console.log(`➡️ Button: navigating to word ${navigationContext.nextWordId}`);
+      navigate(`/app/words/${navigationContext.nextWordId}`);
+    }
+  };
+
+  // ✅ NEW: Get navigation information for UI
   const getNavigationInfo = () => {
     if (!navigationContext) return null;
 
-    const { words, currentIndex, source, searchTerm } = navigationContext;
-    const hasPrevious = currentIndex > 0;
-    const hasNext = currentIndex < words.length - 1;
-    const previousWord = hasPrevious ? words[currentIndex - 1] : null;
-    const nextWord = hasNext ? words[currentIndex + 1] : null;
-
-    let contextLabel = '';
-    switch (source) {
-      case 'search':
-        contextLabel = t('navigation.context.search', { searchTerm });
-        break;
-      case 'category':
-        contextLabel = t('navigation.context.category');
-        break;
-      case 'learning':
-        contextLabel = t('navigation.context.learning');
-        break;
-      default:
-        contextLabel = t('navigation.context.browse');
-    }
+    const hasPrevious = !!navigationContext.previousWordId && !!navigationContext.previousWord;
+    const hasNext = !!navigationContext.nextWord; // We try next even if we don't know if it exists yet
 
     return {
       hasPrevious,
-      hasNext,
-      previousWord,
-      nextWord,
-      currentPosition: currentIndex + 1,
-      totalWords: words.length,
-      contextLabel
+      hasNext: !isLoadingNext, // Show next button unless we're still loading
+      previousWord: navigationContext.previousWord,
+      nextWord: navigationContext.nextWord,
+      currentWordId: navigationContext.currentWordId,
+      previousWordId: navigationContext.previousWordId,
+      nextWordId: navigationContext.nextWordId,
+      contextLabel: t('navigation.context.sequential'),
+      isLoadingPrevious: navigationContext.isLoadingPrevious,
+      isLoadingNext: navigationContext.isLoadingNext,
     };
   };
 
-  // Mutations
+  // Debug Navigation Component
+  // const DebugNavigationInfo: React.FC = () => {
+  //   const navigationInfo = getNavigationInfo();
+    
+  //   return (
+  //     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+  //       <h4 className="font-bold text-blue-800 mb-2">🔢 Sequential Navigation Debug</h4>
+  //       <div className="text-sm space-y-1">
+  //         <div><strong>Current Word ID:</strong> {wordId}</div>
+  //         <div><strong>Previous Word ID:</strong> {navigationContext?.previousWordId || 'None'}</div>
+  //         <div><strong>Next Word ID:</strong> {navigationContext?.nextWordId || 'None'}</div>
+          
+  //         <div className="mt-2 space-y-1">
+  //           <div><strong>API Calls:</strong></div>
+  //           <div>• Previous: GET /words/{navigationContext?.previousWordId || 'N/A'}?language_code={user?.main_language?.language_code}</div>
+  //           <div>• Current: GET /words/{wordId}?language_code={user?.main_language?.language_code}</div>
+  //           <div>• Next: GET /words/{navigationContext?.nextWordId || 'N/A'}?language_code={user?.main_language?.language_code}</div>
+  //         </div>
+          
+  //         <div className="mt-2 space-y-1">
+  //           <div><strong>Word Status:</strong></div>
+  //           <div>• Previous exists: {navigationContext?.previousWord ? '✅ Yes' : '❌ No'}</div>
+  //           <div>• Next exists: {navigationContext?.nextWord ? '✅ Yes' : (isLoadingNext ? '🔄 Loading' : '❌ No')}</div>
+  //           <div>• Loading previous: {navigationContext?.isLoadingPrevious ? '🔄 Yes' : '✅ No'}</div>
+  //           <div>• Loading next: {navigationContext?.isLoadingNext ? '🔄 Yes' : '✅ No'}</div>
+  //         </div>
+          
+  //         <div className="mt-2 space-y-1">
+  //           <div><strong>Navigation Info:</strong></div>
+  //           {navigationInfo ? (
+  //             <>
+  //               <div>• Can go previous: {navigationInfo.hasPrevious ? '✅' : '❌'}</div>
+  //               <div>• Can go next: {navigationInfo.hasNext ? '✅' : '❌'}</div>
+  //               <div>• Context: {navigationInfo.contextLabel}</div>
+  //             </>
+  //           ) : (
+  //             <div>• Navigation info: ❌ Not available</div>
+  //           )}
+  //         </div>
+  //       </div>
+        
+  //       {/* Test Navigation Buttons */}
+  //       <div className="mt-3 flex space-x-2">
+  //         <button
+  //           onClick={navigateToPrevious}
+  //           disabled={!navigationContext?.previousWordId}
+  //           className={`px-3 py-1 rounded text-xs ${
+  //             navigationContext?.previousWordId 
+  //               ? 'bg-blue-500 text-white' 
+  //               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+  //           }`}
+  //         >
+  //           Test Previous (ID: {navigationContext?.previousWordId || 'N/A'})
+  //         </button>
+  //         <button
+  //           onClick={navigateToNext}
+  //           className="px-3 py-1 bg-green-500 text-white rounded text-xs"
+  //         >
+  //           Test Next (ID: {navigationContext?.nextWordId || 'N/A'})
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // };
+
+  // Mutations (keeping existing code)
   const addToLearningMutation = useMutation({
     mutationFn: (wordIds: number[]) => learningAPI.addWordToLearning(wordIds),
     onSuccess: () => {
@@ -401,7 +415,7 @@ const WordDetailPage: React.FC = () => {
     onError: () => toast.error(t('messages.progressUpdateError')),
   });
 
-  // Event handlers
+  // Event handlers (keeping existing code)
   const handleToggleLearning = () => {
     if (progress) {
       removeFromLearningMutation.mutate([wordId]);
@@ -410,7 +424,6 @@ const WordDetailPage: React.FC = () => {
     }
   };
 
-  // Audio event handlers using the hook
   const handlePlayAudio = () => {
     playAudio(t('messages.audioPlayed'), t('messages.audioNotAvailable'));
   };
@@ -463,7 +476,7 @@ const WordDetailPage: React.FC = () => {
     }
   };
 
-  // Utility functions
+  // Utility functions (keeping existing code)
   const getDifficultyColor = (level: number) => {
     const colors = {
       1: 'bg-green-100 text-green-800',
@@ -547,53 +560,55 @@ const WordDetailPage: React.FC = () => {
             <span>{t('navigation.backToWords')}</span>
           </button>
 
-          {navigationInfo && (
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-              <span>|</span>
-              <span>{navigationInfo.contextLabel}</span>
-              <span>({navigationInfo.currentPosition} / {navigationInfo.totalWords})</span>
-            </div>
-          )}
+          <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+            <span>|</span>
+            <span>Sequential Navigation</span>
+            <span>(ID: {wordId})</span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Navigation Controls */}
+          {/* ✅ NEW: Sequential Navigation Controls */}
           {navigationInfo && (
             <div className="flex items-center space-x-1">
               <button
-                onClick={() => navigationInfo.previousWord && navigateToWord(navigationInfo.previousWord.id)}
-                disabled={!navigationInfo.hasPrevious || isLoadingNavigation}
+                onClick={navigateToPrevious}
+                disabled={!navigationInfo.hasPrevious || navigationInfo.isLoadingPrevious}
                 className={`p-2 rounded-md transition-colors ${
-                  navigationInfo.hasPrevious && !isLoadingNavigation
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  navigationInfo.hasPrevious && !navigationInfo.isLoadingPrevious
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
                     : 'text-gray-300 cursor-not-allowed'
                 }`}
-                title={navigationInfo.previousWord 
-                  ? t('navigation.previousWord', { word: navigationInfo.previousWord.kazakh_word })
-                  : t('navigation.noPrevious')
+                title={navigationInfo.hasPrevious 
+                  ? `Previous: ${navigationInfo.previousWord?.kazakh_word} (ID: ${navigationInfo.previousWordId})`
+                  : 'No previous word'
                 }
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
 
               <div className="px-3 py-1 bg-gray-100 rounded-md text-sm text-gray-600 min-w-[80px] text-center">
-                {navigationInfo.currentPosition} / {navigationInfo.totalWords}
+                ID: {wordId}
               </div>
 
               <button
-                onClick={() => navigationInfo.nextWord && navigateToWord(navigationInfo.nextWord.id)}
-                disabled={!navigationInfo.hasNext || isLoadingNavigation}
+                onClick={navigateToNext}
+                disabled={navigationInfo.isLoadingNext}
                 className={`p-2 rounded-md transition-colors ${
-                  navigationInfo.hasNext && !isLoadingNavigation
-                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  !navigationInfo.isLoadingNext
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
                     : 'text-gray-300 cursor-not-allowed'
                 }`}
                 title={navigationInfo.nextWord 
-                  ? t('navigation.nextWord', { word: navigationInfo.nextWord.kazakh_word })
-                  : t('navigation.noNext')
+                  ? `Next: ${navigationInfo.nextWord.kazakh_word} (ID: ${navigationInfo.nextWordId})`
+                  : `Try ID: ${navigationInfo.nextWordId}`
                 }
               >
-                <ChevronRightIcon className="h-5 w-5" />
+                {navigationInfo.isLoadingNext ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                ) : (
+                  <ChevronRightIcon className="h-5 w-5" />
+                )}
               </button>
             </div>
           )}
@@ -610,12 +625,17 @@ const WordDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Keyboard Hint */}
+      {/* ✅ NEW: Sequential Keyboard Hint */}
       <div className="text-center text-xs text-gray-500">
-        {t('navigation.keyboardHint')}
+        Use ← → arrow keys to navigate by word ID • Current: {wordId} • 
+        Previous: {navigationContext?.previousWordId || 'None'} • 
+        Next: {navigationContext?.nextWordId || 'None'}
       </div>
 
-      {/* Main Word Card */}
+      {/* ✅ DEBUG COMPONENT - Remove this in production */}
+      {/* {process.env.NODE_ENV === 'development' && <DebugNavigationInfo />} */}
+
+      {/* Main Word Card - Same as before */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {/* Header with Gradient Background & Image */}
         <div className="p-8 bg-gradient-to-r from-blue-50 to-purple-50">
@@ -1050,69 +1070,83 @@ const WordDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Preview Cards */}
-      {navigationInfo && (navigationInfo.previousWord || navigationInfo.nextWord) && (
+      {/* ✅ NEW: Sequential Navigation Preview Cards */}
+      {navigationInfo && (navigationInfo.hasPrevious || !navigationInfo.isLoadingNext) && (
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Previous Word Preview */}
-            <div className={`${!navigationInfo.previousWord ? 'opacity-30' : ''}`}>
-              {navigationInfo.previousWord ? (
+            <div className={`${!navigationInfo.hasPrevious ? 'opacity-30' : ''}`}>
+              {navigationInfo.hasPrevious && navigationInfo.previousWord ? (
                 <button
-                  onClick={() => navigateToWord(navigationInfo.previousWord!.id)}
+                  onClick={navigateToPrevious}
                   className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
                 >
                   <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
                     <ChevronLeftIcon className="h-4 w-4" />
-                    <span>{t('navigation.previous')}</span>
+                    <span>Previous (ID: {navigationInfo.previousWordId})</span>
                   </div>
                   <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
                     {navigationInfo.previousWord.kazakh_word}
                   </div>
                   <div className="text-sm text-gray-600 truncate">
-                    {navigationInfo.previousWord.primary_translation}
+                    {navigationInfo.previousWord.translations?.[0]?.translation}
                   </div>
                 </button>
               ) : (
                 <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100">
                   <div className="flex items-center space-x-2 text-sm text-gray-400 mb-1">
                     <ChevronLeftIcon className="h-4 w-4" />
-                    <span>{t('navigation.previous')}</span>
+                    <span>No Previous Word</span>
                   </div>
                   <div className="text-gray-400">
-                    {t('navigation.noPrevious')}
+                    First word or word not found
                   </div>
                 </div>
               )}
             </div>
 
             {/* Next Word Preview */}
-            <div className={`${!navigationInfo.nextWord ? 'opacity-30' : ''}`}>
+            <div className={`${navigationInfo.isLoadingNext ? 'opacity-50' : ''}`}>
               {navigationInfo.nextWord ? (
                 <button
-                  onClick={() => navigateToWord(navigationInfo.nextWord!.id)}
+                  onClick={navigateToNext}
                   className="w-full text-right p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-white transition-all group"
                 >
                   <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
-                    <span>{t('navigation.next')}</span>
+                    <span>Next (ID: {navigationInfo.nextWordId})</span>
                     <ChevronRightIcon className="h-4 w-4" />
                   </div>
                   <div className="kazakh-text font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
                     {navigationInfo.nextWord.kazakh_word}
                   </div>
                   <div className="text-sm text-gray-600 truncate">
-                    {navigationInfo.nextWord.primary_translation}
+                    {navigationInfo.nextWord.translations?.[0]?.translation}
                   </div>
                 </button>
               ) : (
-                <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100 text-right">
-                  <div className="flex items-center justify-end space-x-2 text-sm text-gray-400 mb-1">
-                    <span>{t('navigation.next')}</span>
-                    <ChevronRightIcon className="h-4 w-4" />
+                <button
+                  onClick={navigateToNext}
+                  disabled={navigationInfo.isLoadingNext}
+                  className={`w-full p-3 rounded-lg border border-gray-200 transition-all text-right ${
+                    navigationInfo.isLoadingNext 
+                      ? 'bg-gray-100 cursor-not-allowed' 
+                      : 'hover:border-gray-300 hover:bg-white cursor-pointer'
+                  }`}
+                >
+                  <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
+                    <span>
+                      {navigationInfo.isLoadingNext ? 'Loading...' : `Try ID: ${navigationInfo.nextWordId}`}
+                    </span>
+                    {navigationInfo.isLoadingNext ? (
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                    ) : (
+                      <ChevronRightIcon className="h-4 w-4" />
+                    )}
                   </div>
                   <div className="text-gray-400">
-                    {t('navigation.noNext')}
+                    {navigationInfo.isLoadingNext ? 'Checking if word exists...' : 'Click to try next ID'}
                   </div>
-                </div>
+                </button>
               )}
             </div>
           </div>
