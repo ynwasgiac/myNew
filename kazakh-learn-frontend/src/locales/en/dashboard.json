@@ -1,0 +1,47 @@
+{
+    "greetings": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon", 
+      "evening": "Good evening"
+    },
+    "welcome": {
+      "subtitle": "Ready to continue your Kazakh learning journey?",
+      "learningInterface": "Learning interface: {{language}}",
+      "dayStreak": "day streak"
+    },
+    "stats": {
+      "totalWords": "Total Words",
+      "wordsDueReview": "Words Due Review",
+      "accuracyRate": "Accuracy Rate",
+      "sessionsThisWeek": "Sessions This Week"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "startLearning": {
+        "name": "Start Learning",
+        "description": "Practice new words"
+      },
+      "takeQuiz": {
+        "name": "Take Quiz", 
+        "description": "Test your knowledge"
+      },
+      "reviewWords": {
+        "name": "Review Words",
+        "description": "Practice saved words"
+      },
+      "browseWords": {
+        "name": "Browse Words",
+        "description": "Explore vocabulary"
+      }
+    },
+    "learningProgress": {
+      "title": "Learning Progress",
+      "statuses": {
+        "new": "New",
+        "learning": "Learning",
+        "review": "Review",
+        "learned": "Learned",
+        "mastered": "Mastered"
+      }
+    }
+  }

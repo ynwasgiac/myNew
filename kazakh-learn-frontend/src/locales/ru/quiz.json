@@ -1,0 +1,23 @@
+{
+    "progress": {
+      "question": "Вопрос {{current}} из {{total}}"
+    },
+    "question": {
+      "prompt": "Что означает это слово?"
+    },
+    "actions": {
+      "nextQuestion": "Следующий вопрос",
+      "finishQuiz": "Завершить тест",
+      "retakeQuiz": "Пройти тест заново",
+      "continueLearning": "Продолжить обучение"
+    },
+    "results": {
+      "title": "Тест завершен!",
+      "yourScore": "Ваш результат: {{score}}%",
+      "correct": "Правильно",
+      "incorrect": "Неправильно",
+      "reviewTitle": "Просмотр ваших ответов",
+      "yourAnswer": "Ваш ответ",
+      "correctAnswer": "Правильный ответ"
+    }
+  }

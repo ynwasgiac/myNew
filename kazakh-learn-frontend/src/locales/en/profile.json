@@ -1,0 +1,26 @@
+{
+    "page": {
+      "title": "Your Profile",
+      "loading": "Loading..."
+    },
+    "sections": {
+      "accountDetails": "Account Details",
+      "learningPreferences": "Learning Preferences"
+    },
+    "fields": {
+      "username": "Username:",
+      "email": "Email:",
+      "accountType": "Account Type:",
+      "status": "Status:",
+      "interfaceLanguage": "Interface Language:",
+      "memberSince": "Member Since:",
+      "defaultLanguage": "English (Default)"
+    },
+    "status": {
+      "active": "Active"
+    },
+    "comingSoon": {
+      "title": "More Profile Features Coming Soon!",
+      "description": "We're working on adding achievement badges, learning streaks, social features, and more to your profile."
+    }
+  }

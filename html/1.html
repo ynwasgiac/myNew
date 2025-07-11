@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Қазақша - Learn Kazakh Language</title>
+    <meta name="description" content="Learn Kazakh language with interactive lessons, vocabulary practice, and progress tracking">
+    <meta name="keywords" content="Kazakh, language learning, vocabulary, Kazakhstan, Қазақша">
+
+    <!-- External Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/base.css" rel="stylesheet">
+    <link href="css/layout.css" rel="stylesheet">
+    <link href="css/components.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container" id="app">
+        <!-- Navigation -->
+        <nav class="navbar hidden" id="navbar">
+            <div class="nav-content">
+                <a href="#" class="logo" onclick="showDashboard()">
+                    <div class="logo-icon">🇰🇿</div>
+                    <span>Қазақша</span>
+                </a>
+
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" onclick="showDashboard()" data-view="dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showCategories()" data-view="categories">
+                            <i class="fas fa-th-large"></i>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showMyWords()" data-view="myWords">
+                            <i class="fas fa-book"></i>
+                            <span>My Words</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showPractice()" data-view="practice">
+                            <i class="fas fa-dumbbell"></i>
+                            <span>Practice</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAllWords()" data-view="allWords">
+                            <i class="fas fa-list"></i>
+                            <span>All Words</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showLearn()" data-view="learn">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>Learn</span>
+                        </a>
+                    </li>
+                    <li class="nav-item hidden">
+                        <a href="#" class="nav-link" onclick="showAdminPanel()" data-view="adminPanel">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="user-menu">
+                    <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">A</div>
+                    <div class="dropdown" id="userDropdown">
+                        <div id="userLanguageInfo" class="dropdown-language-info hidden">
+                            <div class="dropdown-item-info">
+                                <i class="fas fa-language"></i>
+                                <span>English</span>
+                            </div>
+                        </div>
+
+                        <a href="#" class="dropdown-item" onclick="showSettings()">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="showProfile()">
+                            <i class="fas fa-user"></i>
+                            Profile
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" onclick="Auth.logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Authentication Screen -->
+        <div class="auth-container" id="authScreen">
+            <!-- Login Form -->
+            <div class="auth-card" id="loginForm">
+                <div class="auth-header">
+                    <h1 class="auth-title">Welcome Back</h1>
+                    <p class="auth-subtitle">Sign in to continue learning Kazakh</p>
+                </div>
+
+                <div id="loginAlert" class="alert alert-error hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="loginErrorText"></span>
+                </div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" class="form-input" required autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="#" onclick="showRegister()">Sign up</a></p>
+                    <div class="demo-account">
+                        <small class="text-secondary">
+                            <strong>Demo Account:</strong><br>
+                            Username: <code>demo</code><br>
+                            Password: <code>demo123!</code>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-card hidden" id="registerForm">
+                <div class="auth-header">
+                    <h1 class="auth-title">Create Account</h1>
+                    <p class="auth-subtitle">Start your Kazakh learning journey</p>
+                </div>
+
+                <div id="registerAlert" class="alert alert-error hidden">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="registerErrorText"></span>
+                </div>
+
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" class="form-input" required autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" class="form-input" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="registerFullName">Full Name</label>
+                        <input type="text" id="registerFullName" class="form-input" required autocomplete="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="registerLanguage">Preferred Language</label>
+                        <select id="registerLanguage" class="form-select">
+                            <option value="en">English</option>
+                            <option value="ru">Русский (Russian)</option>
+                            <option value="kk">Қазақша (Kazakh)</option>
+                            <option value="es">Español (Spanish)</option>
+                            <option value="fr">Français (French)</option>
+                            <option value="de">Deutsch (German)</option>
+                            <option value="zh">中文 (Chinese)</option>
+                            <option value="ar">العربية (Arabic)</option>
+                        </select>
+                        <small class="form-text">This will be used for the interface language and translations</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" class="form-input" required autocomplete="new-password">
+                        <small class="form-text">
+                            Must include uppercase, lowercase, number, and special character
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Content -->
+        <div class="main-content hidden" id="mainApp">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view">
+                <div class="dashboard-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back! Continue your Kazakh learning journey.</p>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Welcome to the Kazakh Learning Platform! Set your language preferences in Settings.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories View -->
+            <div id="categoriesView" class="view hidden">
+                <div class="categories-header">
+                    <h1>Categories</h1>
+                    <p>Choose a category to start learning</p>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Categories will be loaded here dynamically -->
+                </div>
+            </div>
+
+            <!-- All Words View -->
+            <div id="allWordsView" class="view hidden">
+                <div class="allwords-container">
+                    <div class="allwords-sidebar" id="allWordsSidebar">
+                        <button class="btn btn-reset-filter" id="resetAllWordsFilterBtn" style="margin-bottom: 1rem;">
+                            <i class="fas fa-undo"></i> Reset Filters
+                        </button>
+                        <h3>Difficulty</h3>
+                        <ul id="allWordsDifficultyList">
+                            <!-- Difficulty options will be loaded here -->
+                        </ul>
+                        <h3>Word Types</h3>
+                        <ul id="allWordsTypeList">
+                            <!-- Word types will be loaded here -->
+                        </ul>
+                        <h3>Categories</h3>
+                        <ul id="allWordsCategoryList">
+                            <!-- Categories will be loaded here -->
+                        </ul>
+                    </div>
+                    <div class="allwords-main">
+                        <h1>All Words</h1>
+                        <div class="allwords-search-panel" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                            <input type="text" id="allWordsSearchInput" class="form-input" placeholder="Search words..." style="flex:1; max-width:350px;">
+                            <button class="btn btn-primary" id="allWordsSearchBtn"><i class="fas fa-search"></i> Search</button>
+                        </div>
+                        <div class="words-table-container">
+                            <table class="words-table" id="allWordsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;"></th>
+                                        <th>Kazakh</th>
+                                        <th>Cyrillic</th>
+                                        <th>Type</th>
+                                        <th>Category</th>
+                                        <th>Difficulty</th>
+                                        <th>Translation</th>
+                                        <th>Image</th>
+                                        <th>Sound</th>
+                                        <th>Learning Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Words will be loaded here -->
+                                </tbody>
+                            </table>
+                            <div class="allwords-pagination" id="allWordsPagination"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Words View -->
+            <div id="myWordsView" class="view hidden">
+                <div class="allwords-container">
+                    <div class="allwords-main" style="width:100%">
+                        <h1>My Words</h1><button class="btn btn-reset-filter" id="resetMyWordsFilterBtn" style="margin-bottom: 0;"><i class="fas fa-undo"></i> Reset Filters</button>
+                        <div class="mywords-search-panel" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                            <select id="myWordsStatusFilter" class="form-select" style="max-width:150px;">
+                                <option value="">All Statuses</option>
+                                <option value="want_to_learn">Want to Learn</option>
+                                <option value="learning">Learning</option>
+                                <option value="review">Review</option>
+                                <option value="mastered">Mastered</option>
+                            </select>
+                            <select id="myWordsDifficultyFilter" class="form-select" style="max-width:150px;"></select>
+                            <select id="myWordsCategoryFilter" class="form-select" style="max-width:180px;"></select>
+                            <input type="text" id="myWordsSearchInput" class="form-input" placeholder="Search words..." style="flex:1; max-width:350px;">
+                            <button class="btn btn-primary" id="myWordsSearchBtn"><i class="fas fa-search"></i> Search</button>
+                            <button class="btn btn-outline" id="toggleMyWordsTranslationsBtn" style="margin-bottom: 1rem;"><i class="fas fa-language"></i> Hide Translations</button>
+                            
+                        </div>
+                        <div class="words-table-container">
+                            <table class="words-table" id="myWordsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Kazakh</th>
+                                        <th>Cyrillic</th>
+                                        <th>Category</th>
+                                        <th>Difficulty</th>
+                                        <th>Translations</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- User words will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="view hidden">
+                <div class="settings-container">
+                    <div class="settings-header">
+                        <h1 class="settings-title">Settings</h1>
+                        <p>Customize your learning experience</p>
+                    </div>
+
+                    <div class="settings-tabs">
+                        <button class="settings-tab active" data-tab="general">
+                            <i class="fas fa-cog"></i>
+                            General
+                        </button>
+                        <button class="settings-tab" data-tab="language">
+                            <i class="fas fa-language"></i>
+                            Language
+                        </button>
+                        <button class="settings-tab" data-tab="profile">
+                            <i class="fas fa-user"></i>
+                            Profile
+                        </button>
+                    </div>
+
+                    <div class="settings-content">
+                        <!-- General Settings -->
+                        <div id="generalContent" class="settings-panel">
+                            <div class="settings-section">
+                                <h3>General Preferences</h3>
+                                <form id="settingsForm">
+                                    <div class="form-group">
+                                        <label class="form-label" for="themeSelect">Theme</label>
+                                        <select id="themeSelect" name="theme" class="form-select">
+                                            <option value="light">Light</option>
+                                            <option value="dark">Dark</option>
+                                            <option value="system">System</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="practiceMode">Practice Mode</label>
+                                        <select id="practiceMode" name="practiceMode" class="form-select">
+                                            <option value="random">Random</option>
+                                            <option value="sequential">Sequential</option>
+                                            <option value="difficulty">By Difficulty</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <input type="checkbox" name="sound" id="soundToggle">
+                                            Enable Sound Effects
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Save Changes
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Language Settings -->
+                        <div id="languageContent" class="settings-panel hidden">
+                            <div class="language-settings">
+                                <!-- Current Language Status -->
+                                <div class="language-status">
+                                    <h3>Current Language Preference</h3>
+                                    <div id="currentLanguageDisplay" class="language-display">
+                                        <i class="fas fa-language"></i>
+                                        <span>Loading...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Language Selection Form -->
+                                <form id="languageForm">
+                                    <div class="form-group">
+                                        <label class="form-label" for="languageSelect">Interface Language</label>
+                                        <select id="languageSelect" name="language" class="form-select">
+                                            <!-- Options will be populated by JavaScript -->
+                                        </select>
+                                        <small class="form-text">
+                                            This language will be used for the interface, translations, and content throughout the application.
+                                        </small>
+                                    </div>
+
+                                    <!-- Quick Language Selector -->
+                                    <div id="quickLanguageSelector">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+
+                                    <div class="language-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i>
+                                            Update Language
+                                        </button>
+
+                                        <button type="button" class="btn btn-outline" id="clearLanguageBtn">
+                                            <i class="fas fa-times"></i>
+                                            Clear Preference
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Language Information -->
+                                <div class="language-info">
+                                    <h4>Language Features</h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <i class="fas fa-globe"></i>
+                                            <div>
+                                                <strong>Interface Language</strong>
+                                                <p>Controls the language of menus, buttons, and system messages</p>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="fas fa-book"></i>
+                                            <div>
+                                                <strong>Translation Language</strong>
+                                                <p>The language used to show word meanings and definitions</p>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="fas fa-user-cog"></i>
+                                            <div>
+                                                <strong>Personal Preference</strong>
+                                                <p>Your language choice is saved to your account and synced across devices</p>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="fas fa-sync"></i>
+                                            <div>
+                                                <strong>Auto-Detection</strong>
+                                                <p>API calls automatically use your preferred language when no specific language is requested</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Settings -->
+                        <div id="profileContent" class="settings-panel hidden">
+                            <div class="profile-settings">
+                                <div class="profile-header">
+                                    <h3>Profile Information</h3>
+                                    <p>Manage your account details and preferences</p>
+                                </div>
+
+                                <div class="profile-info">
+                                    <div class="profile-field">
+                                        <label>Username:</label>
+                                        <span id="profileUsername">Loading...</span>
+                                    </div>
+
+                                    <div class="profile-field">
+                                        <label>Email:</label>
+                                        <span id="profileEmail">Loading...</span>
+                                    </div>
+
+                                    <div class="profile-field">
+                                        <label>Full Name:</label>
+                                        <span id="profileFullName">Loading...</span>
+                                    </div>
+
+                                    <div class="profile-field">
+                                        <label>Role:</label>
+                                        <span id="profileRole">Loading...</span>
+                                    </div>
+
+                                    <div id="profileLanguageInfo">
+                                        <!-- Language info will be populated by JavaScript -->
+                                    </div>
+
+                                    <div class="profile-field">
+                                        <label>Member Since:</label>
+                                        <span id="profileCreatedAt">Loading...</span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-actions">
+                                    <button class="btn btn-outline" onclick="showLanguageSettings()">
+                                        <i class="fas fa-language"></i>
+                                        Manage Language
+                                    </button>
+
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-key"></i>
+                                        Change Password
+                                    </button>
+
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-download"></i>
+                                        Export Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Panel View -->
+            <div id="adminPanelView" class="view hidden">
+                <div class="admin-panel-container">
+                    <h1>Admin Panel</h1>
+                    <button class="btn btn-outline" id="toggleAdminCategoriesPanelBtn" style="margin-bottom: 1rem;"><i class="fas fa-list"></i> Show Categories Panel</button>
+                    <div id="adminCategoriesPanel" style="display:none; margin-bottom:2rem; border:1px solid #eee; border-radius:8px; padding:1.5rem; background:#fafbfc;">
+                        <h2>Manage Categories</h2>
+                        <p>Here you can add, edit, or delete categories. (UI coming soon.)</p>
+                    </div>
+                    <p>Welcome to the admin panel. (UI and features coming soon.)</p>
+                </div>
+            </div>
+
+            <!-- Learn View -->
+            <div id="learnView" class="view hidden">
+                <div class="learn-container" style="display: flex; min-height: 400px;">
+                    <div class="learn-sidebar" style="width: 220px; background: #f7f8fa; border-right: 1px solid #eee; padding: 1.5rem 1rem;">
+                        <ul class="learn-menu" style="list-style: none; padding: 0; margin: 0;">
+                            <li class="learn-menu-item" style="margin-bottom: 1.2rem;">
+                                <i class="fas fa-route"></i> <span style="margin-left: 0.7rem;">Trip</span>
+                            </li>
+                            <li class="learn-menu-item" style="margin-bottom: 1.2rem;">
+                                <i class="fas fa-image"></i> <span style="margin-left: 0.7rem;">Images</span>
+                            </li>
+                            <li class="learn-menu-item">
+                                <i class="fas fa-volume-up"></i> <span style="margin-left: 0.7rem;">Audio</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="learn-main" style="flex: 1; padding: 2rem;">
+                        <h1>Learn</h1>
+                        <p>Select an item from the left panel to start learning.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div class="notification-container" id="notificationContainer">
+            <!-- Notifications will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <script src="js/config.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>

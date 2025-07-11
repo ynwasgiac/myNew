@@ -1,0 +1,121 @@
+{
+    "navigation": {
+      "logo": "Kazakh Learn",
+      "features": "Features",
+      "about": "About",
+      "reviews": "Reviews",
+      "signIn": "Sign In",
+      "getStarted": "Get Started",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "hero": {
+      "title": "Master Kazakh Language",
+      "subtitle": "Learn Kazakh with our interactive platform featuring thousands of words, personalized lessons, and proven learning methods.",
+      "startLearningFree": "Start Learning Free",
+      "signIn": "Sign In",
+      "continueLearning": "Continue Learning",
+      "process": {
+        "learn": {
+          "title": "Learn",
+          "description": "Discover new words daily"
+        },
+        "practice": {
+          "title": "Practice",
+          "description": "Interactive exercises"
+        },
+        "master": {
+          "title": "Master",
+          "description": "Achieve fluency"
+        }
+      }
+    },
+    "stats": {
+      "activeUsers": "Active Learners",
+      "kazakhWords": "Kazakh Words",
+      "learningSessions": "Learning Sessions",
+      "successRate": "Success Rate"
+    },
+    "features": {
+      "title": "Why Choose Kazakh Learn?",
+      "subtitle": "Our platform combines modern technology with proven language learning methods to help you master Kazakh effectively.",
+      "vocabulary": {
+        "title": "Comprehensive Vocabulary",
+        "description": "Learn thousands of Kazakh words with translations, pronunciations, and examples."
+      },
+      "interactive": {
+        "title": "Interactive Learning",
+        "description": "Practice with flashcards, quizzes, and spaced repetition system."
+      },
+      "progress": {
+        "title": "Progress Tracking",
+        "description": "Monitor your learning journey with detailed statistics and achievements."
+      },
+      "gamification": {
+        "title": "Gamification",
+        "description": "Earn points, maintain streaks, and compete with other learners."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Start your Kazakh learning journey in three simple steps",
+      "steps": {
+        "createAccount": {
+          "title": "Create Account",
+          "description": "Sign up for free and set your learning preferences and goals."
+        },
+        "startLearning": {
+          "title": "Start Learning",
+          "description": "Begin with basic words and phrases, progressing at your own pace."
+        },
+        "trackProgress": {
+          "title": "Track Progress",
+          "description": "Monitor your improvement and celebrate milestones along the way."
+        }
+      }
+    },
+    "testimonials": {
+      "title": "What Our Learners Say",
+      "subtitle": "Join thousands of successful Kazakh language learners",
+      "reviews": [
+        {
+          "content": "KazakhLearn made learning Kazakh so much easier. The interactive lessons and progress tracking keep me motivated every day!",
+          "author": "Sarah Johnson",
+          "role": "Language Enthusiast"
+        },
+        {
+          "content": "As someone living in Kazakhstan, this app helped me connect better with the local culture. Highly recommended!",
+          "author": "Mike Chen",
+          "role": "Expat in Almaty"
+        },
+        {
+          "content": "The pronunciation features and example sentences are incredibly helpful. My Kazakh has improved dramatically!",
+          "author": "Elena Petrov",
+          "role": "Student"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to Start Learning Kazakh?",
+      "subtitle": "Join our community of learners and start your journey to mastering the Kazakh language today.",
+      "getStartedFree": "Get Started Free",
+      "continueLearning": "Continue Learning"
+    },
+    "footer": {
+      "description": "The most effective way to learn Kazakh online. Master vocabulary, improve pronunciation, and track your progress.",
+      "madeWith": "Made with ❤️ for Kazakh language learners",
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "mobileApp": "Mobile App"
+      },
+      "support": {
+        "title": "Support",
+        "helpCenter": "Help Center",
+        "contactUs": "Contact Us",
+        "privacyPolicy": "Privacy Policy",
+        "termsOfService": "Terms of Service"
+      },
+      "copyright": "© 2024 Kazakh Learn. All rights reserved."
+    }
+  }

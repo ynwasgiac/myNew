@@ -1,0 +1,47 @@
+{
+    "greetings": {
+      "morning": "Қайырлы таң",
+      "afternoon": "Қайырлы күн",
+      "evening": "Қайырлы кеш"
+    },
+    "welcome": {
+      "subtitle": "Қазақ тілін үйрену сапарыңызды жалғастыруға дайынсыз ба?",
+      "learningInterface": "Оқыту интерфейсі: {{language}}",
+      "dayStreak": "күн үздіксіз"
+    },
+    "stats": {
+      "totalWords": "Барлық сөздер",
+      "wordsDueReview": "Қайталауға тиіс сөздер",
+      "accuracyRate": "Дәлдік дәрежесі",
+      "sessionsThisWeek": "Осы аптадағы сессиялар"
+    },
+    "quickActions": {
+      "title": "Жылдам әрекеттер",
+      "startLearning": {
+        "name": "Үйренуді бастау",
+        "description": "Жаңа сөздерді жаттығу"
+      },
+      "takeQuiz": {
+        "name": "Викторина өту",
+        "description": "Білімді тексеру"
+      },
+      "reviewWords": {
+        "name": "Сөздерді қайталау",
+        "description": "Сақталған сөздерді жаттығу"
+      },
+      "browseWords": {
+        "name": "Сөздерді шолу",
+        "description": "Лексиканы зерттеу"
+      }
+    },
+    "learningProgress": {
+      "title": "Оқыту прогрессі",
+      "statuses": {
+        "new": "Жаңа",
+        "learning": "Үйренуде",
+        "review": "Қайталау",
+        "learned": "Үйренілген",
+        "mastered": "Меңгерілген"
+      }
+    }
+  }

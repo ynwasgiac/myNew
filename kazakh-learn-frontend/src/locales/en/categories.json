@@ -1,0 +1,33 @@
+{
+    "page": {
+      "title": "Word Categories",
+      "subtitle": "Explore {{count}} categories of Kazakh words"
+    },
+    "loading": {
+      "categories": "Loading categories..."
+    },
+    "errors": {
+      "loadingError": "Error loading categories. Please try again."
+    },
+    "search": {
+      "placeholder": "Search categories...",
+      "clearSearch": "Clear Search"
+    },
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "card": {
+      "viewWords": "View Words"
+    },
+    "list": {
+      "browse": "Browse",
+      "categoryId": "Category ID: {{id}}",
+      "created": "Created: {{date}}"
+    },
+    "emptyState": {
+      "title": "No categories found",
+      "searchMessage": "No categories match your search \"{{searchTerm}}\". Try different keywords.",
+      "noCategories": "No categories are available at the moment."
+    }
+  }

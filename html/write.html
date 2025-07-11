@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write the Word - KazakhLearn</title>
+    <link href="css/unified-learning.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="learn-container">
+            <div class="learn-header">
+                <h1 class="learn-title">Write the Word</h1>
+                <p class="learn-subtitle">Test your spelling and memory</p>
+            </div>
+            
+            <div class="learn-content">
+                <div class="quiz-container" id="quiz-container"></div>
+                
+                <form class="write-form" id="write-form">
+                    <div class="input-group">
+                        <input id="word-input" type="text" class="word-input" placeholder="Type the Kazakh word..." autocomplete="off" required />
+                        <button id="help-btn" class="btn btn-secondary" type="button" title="Show next letter">
+                            <i class="fas fa-lightbulb"></i>
+                            Help
+                        </button>
+                    </div>
+                    <button id="submit-btn" class="btn btn-success" type="submit">
+                        <i class="fas fa-check"></i>
+                        Check Answer
+                    </button>
+                </form>
+                
+                <div class="action-buttons" style="margin-top: 1rem;">
+                    <button id="hard-btn" class="btn btn-danger" type="button">
+                        <i class="fas fa-star"></i>
+                        Hard Word
+                    </button>
+                    <button id="next-btn" class="btn btn-info hidden">
+                        <i class="fas fa-arrow-right"></i>
+                        Next Word
+                    </button>
+                </div>
+                
+                <div class="feedback" id="feedback"></div>
+                
+                <div class="completion-screen hidden" id="write-finish">
+                    <h2 class="completion-title">🎉 Well Done!</h2>
+                    <p class="completion-message">You've completed this writing exercise successfully!</p>
+                    <button class="btn" onclick="window.location.href='1.html'">
+                        <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
+                        Back to Home
+                    </button>
+                </div>
+            </div>
+            
+            <div class="progress-indicator" id="progress-indicator">
+                <p class="progress-text" id="progress-text">Loading exercise...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-learn.js"></script>
+    <script>
+    class WritePage {
+        constructor() {
+            this.words = [];
+            this.quizWords = [];
+            this.currentIdx = 0;
+            this.categoryId = LearnShared.getQueryParam('category_id');
+            this.languageCode = LearnShared.getUserLanguageCode();
+            const wordIdsParam = LearnShared.getQueryParam('word_ids');
+            this.wordIds = wordIdsParam ? wordIdsParam.split(',').map(x => x.trim()).filter(Boolean) : null;
+            this.helpUsage = {};
+        }
+
+        async init() {
+            await this.loadWords();
+            this.setupEventListeners();
+        }
+
+        async loadWords() {
+            const allWords = await LearnShared.fetchWords(this.categoryId, this.languageCode, this.wordIds);
+            if (!allWords) return;
+            this.words = allWords;
+            
+            // Filter words with images for better context
+            this.quizWords = await LearnShared.filterWordsWithImages(allWords);
+            
+            // If no words with images, use all words
+            if (this.quizWords.length === 0) {
+                this.quizWords = allWords;
+            }
+            
+            this.quizWords = LearnShared.shuffleArray(this.quizWords);
+            this.currentIdx = 0;
+            await this.showQuiz();
+        }
+
+        setupEventListeners() {
+            document.getElementById('write-form').onsubmit = (e) => this.handleSubmit(e);
+            document.getElementById('next-btn').onclick = () => this.nextWord();
+            document.getElementById('help-btn').onclick = () => this.showHelp();
+            
+            // Enter key support for input
+            document.getElementById('word-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !document.getElementById('submit-btn').disabled) {
+                    e.preventDefault();
+                    document.getElementById('write-form').dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+
+        async showQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            const feedback = document.getElementById('feedback');
+            const progress = document.getElementById('progress-text');
+            const writeForm = document.getElementById('write-form');
+            const wordInput = document.getElementById('word-input');
+            const nextBtn = document.getElementById('next-btn');
+            const finish = document.getElementById('write-finish');
+            
+            // Clean up previous elements
+            this.cleanupPreviousElements();
+            
+            feedback.textContent = '';
+            nextBtn.classList.add('hidden');
+            writeForm.classList.remove('hidden');
+            wordInput.value = '';
+            wordInput.disabled = false;
+            document.getElementById('submit-btn').disabled = false;
+            
+            if (this.currentIdx >= this.quizWords.length) {
+                quizContainer.style.display = 'none';
+                writeForm.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                finish.classList.remove('hidden');
+                progress.textContent = 'Exercise completed!';
+                return;
+            }
+            
+            progress.textContent = `Question ${this.currentIdx + 1} of ${this.quizWords.length}`;
+            
+            const word = this.quizWords[this.currentIdx];
+            quizContainer.innerHTML = '';
+            
+            // Show image if available
+            const imageUrl = await LearnShared.getWordImageUrl(word.id);
+            if (imageUrl) {
+                const img = LearnShared.createImageElement(imageUrl, 'Word Image');
+                img.id = 'quiz-word-image';
+                img.className = 'word-image';
+                quizContainer.appendChild(img);
+            }
+            
+            // Show sound button if available
+            const soundUrl = await LearnShared.getWordSoundUrl(word.id);
+            if (soundUrl) {
+                const soundBtn = LearnShared.createSoundButton(soundUrl, 'sound-button');
+                soundBtn.id = 'quiz-word-sound-btn';
+                soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>Play Sound';
+                quizContainer.appendChild(soundBtn);
+                
+                // Auto-play sound
+                setTimeout(() => {
+                    const audio = new Audio(soundUrl);
+                    audio.play().catch(e => console.error('Audio play failed:', e));
+                }, 500);
+            }
+            
+            // Show translation as hint
+            const translation = await LearnShared.getTranslation(word.id, this.languageCode);
+            if (translation) {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'example-sentence';
+                hintDiv.innerHTML = `
+                    <div class="example-translation">
+                        <i class="fas fa-lightbulb" style="opacity: 0.7; margin-right: 0.75rem;"></i>
+                        Meaning: ${translation}
+                    </div>
+                `;
+                quizContainer.appendChild(hintDiv);
+            }
+            
+            this.helpUsage[this.currentIdx] = 0;
+            
+            // Setup hard word button
+            const hardBtn = document.getElementById('hard-btn');
+            hardBtn.onclick = async () => {
+                await LearnShared.updateWordProgress(word.id, { difficulty_rating: 'hard' });
+                this.showFeedback('⭐ Marked as hard word!', '#f59e0b');
+            };
+            
+            // Focus on input
+            setTimeout(() => wordInput.focus(), 100);
+        }
+
+        async handleSubmit(e) {
+            e.preventDefault();
+            
+            const word = this.quizWords[this.currentIdx];
+            const wordInput = document.getElementById('word-input');
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            const correct = (word.kazakh_word || word.word || '').trim().toLowerCase();
+            const userInput = wordInput.value.trim().toLowerCase();
+            const helpCount = this.helpUsage[this.currentIdx] || 0;
+            const helpRatio = correct.length > 0 ? helpCount / correct.length : 0;
+            
+            let isBad = false;
+            if (helpRatio >= 0.5) {
+                isBad = true;
+                // Update word status to 'learning'
+                await LearnShared.updateWordProgress(word.id, { status: 'learning' });
+            }
+            
+            if (userInput === correct && !isBad) {
+                feedback.textContent = '✅ Correct! Well done!';
+                feedback.style.color = '#10b981';
+                await LearnShared.updateWordProgress(word.id, { status: 'learned' });
+            } else if (isBad) {
+                feedback.textContent = `❌ Too much help used! Marked for more practice. Correct answer: ${word.kazakh_word || word.word}`;
+                feedback.style.color = '#ef4444';
+            } else {
+                feedback.textContent = `❌ Incorrect! Correct answer: ${word.kazakh_word || word.word}`;
+                feedback.style.color = '#ef4444';
+            }
+            
+            wordInput.disabled = true;
+            submitBtn.disabled = true;
+            nextBtn.classList.remove('hidden');
+            
+            // Auto-advance after 3 seconds
+            setTimeout(() => {
+                if (!nextBtn.classList.contains('hidden')) {
+                    this.nextWord();
+                }
+            }, 3000);
+        }
+
+        nextWord() {
+            this.currentIdx++;
+            this.showQuiz();
+        }
+
+        showHelp() {
+            const word = this.quizWords[this.currentIdx];
+            const wordInput = document.getElementById('word-input');
+            const correct = (word.kazakh_word || word.word || '').trim();
+            let current = wordInput.value;
+            let nextLetterIdx = current.length;
+            
+            // Find the first incorrect letter or add next letter
+            for (let i = 0; i < current.length; i++) {
+                if (current[i].toLowerCase() !== correct[i].toLowerCase()) {
+                    nextLetterIdx = i;
+                    break;
+                }
+            }
+            
+            if (nextLetterIdx < correct.length) {
+                wordInput.value = correct.slice(0, nextLetterIdx + 1);
+                this.helpUsage[this.currentIdx] = (this.helpUsage[this.currentIdx] || 0) + 1;
+                
+                // Show feedback about help usage
+                const helpCount = this.helpUsage[this.currentIdx];
+                const maxHelp = Math.ceil(correct.length * 0.4); // 40% of word length
+                if (helpCount >= maxHelp) {
+                    this.showFeedback(`⚠️ Maximum help used (${helpCount}/${correct.length} letters)`, '#f59e0b');
+                } else {
+                    this.showFeedback(`💡 Hint used (${helpCount}/${correct.length} letters)`, '#3b82f6');
+                }
+            } else {
+                this.showFeedback('No more hints available!', '#64748b');
+            }
+            
+            wordInput.focus();
+        }
+
+        cleanupPreviousElements() {
+            ['quiz-word-image', 'quiz-word-sound-btn'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.remove();
+            });
+        }
+
+        showFeedback(message, color = '#10b981') {
+            // Create floating notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${color};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    // Initialize page
+    let writePage;
+    document.addEventListener('DOMContentLoaded', () => {
+        writePage = new WritePage();
+        writePage.init();
+    });
+
+    // Add CSS animations for notifications
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+</body>
+</html>

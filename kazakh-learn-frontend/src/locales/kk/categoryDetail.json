@@ -1,0 +1,65 @@
+{
+    "loading": {
+      "category": "Санат жүктелуде...",
+      "words": "Сөздер жүктелуде..."
+    },
+    "errors": {
+      "categoryNotFound": "Санат табылмады",
+      "categoryNotFoundDescription": "Іздеп отырған санатыңыз жоқ немесе жойылған."
+    },
+    "navigation": {
+      "backToCategories": "Санаттарға оралу"
+    },
+    "actions": {
+      "browseCategories": "Санаттарды шолу",
+      "addToLearning": "Үйренуге қосу",
+      "practiceCategory": "Осы санатты жаттығу",
+      "takeQuiz": "Тест тапсыру",
+      "clearSearch": "Іздеуді тазалау"
+    },
+    "selection": {
+      "selectedCount": "{{count}} таңдалды"
+    },
+    "stats": {
+      "wordsCount": "{{count}} сөз",
+      "inLearningList": "{{count}} үйрену тізімінде",
+      "categoryId": "Санат ID: {{id}}"
+    },
+    "search": {
+      "placeholder": "Осы санаттағы сөздерді іздеу..."
+    },
+    "view": {
+      "grid": "Тор көрінісі",
+      "list": "Тізім көрінісі"
+    },
+    "filters": {
+      "title": "Сүзгілер",
+      "difficultyLevel": "Қиындық деңгейі",
+      "allLevels": "Барлық деңгейлер",
+      "levels": {
+        "beginner": "1 деңгей - Бастаушы",
+        "elementary": "2 деңгей - Бастапқы",
+        "intermediate": "3 деңгей - Орташа",
+        "advanced": "4 деңгей - Жоғары",
+        "expert": "5 деңгей - Сарапшы"
+      },
+      "clear": "Сүзгілерді тазалау"
+    },
+    "results": {
+      "searchResults": "{{count}} нәтиже табылды",
+      "showing": "{{count}} сөз көрсетілуде"
+    },
+    "emptyState": {
+      "noWordsFound": "Сөздер табылмады",
+      "noWordsInCategory": "Бұл санатта сөздер жоқ",
+      "searchMessage": "Осы санатта \"{{searchTerm}}\" іздеуіңізге сәйкес сөздер табылмады.",
+      "categoryMessage": "Бұл санатта әлі сөздер жоқ."
+    },
+    "messages": {
+      "addedToLearning": "Сөздер үйрену тізіміне қосылды!",
+      "addToLearningError": "Сөздерді үйрену тізіміне қосу сәтсіз аяқталды",
+      "removedFromLearning": "Сөздер үйрену тізімінен алынып тасталды!",
+      "removeFromLearningError": "Сөздерді үйрену тізімінен алып тастау сәтсіз аяқталды"
+    }
+  }
+  

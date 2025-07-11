@@ -1,0 +1,14 @@
+{
+    "title": "Page Not Found",
+    "description": "Oops! The page you're looking for doesn't exist. It might have been moved, deleted, or you entered the wrong URL.",
+    "actions": {
+      "goToDashboard": "Go to Dashboard",
+      "browseWords": "Browse Words"
+    },
+    "help": {
+      "needHelp": "Need help? Check out our",
+      "learningGuide": "learning guide",
+      "or": "or",
+      "contactSupport": "contact support"
+    }
+  }

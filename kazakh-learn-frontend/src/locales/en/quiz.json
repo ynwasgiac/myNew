@@ -1,0 +1,23 @@
+{
+    "progress": {
+      "question": "Question {{current}} of {{total}}"
+    },
+    "question": {
+      "prompt": "What does this word mean?"
+    },
+    "actions": {
+      "nextQuestion": "Next Question",
+      "finishQuiz": "Finish Quiz",
+      "retakeQuiz": "Retake Quiz",
+      "continueLearning": "Continue Learning"
+    },
+    "results": {
+      "title": "Quiz Complete!",
+      "yourScore": "Your Score: {{score}}%",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "reviewTitle": "Review Your Answers",
+      "yourAnswer": "Your answer",
+      "correctAnswer": "Correct"
+    }
+  }

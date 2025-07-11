@@ -1,0 +1,23 @@
+{
+    "progress": {
+      "question": "{{current}} сұрақ {{total}} ішінен"
+    },
+    "question": {
+      "prompt": "Бұл сөз не дегенді білдіреді?"
+    },
+    "actions": {
+      "nextQuestion": "Келесі сұрақ",
+      "finishQuiz": "Тестті аяқтау",
+      "retakeQuiz": "Тестті қайта тапсыру",
+      "continueLearning": "Үйренуді жалғастыру"
+    },
+    "results": {
+      "title": "Тест аяқталды!",
+      "yourScore": "Сіздің нәтижеңіз: {{score}}%",
+      "correct": "Дұрыс",
+      "incorrect": "Дұрыс емес",
+      "reviewTitle": "Жауаптарыңызды қарау",
+      "yourAnswer": "Сіздің жауабыңыз",
+      "correctAnswer": "Дұрыс жауап"
+    }
+  }

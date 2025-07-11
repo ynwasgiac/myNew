@@ -1,0 +1,56 @@
+{
+    "title": "Оқыту мақсаттары",
+    "addNewGoal": "Жаңа мақсат қосу",
+    "goalTypes": {
+      "daily_words": "Күнделікті сөздер",
+      "weekly_practice": "Апталық жаттығу",
+      "category_mastery": "Санат меңгеру",
+      "monthly_streak": "Ай бойы үздіксіз"
+    },
+    "goalUnits": {
+      "words": "сөз",
+      "sessions": "сессия"
+    },
+    "progress": {
+      "title": "Прогресс",
+      "completed": "✓ Аяқталды",
+      "created": "Жасалды {{date}}",
+      "due": "Мерзімі {{date}}"
+    },
+    "noGoals": {
+      "title": "Мақсаттар орнатылмаған",
+      "description": "Прогрессіңізді бақылау және мотивация сақтау үшін оқыту мақсаттарын орнатыңыз!",
+      "createFirst": "Алғашқы мақсатыңызды жасаңыз"
+    },
+    "createGoal": {
+      "title": "Жаңа мақсат жасау",
+      "goalType": "Мақсат түрі",
+      "targetValue": "Мақсатты мән",
+      "targetDate": "Мақсатты күн (Міндетті емес)",
+      "targetPlaceholder": "Мақсатты сандық мәнді енгізіңіз",
+      "creating": "Жасалуда...",
+      "create": "Мақсат жасау",
+      "cancel": "Болдырмау"
+    },
+    "goalTypeOptions": {
+      "daily_words": "Күнделікті сөздер",
+      "weekly_practice": "Апталық жаттығу сессиялары",
+      "category_mastery": "Санат меңгеру",
+      "monthly_streak": "Ай бойы үздіксіз"
+    },
+    "quickGoals": {
+      "title": "Жылдам мақсаттар",
+      "beginnerPace": {
+        "title": "Күніне 5 сөз",
+        "description": "Бастаушы қарқыны"
+      },
+      "dailyPractice": {
+        "title": "Күнделікті жаттығу",
+        "description": "Аптасына 7 сессия"
+      }
+    },
+    "messages": {
+      "goalCreated": "Мақсат сәтті жасалды!",
+      "goalCreateFailed": "Мақсат жасау сәтсіз аяқталды"
+    }
+  }

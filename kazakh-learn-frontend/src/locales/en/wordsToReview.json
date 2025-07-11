@@ -1,0 +1,30 @@
+{
+    "title": "Words to Review",
+    "actions": {
+      "reviewAll": "Review all",
+      "startReviewSession": "Start Review Session",
+      "quickPractice": "Quick Practice",
+      "learnNewWords": "Learn New Words",
+      "practiceAnyway": "Practice Anyway"
+    },
+    "wordInfo": {
+      "wordId": "Word ID: {{id}}",
+      "due": "Due: {{date}}",
+      "dueNow": "Due: Now",
+      "moreWords": "+{{count}} more words to review",
+      "moreWords_one": "+{{count}} more word to review",
+      "moreWords_other": "+{{count}} more words to review"
+    },
+    "statuses": {
+      "want_to_learn": "Want to Learn",
+      "learning": "Learning",
+      "learned": "Learned", 
+      "mastered": "Mastered",
+      "review": "Review"
+    },
+    "emptyState": {
+      "title": "All caught up! 🎉",
+      "description": "No words need review right now. Great job staying on top of your learning!"
+    },
+    "accuracy": "{{rate}}% accuracy"
+  }

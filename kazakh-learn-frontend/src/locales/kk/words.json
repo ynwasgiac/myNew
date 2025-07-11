@@ -1,0 +1,92 @@
+{
+  "page": {
+    "title": "Сөздерді қарау",
+    "subtitle": "{{count}} сөз қолжетімді",
+    "loading": "Сөздер жүктелуде..."
+  },
+  "loading": {
+    "words": "Сөздер жүктелуде...",
+    "updating": "Жаңартылуда...",
+    "searching": "Іздеу..."
+  },
+  "errors": {
+    "loadingError": "Сөздерді жүктеу қатесі. Қайта көріңіз."
+  },
+  "search": {
+    "placeholder": "Сөздерді іздеу..."
+  },
+  "view": {
+    "grid": "Тор көрінісі",
+    "list": "Тізім көрінісі"
+  },
+  "filters": {
+    "title": "Сүзгілер",
+    "clear": "Сүзгілерді тазалау",
+    "category": {
+      "label": "Санат",
+      "all": "Барлық санаттар"
+    },
+    "wordType": {
+      "label": "Сөз түрі",
+      "all": "Барлық түрлер"
+    },
+    "difficulty": {
+      "label": "Қиындық",
+      "all": "Барлық деңгейлер",
+      "level": "{{level}} деңгей - {{name}}"
+    },
+    "translation": {
+      "show": "Аудармаларды көрсету",
+      "hide": "Аудармаларды жасыру"
+    }
+  },
+  "selection": {
+    "selectedCount": "{{count}} таңдалды"
+  },
+  "actions": {
+    "retry": "Қайталау",
+    "refresh": "Жаңарту"
+  },
+  "messages": {
+    "addedToLearning": "Сөздер үйрену тізіміне қосылды!",
+    "addToLearningError": "Сөздерді үйрену тізіміне қосу мүмкін болмады",
+    "removedFromLearning": "Сөздер үйрену тізімінен алынып тасталды!",
+    "removeFromLearningError": "Сөздерді үйрену тізімінен алып тастау мүмкін болмады"
+  },
+  "results": {
+    "showing": "{{total}} сөзден {{start}}-{{end}} көрсетілуде",
+    "searchResults": "\"{{searchTerm}}\" үшін {{count}} нәтиже табылды",
+    "noResults": "Сөздер табылмады",
+    "totalWords": "Барлығы {{count}} сөз"
+  },
+  "pagination": {
+    "previous": "Алдыңғы",
+    "next": "Келесі",
+    "first": "Бірінші",
+    "last": "Соңғы",
+    "page": "Бет",
+    "of": "дан",
+    "items": "элемент",
+    "itemsPerPage": "Бетте элементтер саны",
+    "pageInfo": "{{total}} беттен {{current}} бет",
+    "showing": "{{total}} сөзден {{start}}-{{end}} көрсетілуде",
+    "goToPage": "Бетке өту",
+    "entriesPerPage": "Бетте жазбалар саны"
+  },
+  "table": {
+    "headers": {
+      "word": "Сөз",
+      "translation": "Аударма",
+      "category": "Санат",
+      "type": "Түрі",
+      "level": "Деңгей",
+      "actions": "Әрекеттер"
+    }
+  },
+  "emptyState": {
+    "searchTitle": "Сөздер табылмады",
+    "noWordsTitle": "Сөздер жоқ",
+    "searchMessage": "\"{{searchTerm}}\" сұрауыңызға сәйкес сөздер жоқ. Басқа кілт сөздерді көріңіз.",
+    "noWordsMessage": "Ағымдағы сүзгілермен көрсетуге сөздер жоқ."
+  }
+}

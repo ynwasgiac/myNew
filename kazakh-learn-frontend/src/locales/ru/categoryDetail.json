@@ -1,0 +1,64 @@
+{
+    "loading": {
+      "category": "Загрузка категории...",
+      "words": "Загрузка слов..."
+    },
+    "errors": {
+      "categoryNotFound": "Категория не найдена",
+      "categoryNotFoundDescription": "Категория, которую вы ищете, не существует или была удалена."
+    },
+    "navigation": {
+      "backToCategories": "Назад к категориям"
+    },
+    "actions": {
+      "browseCategories": "Просмотр категорий",
+      "addToLearning": "Добавить в изучение",
+      "practiceCategory": "Практиковать эту категорию",
+      "takeQuiz": "Пройти тест",
+      "clearSearch": "Очистить поиск"
+    },
+    "selection": {
+      "selectedCount": "{{count}} выбрано"
+    },
+    "stats": {
+      "wordsCount": "{{count}} слов",
+      "inLearningList": "{{count}} в списке изучения",
+      "categoryId": "ID категории: {{id}}"
+    },
+    "search": {
+      "placeholder": "Поиск слов в этой категории..."
+    },
+    "view": {
+      "grid": "Вид сетки",
+      "list": "Вид списка"
+    },
+    "filters": {
+      "title": "Фильтры",
+      "difficultyLevel": "Уровень сложности",
+      "allLevels": "Все уровни",
+      "levels": {
+        "beginner": "Уровень 1 - Начинающий",
+        "elementary": "Уровень 2 - Базовый",
+        "intermediate": "Уровень 3 - Средний",
+        "advanced": "Уровень 4 - Продвинутый",
+        "expert": "Уровень 5 - Эксперт"
+      },
+      "clear": "Очистить фильтры"
+    },
+    "results": {
+      "searchResults": "Найдено {{count}} результатов",
+      "showing": "Показано {{count}} слов"
+    },
+    "emptyState": {
+      "noWordsFound": "Слова не найдены",
+      "noWordsInCategory": "В этой категории нет слов",
+      "searchMessage": "Ни одно слово не соответствует вашему поиску \"{{searchTerm}}\" в этой категории.",
+      "categoryMessage": "В этой категории пока нет слов."
+    },
+    "messages": {
+      "addedToLearning": "Слова добавлены в список изучения!",
+      "addToLearningError": "Не удалось добавить слова в список изучения",
+      "removedFromLearning": "Слова удалены из списка изучения!",
+      "removeFromLearningError": "Не удалось удалить слова из списка изучения"
+    }
+  }

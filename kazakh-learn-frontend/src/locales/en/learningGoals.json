@@ -1,0 +1,56 @@
+{
+    "title": "Learning Goals",
+    "addNewGoal": "Add new goal",
+    "goalTypes": {
+      "daily_words": "Daily Words",
+      "weekly_practice": "Weekly Practice",
+      "category_mastery": "Category Mastery",
+      "monthly_streak": "Monthly Streak"
+    },
+    "goalUnits": {
+      "words": "words",
+      "sessions": "sessions"
+    },
+    "progress": {
+      "title": "Progress",
+      "completed": "✓ Completed",
+      "created": "Created {{date}}",
+      "due": "Due {{date}}"
+    },
+    "noGoals": {
+      "title": "No goals set",
+      "description": "Set learning goals to track your progress and stay motivated!",
+      "createFirst": "Create Your First Goal"
+    },
+    "createGoal": {
+      "title": "Create New Goal",
+      "goalType": "Goal Type",
+      "targetValue": "Target Value",
+      "targetDate": "Target Date (Optional)",
+      "targetPlaceholder": "Enter target number",
+      "creating": "Creating...",
+      "create": "Create Goal",
+      "cancel": "Cancel"
+    },
+    "goalTypeOptions": {
+      "daily_words": "Daily Words",
+      "weekly_practice": "Weekly Practice Sessions",
+      "category_mastery": "Category Mastery",
+      "monthly_streak": "Monthly Streak"
+    },
+    "quickGoals": {
+      "title": "Quick Goals",
+      "beginnerPace": {
+        "title": "5 words/day",
+        "description": "Beginner pace"
+      },
+      "dailyPractice": {
+        "title": "Daily practice", 
+        "description": "7 sessions/week"
+      }
+    },
+    "messages": {
+      "goalCreated": "Goal created successfully!",
+      "goalCreateFailed": "Failed to create goal"
+    }
+  }

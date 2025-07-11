@@ -1,0 +1,92 @@
+{
+    "page": {
+      "title": "Browse Words",
+      "subtitle": "{{count}} words available",
+      "loading": "Loading words..."
+    },
+    "loading": {
+      "words": "Loading words...",
+      "updating": "Updating...",
+      "searching": "Searching..."
+    },
+    "errors": {
+      "loadingError": "Error loading words. Please try again."
+    },
+    "search": {
+      "placeholder": "Search words..."
+    },
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "filters": {
+      "title": "Filters",
+      "clear": "Clear Filters",
+      "category": {
+        "label": "Category",
+        "all": "All Categories"
+      },
+      "wordType": {
+        "label": "Word Type",
+        "all": "All Types"
+      },
+      "difficulty": {
+        "label": "Difficulty",
+        "all": "All Levels",
+        "level": "Level {{level}} - {{name}}"
+      },
+      "translation": {
+        "show": "Show translations",
+        "hide": "Hide translations"
+      }
+    },
+    "selection": {
+      "selectedCount": "{{count}} selected"
+    },
+    "actions": {
+      "retry": "Retry",
+      "refresh": "Refresh"
+    },
+    "messages": {
+      "addedToLearning": "Words added to learning list!",
+      "addToLearningError": "Failed to add words to learning list",
+      "removedFromLearning": "Words removed from learning list!",
+      "removeFromLearningError": "Failed to remove words from learning list"
+    },
+    "results": {
+      "showing": "Showing {{start}}-{{end}} of {{total}} words",
+      "searchResults": "Found {{count}} results for \"{{searchTerm}}\"",
+      "noResults": "No words found",
+      "totalWords": "{{count}} words total"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "first": "First",
+      "last": "Last",
+      "page": "Page",
+      "of": "of",
+      "items": "items",
+      "itemsPerPage": "Items per page",
+      "pageInfo": "Page {{current}} of {{total}}",
+      "showing": "Showing {{start}}-{{end}} of {{total}} words",
+      "goToPage": "Go to page",
+      "entriesPerPage": "Entries per page"
+    },
+    "table": {
+      "headers": {
+        "word": "Word",
+        "translation": "Translation",
+        "category": "Category",
+        "type": "Type",
+        "level": "Level",
+        "actions": "Actions"
+      }
+    },
+    "emptyState": {
+      "searchTitle": "No words found",
+      "noWordsTitle": "No words available",
+      "searchMessage": "No words match your search \"{{searchTerm}}\". Try different keywords.",
+      "noWordsMessage": "There are no words to display with the current filters."
+    }
+  }

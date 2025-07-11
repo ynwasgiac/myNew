@@ -1,0 +1,60 @@
+{
+    "loading": {
+      "startingSession": "Запуск вашей сессии практики..."
+    },
+    "errors": {
+      "unableToStart": "Невозможно начать сессию практики",
+      "tryAgain": "Попробуйте снова или проверьте ваш список изучения.",
+      "noReviewWords": "Нет слов для повторения", 
+      "tryLearningFirst": "Сначала выучите несколько слов, а затем возвращайтесь к практике!"
+    },
+    "session": {
+      "title": "сессия",
+      "types": {
+        "practice": "Практика",
+        "review": "Повторение",
+        "random": "Случайная",
+        "category": "Категория",
+        "mixed": "Перемешанная",
+        "learning": "Обучающая"
+      },
+      "questionProgress": "Вопрос {{current}} из {{total}}",
+      "correct": "Правильно: {{correct}} / {{total}}",
+      "pause": "Приостановить сессию",
+      "resume": "Возобновить сессию"
+    },
+    "word": {
+      "level": "Уровень {{level}}"
+    },
+    "question": {
+      "prompt": "Что означает это слово на английском языке?",
+      "placeholder": "Введите ваш ответ..."
+    },
+    "actions": {
+      "backToLearning": "Назад к изучению",
+      "playAudio": "Воспроизвести аудио",
+      "skip": "Пропустить",
+      "submitAnswer": "Отправить ответ",
+      "nextWord": "Следующее слово",
+      "finishSession": "Завершить сессию"
+    },
+    "result": {
+      "correct": "Правильно!",
+      "incorrect": "Не совсем верно",
+      "means": "означает",
+      "yourAnswer": "Ваш ответ",
+      "correctAnswer": "Правильный ответ"
+    },
+    "stats": {
+      "title": "Прогресс сессии",
+      "current": "Текущий",
+      "correct": "Правильно",
+      "incorrect": "Неправильно"
+    },
+    "messages": {
+      "sessionStarted": "Сессия практики начата!",
+      "sessionStartError": "Не удалось начать сессию практики",
+      "submitAnswerError": "Не удалось отправить ответ",
+      "audioComingSoon": "Функция аудио скоро появится!"
+    }
+  }

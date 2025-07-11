@@ -1,0 +1,117 @@
+{
+  "navigation": {
+    "backToWords": "Back to Words",
+    "previous": "Previous",
+    "next": "Next",
+    "previousWord": "Previous: {{word}}",
+    "nextWord": "Next: {{word}}",
+    "noPrevious": "No previous word",
+    "noNext": "No next word",
+    "keyboardHint": "Use ← → arrow keys to navigate",
+    "context": {
+      "browse": "Browsing all words",
+      "search": "Search results for \"{{searchTerm}}\"",
+      "category": "Category words",
+      "learning": "Learning words"
+    }
+  },
+  "loading": {
+    "wordDetails": "Loading word details..."
+  },
+  "errors": {
+    "wordNotFound": "Word Not Found",
+    "wordNotFoundDescription": "The word you're looking for doesn't exist or has been removed."
+  },
+  "actions": {
+    "browseWords": "Browse Words",
+    "shareWord": "Share Word",
+    "addToLearning": "Add to Learning",
+    "removeFromLearning": "Remove from Learning",
+    "markAsLearned": "Mark as Learned",
+    "practiceThisWord": "Practice This Word",
+    "listen": "Listen",
+    "saveNotes": "Save Notes",
+    "addToLearningList": "Add to Learning List"
+  },
+  "messages": {
+    "addedToLearning": "Word added to learning list",
+    "removedFromLearning": "Word removed from learning list",
+    "addToLearningError": "Failed to add word to learning list",
+    "removeFromLearningError": "Failed to remove word from learning list",
+    "progressUpdated": "Progress updated successfully",
+    "progressUpdateError": "Failed to update progress",
+    "audioError": "Audio playback failed",
+    "audioNotAvailable": "Audio not available for this word",
+    "linkCopied": "Link copied to clipboard"
+  },
+  "share": {
+    "title": "Learn Kazakh: {{word}}",
+    "text": "{{word}} means {{translation}} in Kazakh"
+  },
+  "word": {
+    "level": "Level {{level}}",
+    "also": "Also"
+  },
+  "status": {
+    "wantToLearn": "Want to Learn",
+    "learning": "Learning",
+    "learned": "Learned",
+    "mastered": "Mastered",
+    "review": "Review"
+  },
+  "difficulty": {
+    "veryEasy": "Very Easy",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "veryHard": "Very Hard"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "examples": "Examples",
+    "myProgress": "My Progress"
+  },
+  "overview": {
+    "wordDetails": "Word Details",
+    "category": "Category",
+    "wordType": "Word Type",
+    "difficultyLevel": "Difficulty Level",
+    "levelInfo": "Level {{level}} - {{name}}",
+    "images": "Images",
+    "allTranslations": "All Translations",
+    "pronunciations": "Pronunciations"
+  },
+  "examples": {
+    "title": "Example Sentences",
+    "count": "{{count}} examples",
+    "context": "Context",
+    "otherTranslations": "Other translations",
+    "noExamples": "No example sentences available for this word."
+  },
+  "progress": {
+    "timesSeen": "Times Seen",
+    "correctAnswers": "Correct Answers",
+    "accuracyRate": "Accuracy Rate",
+    "learningStatus": "Learning Status",
+    "currentStatus": "Current Status",
+    "added": "Added",
+    "firstLearned": "First Learned",
+    "lastPracticed": "Last Practiced",
+    "nextReview": "Next Review",
+    "spacedRepetition": "Spaced Repetition",
+    "interval": "Interval",
+    "days": "{{count}} day",
+    "days_plural": "{{count}} days",
+    "easeFactor": "Ease Factor",
+    "yourDifficultyRating": "Your Difficulty Rating",
+    "rateDifficulty": "Rate Difficulty",
+    "difficultyDescription": "How difficult is this word for you personally?",
+    "personalNotes": "Personal Notes",
+    "notesPlaceholder": "Add your personal notes about this word...",
+    "addToTrackDescription": "Add this word to your learning list to track progress."
+  },
+  "relatedWords": {
+    "title": "Related Words",
+    "comingSoon": "Related words feature coming soon!"
+  }
+}

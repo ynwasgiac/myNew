@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progressive Learning - KazakhLearn</title>
+    <link href="css/unified-learning.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="learn-container">
+            <div class="learn-header">
+                <h1 class="learn-title" id="progressiveTitle">Progressive Learning</h1>
+                <p class="learn-subtitle" id="progressiveSubtitle">Building your vocabulary step by step</p>
+            </div>
+            
+            <!-- Progress Overview -->
+            <div class="progress-overview" id="progressOverview">
+                <div class="progress-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Step <span id="currentStep">1</span> of <span id="totalSteps">0</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-book-open"></i>
+                        <span>Words <span id="currentWords">1-2</span> of <span id="totalWords">0</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span id="currentMode">Learn</span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+            </div>
+            
+            <div class="learn-content">
+                <!-- Dynamic content area -->
+                <div class="progressive-content" id="progressiveContent">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Preparing your learning session...</p>
+                    </div>
+                </div>
+                
+                <!-- Control buttons -->
+                <div class="action-buttons" id="progressiveActions">
+                    <button class="btn btn-success" id="continueBtn" onclick="progressiveLearning.nextStep()">
+                        <i class="fas fa-arrow-right"></i>
+                        Continue
+                    </button>
+                    <button class="btn btn-secondary" id="pauseBtn" onclick="progressiveLearning.pauseSession()">
+                        <i class="fas fa-pause"></i>
+                        Pause Session
+                    </button>
+                    <button class="btn btn-outline" id="skipBtn" onclick="progressiveLearning.skipStep()">
+                        <i class="fas fa-forward"></i>
+                        Skip Step
+                    </button>
+                </div>
+                
+                <!-- Completion screen -->
+                <div class="completion-screen hidden" id="progressiveCompletion">
+                    <h2 class="completion-title">🎉 Session Complete!</h2>
+                    <p class="completion-message">
+                        Congratulations! You've completed this progressive learning session.
+                    </p>
+                    <div class="completion-stats" id="completionStats">
+                        <!-- Will be populated with session statistics -->
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="progressiveLearning.startNewSession()">
+                            <i class="fas fa-redo"></i>
+                            Start New Session
+                        </button>
+                        <button class="btn btn-success" onclick="window.location.href='1.html'">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress indicator -->
+            <div class="progress-indicator" id="progressIndicator">
+                <p class="progress-text" id="progressText">Initializing progressive learning...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-learn.js"></script>
+    <script>
+    class ProgressiveLearning {
+        constructor() {
+            this.categoryId = LearnShared.getQueryParam('category_id');
+            this.languageCode = LearnShared.getUserLanguageCode();
+            this.words = [];
+            this.wordPairs = [];
+            this.currentPairIndex = 0;
+            this.currentStepInSequence = 0;
+            this.sessionStartTime = new Date();
+            this.sessionStats = {
+                totalSteps: 0,
+                completedSteps: 0,
+                wordsLearned: 0,
+                timeSpent: 0
+            };
+            
+            // Learning sequence: 0=learn, 1=repeat, 2=repeat-audio, 3=write
+            this.learningSequence = [
+                { mode: 'learn', icon: 'fa-book-open', title: 'Learn New Words' },
+                { mode: 'repeat', icon: 'fa-eye', title: 'Visual Recognition' },
+                { mode: 'repeat-audio', icon: 'fa-headphones', title: 'Audio Recognition' },
+                { mode: 'write', icon: 'fa-pencil-alt', title: 'Write the Word' }
+            ];
+            
+            // Disabled modes (can be configured via URL params)
+            this.disabledModes = this.getDisabledModes();
+            this.enabledSequence = this.learningSequence.filter(step => !this.disabledModes.includes(step.mode));
+            
+            this.currentStep = 0;
+            this.isPaused = false;
+        }
+
+        getDisabledModes() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const disabled = [];
+            
+            if (urlParams.get('disable_learn') === '1') disabled.push('learn');
+            if (urlParams.get('disable_repeat') === '1') disabled.push('repeat');
+            if (urlParams.get('disable_audio') === '1') disabled.push('repeat-audio');
+            if (urlParams.get('disable_write') === '1') disabled.push('write');
+            
+            return disabled;
+        }
+
+        async init() {
+            if (!this.categoryId) {
+                this.showError('No category selected. Please go back and choose a category.');
+                return;
+            }
+
+            await this.loadWords();
+            if (this.words && this.words.length > 0) {
+                this.setupWordPairs();
+                this.calculateTotalSteps();
+                this.updateProgress();
+                await this.startCurrentStep();
+            } else {
+                this.showError('No words found in this category.');
+            }
+        }
+
+        async loadWords() {
+            try {
+                this.updateProgressText('Loading words from category...');
+                this.words = await LearnShared.fetchWords(this.categoryId, this.languageCode);
+                
+                if (this.words) {
+                    this.words = LearnShared.shuffleArray(this.words);
+                    this.updateProgressText(`${this.words.length} words loaded successfully`);
+                }
+            } catch (error) {
+                console.error('Error loading words:', error);
+                this.showError('Failed to load words. Please try again.');
+            }
+        }
+
+        setupWordPairs() {
+            this.wordPairs = [];
+            for (let i = 0; i < this.words.length; i += 2) {
+                const pair = [this.words[i]];
+                if (i + 1 < this.words.length) {
+                    pair.push(this.words[i + 1]);
+                }
+                this.wordPairs.push(pair);
+            }
+        }
+
+        calculateTotalSteps() {
+            // Each pair goes through all enabled learning modes
+            // Plus additional pairs get audio and write exercises from previous pairs
+            let totalSteps = 0;
+            
+            for (let pairIndex = 0; pairIndex < this.wordPairs.length; pairIndex++) {
+                // Basic sequence for each pair (learn + repeat)
+                if (!this.disabledModes.includes('learn')) totalSteps++;
+                if (!this.disabledModes.includes('repeat')) totalSteps++;
+                
+                // Audio and write for previous pairs
+                if (pairIndex > 0) {
+                    if (!this.disabledModes.includes('repeat-audio')) totalSteps++;
+                    if (!this.disabledModes.includes('write')) totalSteps++;
+                }
+            }
+            
+            this.sessionStats.totalSteps = totalSteps;
+            document.getElementById('totalSteps').textContent = totalSteps;
+            document.getElementById('totalWords').textContent = this.words.length;
+        }
+
+        getCurrentWords() {
+            const step = this.getStepInfo();
+            if (step.pairIndex >= this.wordPairs.length) return [];
+            
+            return this.wordPairs[step.pairIndex];
+        }
+
+        getStepInfo() {
+            let stepCount = 0;
+            let currentPairIndex = 0;
+            let currentMode = '';
+            let targetPairForAudioWrite = -1;
+            
+            // Calculate which step we're on based on the learning pattern
+            for (let pairIndex = 0; pairIndex < this.wordPairs.length; pairIndex++) {
+                // Learn new words
+                if (!this.disabledModes.includes('learn')) {
+                    if (stepCount === this.currentStep) {
+                        return { 
+                            pairIndex, 
+                            mode: 'learn', 
+                            title: `Learn Words ${pairIndex * 2 + 1}-${Math.min((pairIndex + 1) * 2, this.words.length)}` 
+                        };
+                    }
+                    stepCount++;
+                }
+                
+                // Repeat new words
+                if (!this.disabledModes.includes('repeat')) {
+                    if (stepCount === this.currentStep) {
+                        return { 
+                            pairIndex, 
+                            mode: 'repeat', 
+                            title: `Practice Words ${pairIndex * 2 + 1}-${Math.min((pairIndex + 1) * 2, this.words.length)}` 
+                        };
+                    }
+                    stepCount++;
+                }
+                
+                // Audio and Write for previous pair (if exists)
+                if (pairIndex > 0) {
+                    const prevPairIndex = pairIndex - 1;
+                    
+                    // Audio for previous pair
+                    if (!this.disabledModes.includes('repeat-audio')) {
+                        if (stepCount === this.currentStep) {
+                            return { 
+                                pairIndex: prevPairIndex, 
+                                mode: 'repeat-audio', 
+                                title: `Audio Practice Words ${prevPairIndex * 2 + 1}-${Math.min((prevPairIndex + 1) * 2, this.words.length)}` 
+                            };
+                        }
+                        stepCount++;
+                    }
+                    
+                    // Write for previous pair
+                    if (!this.disabledModes.includes('write')) {
+                        if (stepCount === this.currentStep) {
+                            return { 
+                                pairIndex: prevPairIndex, 
+                                mode: 'write', 
+                                title: `Write Words ${prevPairIndex * 2 + 1}-${Math.min((prevPairIndex + 1) * 2, this.words.length)}` 
+                            };
+                        }
+                        stepCount++;
+                    }
+                }
+            }
+            
+            return { pairIndex: this.wordPairs.length, mode: 'complete', title: 'Session Complete' };
+        }
+
+        async startCurrentStep() {
+            if (this.isPaused) return;
+            
+            const stepInfo = this.getStepInfo();
+            
+            if (stepInfo.mode === 'complete') {
+                this.completeSession();
+                return;
+            }
+            
+            const words = this.wordPairs[stepInfo.pairIndex];
+            if (!words || words.length === 0) {
+                this.completeSession();
+                return;
+            }
+            
+            this.updateProgressText(`Starting: ${stepInfo.title}`);
+            
+            // Update UI
+            this.updateCurrentStepDisplay(stepInfo);
+            
+            // Show the learning content for this step
+            await this.showStepContent(stepInfo, words);
+        }
+
+        updateCurrentStepDisplay(stepInfo) {
+            document.getElementById('currentStep').textContent = this.currentStep + 1;
+            document.getElementById('currentWords').textContent = 
+                `${stepInfo.pairIndex * 2 + 1}-${Math.min((stepInfo.pairIndex + 1) * 2, this.words.length)}`;
+            
+            const modeInfo = this.learningSequence.find(s => s.mode === stepInfo.mode);
+            document.getElementById('currentMode').innerHTML = 
+                `<i class="fas ${modeInfo.icon}"></i> ${modeInfo.title}`;
+            
+            document.getElementById('progressiveTitle').textContent = stepInfo.title;
+            document.getElementById('progressiveSubtitle').textContent = modeInfo.title;
+        }
+
+        async showStepContent(stepInfo, words) {
+            const content = document.getElementById('progressiveContent');
+            content.innerHTML = '';
+            
+            switch (stepInfo.mode) {
+                case 'learn':
+                    await this.showLearnContent(words, content);
+                    break;
+                case 'repeat':
+                    await this.showRepeatContent(words, content);
+                    break;
+                case 'repeat-audio':
+                    await this.showAudioContent(words, content);
+                    break;
+                case 'write':
+                    await this.showWriteContent(words, content);
+                    break;
+            }
+        }
+
+        async showLearnContent(words, container) {
+            container.innerHTML = '<div class="words-learn-grid"></div>';
+            const grid = container.querySelector('.words-learn-grid');
+            
+            for (let word of words) {
+                const wordCard = document.createElement('div');
+                wordCard.className = 'word-learn-card';
+                
+                // Get word details
+                const imageUrl = await LearnShared.getWordImageUrl(word.id);
+                const soundUrl = await LearnShared.getWordSoundUrl(word.id);
+                const translation = await LearnShared.getTranslation(word.id, this.languageCode);
+                
+                wordCard.innerHTML = `
+                    <div class="word-display">
+                        <div class="word-text">${word.kazakh_word || word.word || '[No word]'}</div>
+                    </div>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="Word illustration" class="word-image">` : ''}
+                    ${soundUrl ? `<button class="sound-button" onclick="progressiveLearning.playSound('${soundUrl}')">
+                        <i class="fas fa-volume-up"></i> Play Pronunciation
+                    </button>` : ''}
+                    ${translation ? `<div class="word-translation">
+                        <i class="fas fa-language"></i> ${translation}
+                    </div>` : ''}
+                `;
+                
+                grid.appendChild(wordCard);
+                
+                // Mark as learning
+                await LearnShared.setWantToLearn(word.id);
+            }
+        }
+
+        async showRepeatContent(words, container) {
+            if (words.length === 0) {
+                this.nextStep();
+                return;
+            }
+            
+            // Create a mini quiz with the current words
+            this.currentQuizWords = [...words];
+            this.currentQuizIndex = 0;
+            this.quizCorrectAnswers = 0;
+            
+            await this.showQuizQuestion(container);
+        }
+
+        async showQuizQuestion(container) {
+            if (this.currentQuizIndex >= this.currentQuizWords.length) {
+                // Quiz completed, show results and move to next step
+                this.showQuizResults(container);
+                return;
+            }
+            
+            const word = this.currentQuizWords[this.currentQuizIndex];
+            const imageUrl = await LearnShared.getWordImageUrl(word.id);
+            
+            // Get answer options
+            const correctAnswer = await LearnShared.getTranslation(word.id, this.languageCode);
+            const distractors = await LearnShared.getDistractorTranslations(
+                this.words, word.id, this.languageCode, 3
+            );
+            const options = LearnShared.shuffleArray([correctAnswer, ...distractors]);
+            
+            container.innerHTML = `
+                <div class="quiz-question">
+                    <div class="word-display">
+                        <div class="word-text">${word.kazakh_word || word.word}</div>
+                    </div>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="Word illustration" class="word-image">` : ''}
+                    <p>What does this word mean?</p>
+                </div>
+                <div class="quiz-options">
+                    ${options.map((option, index) => `
+                        <button class="btn btn-outline quiz-option" data-answer="${option}" data-correct="${option === correctAnswer}">
+                            ${option}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+            `;
+            
+            // Add click handlers to options
+            container.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.addEventListener('click', (e) => this.handleQuizAnswer(e.target, correctAnswer));
+            });
+        }
+
+        handleQuizAnswer(button, correctAnswer) {
+            const isCorrect = button.dataset.correct === 'true';
+            const feedback = document.getElementById('quizFeedback');
+            
+            // Disable all options
+            document.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true);
+            
+            // Show feedback
+            if (isCorrect) {
+                button.style.backgroundColor = '#10b981';
+                button.style.color = 'white';
+                feedback.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> Correct!';
+                this.quizCorrectAnswers++;
+            } else {
+                button.style.backgroundColor = '#ef4444';
+                button.style.color = 'white';
+                feedback.innerHTML = `<i class="fas fa-times-circle" style="color: #ef4444;"></i> Incorrect. The answer is: ${correctAnswer}`;
+                
+                // Highlight correct answer
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    if (btn.dataset.correct === 'true') {
+                        btn.style.backgroundColor = '#10b981';
+                        btn.style.color = 'white';
+                    }
+                });
+            }
+            
+            // Auto-advance after 2 seconds
+            setTimeout(() => {
+                this.currentQuizIndex++;
+                this.showQuizQuestion(document.getElementById('progressiveContent'));
+            }, 2000);
+        }
+
+        showQuizResults(container) {
+            const accuracy = Math.round((this.quizCorrectAnswers / this.currentQuizWords.length) * 100);
+            
+            container.innerHTML = `
+                <div class="quiz-results">
+                    <div class="results-icon">
+                        ${accuracy >= 80 ? '🎉' : accuracy >= 60 ? '👍' : '📚'}
+                    </div>
+                    <h3>Round Complete!</h3>
+                    <p>You got ${this.quizCorrectAnswers} out of ${this.currentQuizWords.length} correct (${accuracy}%)</p>
+                    <div class="auto-continue">
+                        <i class="fas fa-clock"></i>
+                        <span>Continuing automatically...</span>
+                    </div>
+                </div>
+            `;
+            
+            // Auto-continue after 3 seconds
+            setTimeout(() => {
+                this.nextStep();
+            }, 3000);
+        }
+
+        async showAudioContent(words, container) {
+            // Similar to repeat but with audio focus
+            container.innerHTML = `
+                <div class="audio-instructions">
+                    <i class="fas fa-headphones" style="font-size: 3rem; color: #667eea; margin-bottom: 1rem;"></i>
+                    <h3>Audio Recognition</h3>
+                    <p>Listen carefully and identify the correct meaning</p>
+                </div>
+            `;
+            
+            // Create audio quiz
+            this.currentQuizWords = [...words];
+            this.currentQuizIndex = 0;
+            this.quizCorrectAnswers = 0;
+            
+            setTimeout(() => {
+                this.showAudioQuestion(container);
+            }, 2000);
+        }
+
+        async showAudioQuestion(container) {
+            if (this.currentQuizIndex >= this.currentQuizWords.length) {
+                this.showQuizResults(container);
+                return;
+            }
+            
+            const word = this.currentQuizWords[this.currentQuizIndex];
+            const soundUrl = await LearnShared.getWordSoundUrl(word.id);
+            
+            if (!soundUrl) {
+                // Skip if no audio
+                this.currentQuizIndex++;
+                this.showAudioQuestion(container);
+                return;
+            }
+            
+            const correctAnswer = await LearnShared.getTranslation(word.id, this.languageCode);
+            const distractors = await LearnShared.getDistractorTranslations(
+                this.words, word.id, this.languageCode, 3
+            );
+            const options = LearnShared.shuffleArray([correctAnswer, ...distractors]);
+            
+            container.innerHTML = `
+                <div class="audio-question">
+                    <div class="audio-player">
+                        <button class="sound-button" onclick="progressiveLearning.playSound('${soundUrl}')">
+                            <i class="fas fa-volume-up"></i> Play Audio
+                        </button>
+                    </div>
+                    <p>What word did you hear?</p>
+                </div>
+                <div class="quiz-options">
+                    ${options.map(option => `
+                        <button class="btn btn-outline quiz-option" data-answer="${option}" data-correct="${option === correctAnswer}">
+                            ${option}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+            `;
+            
+            // Auto-play audio
+            setTimeout(() => this.playSound(soundUrl), 500);
+            
+            // Add click handlers
+            container.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.addEventListener('click', (e) => this.handleQuizAnswer(e.target, correctAnswer));
+            });
+        }
+
+        async showWriteContent(words, container) {
+            container.innerHTML = `
+                <div class="write-instructions">
+                    <i class="fas fa-pencil-alt" style="font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+                    <h3>Writing Practice</h3>
+                    <p>Listen to the word and write it in Kazakh</p>
+                </div>
+            `;
+            
+            this.currentWriteWords = [...words];
+            this.currentWriteIndex = 0;
+            this.writeCorrectAnswers = 0;
+            
+            setTimeout(() => {
+                this.showWriteQuestion(container);
+            }, 2000);
+        }
+
+        async showWriteQuestion(container) {
+            if (this.currentWriteIndex >= this.currentWriteWords.length) {
+                this.showWriteResults(container);
+                return;
+            }
+            
+            const word = this.currentWriteWords[this.currentWriteIndex];
+            const soundUrl = await LearnShared.getWordSoundUrl(word.id);
+            const translation = await LearnShared.getTranslation(word.id, this.languageCode);
+            
+            container.innerHTML = `
+                <div class="write-question">
+                    ${soundUrl ? `
+                        <div class="audio-player">
+                            <button class="sound-button" onclick="progressiveLearning.playSound('${soundUrl}')">
+                                <i class="fas fa-volume-up"></i> Play Audio
+                            </button>
+                        </div>
+                    ` : ''}
+                    <p><strong>Meaning:</strong> ${translation}</p>
+                    <p>Write the Kazakh word:</p>
+                    <input type="text" class="word-input" id="writeInput" placeholder="Type the Kazakh word...">
+                    <button class="btn btn-success" onclick="progressiveLearning.checkWriteAnswer()">
+                        <i class="fas fa-check"></i> Check Answer
+                    </button>
+                </div>
+                <div class="write-feedback" id="writeFeedback"></div>
+            `;
+            
+            // Focus input and add enter key handler
+            const input = document.getElementById('writeInput');
+            input.focus();
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    this.checkWriteAnswer();
+                }
+            });
+            
+            // Auto-play audio if available
+            if (soundUrl) {
+                setTimeout(() => this.playSound(soundUrl), 500);
+            }
+        }
+
+        checkWriteAnswer() {
+            const input = document.getElementById('writeInput');
+            const feedback = document.getElementById('writeFeedback');
+            const word = this.currentWriteWords[this.currentWriteIndex];
+            
+            const correct = (word.kazakh_word || word.word || '').trim().toLowerCase();
+            const userInput = input.value.trim().toLowerCase();
+            
+            const isCorrect = userInput === correct;
+            
+            if (isCorrect) {
+                feedback.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> Correct! Well done!';
+                feedback.style.color = '#10b981';
+                this.writeCorrectAnswers++;
+            } else {
+                feedback.innerHTML = `<i class="fas fa-times-circle" style="color: #ef4444;"></i> Incorrect. The correct answer is: ${word.kazakh_word || word.word}`;
+                feedback.style.color = '#ef4444';
+            }
+            
+            input.disabled = true;
+            
+            setTimeout(() => {
+                this.currentWriteIndex++;
+                this.showWriteQuestion(document.getElementById('progressiveContent'));
+            }, 2500);
+        }
+
+        showWriteResults(container) {
+            const accuracy = Math.round((this.writeCorrectAnswers / this.currentWriteWords.length) * 100);
+            
+            container.innerHTML = `
+                <div class="quiz-results">
+                    <div class="results-icon">
+                        ${accuracy >= 80 ? '✍️🎉' : accuracy >= 60 ? '✍️👍' : '✍️📚'}
+                    </div>
+                    <h3>Writing Round Complete!</h3>
+                    <p>You wrote ${this.writeCorrectAnswers} out of ${this.currentWriteWords.length} words correctly (${accuracy}%)</p>
+                    <div class="auto-continue">
+                        <i class="fas fa-clock"></i>
+                        <span>Continuing automatically...</span>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                this.nextStep();
+            }, 3000);
+        }
+
+        playSound(url) {
+            try {
+                const audio = new Audio(url);
+                audio.play().catch(e => console.error('Error playing audio:', e));
+            } catch (error) {
+                console.error('Error creating audio:', error);
+            }
+        }
+
+        nextStep() {
+            this.currentStep++;
+            this.sessionStats.completedSteps++;
+            this.updateProgress();
+            this.startCurrentStep();
+        }
+
+        skipStep() {
+            if (confirm('Are you sure you want to skip this step?')) {
+                this.nextStep();
+            }
+        }
+
+        pauseSession() {
+            this.isPaused = !this.isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            
+            if (this.isPaused) {
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume Session';
+                this.updateProgressText('Session paused');
+                document.getElementById('progressiveContent').innerHTML = `
+                    <div class="pause-screen">
+                        <i class="fas fa-pause-circle" style="font-size: 4rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+                        <h3>Session Paused</h3>
+                        <p>Take a break! Click "Resume Session" when you're ready to continue.</p>
+                    </div>
+                `;
+            } else {
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Session';
+                this.startCurrentStep();
+            }
+        }
+
+        updateProgress() {
+            const percentage = Math.round((this.sessionStats.completedSteps / this.sessionStats.totalSteps) * 100);
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('progressPercentage').textContent = `${percentage}%`;
+        }
+
+        updateProgressText(text) {
+            document.getElementById('progressText').textContent = text;
+        }
+
+        completeSession() {
+            this.sessionStats.timeSpent = new Date() - this.sessionStartTime;
+            
+            document.getElementById('progressiveContent').classList.add('hidden');
+            document.getElementById('progressiveActions').classList.add('hidden');
+            document.getElementById('progressIndicator').classList.add('hidden');
+            
+            // Calculate statistics
+            const timeMinutes = Math.round(this.sessionStats.timeSpent / (1000 * 60));
+            const wordsPerMinute = timeMinutes > 0 ? Math.round(this.words.length / timeMinutes) : 0;
+            
+            document.getElementById('completionStats').innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-value">${timeMinutes} min</div>
+                        <div class="stat-label">Time Spent</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-book"></i>
+                        <div class="stat-value">${this.words.length}</div>
+                        <div class="stat-label">Words Practiced</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-list-check"></i>
+                        <div class="stat-value">${this.sessionStats.completedSteps}</div>
+                        <div class="stat-label">Steps Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-gauge-high"></i>
+                        <div class="stat-value">${wordsPerMinute}</div>
+                        <div class="stat-label">Words/Min</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('progressiveCompletion').classList.remove('hidden');
+            this.updateProgressText('Session completed successfully!');
+        }
+
+        startNewSession() {
+            // Reset all values
+            this.currentStep = 0;
+            this.sessionStats.completedSteps = 0;
+            this.sessionStartTime = new Date();
+            this.isPaused = false;
+            
+            // Show main content again
+            document.getElementById('progressiveContent').classList.remove('hidden');
+            document.getElementById('progressiveActions').classList.remove('hidden');
+            document.getElementById('progressIndicator').classList.remove('hidden');
+            document.getElementById('progressiveCompletion').classList.add('hidden');
+            
+            // Restart
+            this.init();
+        }
+
+        showError(message) {
+            document.getElementById('progressiveContent').innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.7; color: #ef4444;"></i>
+                    <div style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #ef4444;">${message}</div>
+                    <button class="btn btn-secondary" onclick="window.location.href='1.html'">
+                        <i class="fas fa-home"></i>
+                        Back to Home
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('progressiveActions').style.display = 'none';
+            this.updateProgressText('Error occurred');
+        }
+    }
+
+    // Initialize
+    let progressiveLearning;
+    document.addEventListener('DOMContentLoaded', () => {
+        progressiveLearning = new ProgressiveLearning();
+        progressiveLearning.init();
+    });
+    </script>
+
+    <style>
+    /* Additional styles for progressive learning */
+    .progress-overview {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .progress-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .stat-item i {
+        color: #667eea;
+        font-size: 1.2rem;
+    }
+
+    .progress-bar-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: 0%;
+    }
+
+    .progress-percentage {
+        font-weight: 600;
+        color: #667eea;
+        min-width: 40px;
+    }
+
+    .words-learn-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .word-learn-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .word-translation {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(102, 126, 234, 0.08);
+        border-radius: 8px;
+        color: #64748b;
+        font-style: italic;
+    }
+
+    .quiz-question, .audio-question, .write-question {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .quiz-feedback, .write-feedback {
+        margin-top: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        min-height: 1.5rem;
+    }
+
+    .quiz-results, .pause-screen, .loading-state, .error-state {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .results-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .auto-continue {
+        margin-top: 1rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .audio-player {
+        margin: 1.5rem 0;
+    }
+
+    .audio-instructions, .write-instructions {
+        text-align: center;
+        padding: 2rem;
+        color: #64748b;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .stat-card {
+        background: rgba(102, 126, 234, 0.08);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid rgba(102, 126, 234, 0.15);
+    }
+
+    .stat-card i {
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Enhanced category card styles */
+    .category-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-btn-primary {
+        width: 100%;
+    }
+
+    .category-btn-progressive {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-btn-progressive::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .category-btn-progressive:hover::before {
+        left: 100%;
+    }
+
+    .category-btn-progressive:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .category-quick-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+    }
+
+    .category-quick-actions .btn {
+        flex: 1;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    /* Progressive Learning Modal */
+    .progressive-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    .progressive-modal {
+        background: white;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: modalSlideUp 0.3s ease;
+    }
+
+    .modal-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #1a202c;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-header h3 i {
+        color: #667eea;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #64748b;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #e2e8f0;
+        color: #1a202c;
+    }
+
+    .modal-content {
+        padding: 2rem;
+    }
+
+    .option-group {
+        margin-bottom: 2rem;
+    }
+
+    .option-group h4 {
+        margin-bottom: 1rem;
+        color: #1a202c;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .option-group h4 i {
+        color: #667eea;
+    }
+
+    .option-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+
+    .option-checkbox:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e0;
+    }
+
+    .option-checkbox input[type="checkbox"] {
+        display: none;
+    }
+
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #cbd5e0;
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .option-checkbox input[type="checkbox"]:checked + .checkmark {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .option-checkbox input[type="checkbox"]:checked + .checkmark::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    .option-info {
+        flex: 1;
+    }
+
+    .option-info strong {
+        display: block;
+        color: #1a202c;
+        margin-bottom: 0.25rem;
+    }
+
+    .option-info small {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    .learning-flow {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 12px;
+        overflow-x: auto;
+    }
+
+    .flow-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .step-info strong {
+        display: block;
+        color: #1a202c;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .step-info small {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .flow-arrow {
+        color: #cbd5e0;
+        font-size: 1.5rem;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .modal-actions {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        background: #f8fafc;
+        border-radius: 0 0 20px 20px;
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes modalSlideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .progressive-modal {
+            margin: 1rem;
+            border-radius: 16px;
+        }
+
+        .modal-header, .modal-content, .modal-actions {
+            padding: 1rem 1.5rem;
+        }
+
+        .learning-flow {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .flow-arrow {
+            transform: rotate(90deg);
+        }
+
+        .category-quick-actions {
+            flex-wrap: wrap;
+        }
+
+        .category-quick-actions .btn {
+            flex: 1 1 calc(50% - 0.25rem);
+        }
+    }
+    </style>
+</body>
+</html>

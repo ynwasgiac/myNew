@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repeat Words (Audio) - KazakhLearn</title>
+    <link href="css/unified-learning.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="learn-container">
+            <div class="learn-header">
+                <h1 class="learn-title">Repeat Words (Audio)</h1>
+                <p class="learn-subtitle">Listen and identify the correct meaning</p>
+            </div>
+            
+            <div class="learn-content">
+                <!-- Audio quiz container -->
+                <div class="quiz-container" id="quiz-container">
+                    <div class="word-display" id="audio-display">
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-headphones" style="font-size: 4rem; color: #667eea; margin-bottom: 1rem; opacity: 0.7;"></i>
+                            <div class="word-text" style="font-size: 1.5rem; color: #64748b;">
+                                Listen to the pronunciation
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Audio control -->
+                <div class="word-media" id="audio-control"></div>
+                
+                <!-- Answer options -->
+                <div class="answers-container" id="answers-container"></div>
+                
+                <!-- Feedback area -->
+                <div class="feedback" id="feedback"></div>
+                
+                <!-- Control buttons -->
+                <div class="action-buttons" id="control-buttons"></div>
+                
+                <!-- Completion screen -->
+                <div class="completion-screen hidden" id="completion-screen">
+                    <h2 class="completion-title">🎉 Fantastic Listening!</h2>
+                    <p class="completion-message">
+                        You've successfully completed this audio recognition exercise. Your listening skills are improving!
+                    </p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="window.location.href='1.html'">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </button>
+                        <button class="btn btn-success" onclick="window.location.reload()">
+                            <i class="fas fa-redo"></i>
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress indicator -->
+            <div class="progress-indicator" id="progress-indicator">
+                <p class="progress-text" id="progress-text">Loading audio content...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-learn.js"></script>
+    <script>
+    class RepeatAudioPage {
+        constructor() {
+            this.words = [];
+            this.quizWords = [];
+            this.currentIdx = 0;
+            this.categoryId = LearnShared.getQueryParam('category_id');
+            this.languageCode = LearnShared.getUserLanguageCode();
+            const wordIdsParam = LearnShared.getQueryParam('word_ids');
+            this.wordIds = wordIdsParam ? wordIdsParam.split(',').map(x => x.trim()).filter(Boolean) : null;
+            this.answerSelected = false;
+            this.score = 0;
+            this.currentAudio = null;
+            this.autoPlayCount = 0;
+        }
+
+        async init() {
+            if (!this.categoryId && !this.wordIds) {
+                this.showError('No category or word list selected. Please go back and choose a category.');
+                return;
+            }
+
+            await this.loadWords();
+            if (this.quizWords && this.quizWords.length > 0) {
+                await this.showQuiz();
+            } else {
+                this.showError('No words with audio found for this session.');
+            }
+        }
+
+        async loadWords() {
+            try {
+                this.updateProgress('Loading audio content...');
+                const allWords = await LearnShared.fetchWords(this.categoryId, this.languageCode, this.wordIds);
+                if (!allWords) return;
+                this.words = allWords;
+                this.updateProgress('Filtering words with audio...');
+                this.quizWords = await LearnShared.filterWordsWithSounds(allWords);
+                if (this.quizWords.length === 0) {
+                    throw new Error('No words with audio found');
+                }
+                this.quizWords = LearnShared.shuffleArray(this.quizWords);
+                this.currentIdx = 0;
+                this.updateProgress(`${this.quizWords.length} audio words loaded`);
+            } catch (error) {
+                console.error('Error loading words:', error);
+                this.showError('Failed to load words with audio. Please try again.');
+            }
+        }
+
+        async showQuiz() {
+            if (this.currentIdx >= this.quizWords.length) {
+                this.showCompletion();
+                return;
+            }
+
+            const word = this.quizWords[this.currentIdx];
+            this.answerSelected = false;
+            this.autoPlayCount = 0;
+            
+            // Stop any currently playing audio
+            this.stopCurrentAudio();
+            
+            // Clear previous content
+            this.clearFeedback();
+            this.clearControlButtons();
+            
+            // Update progress
+            this.updateProgress(`Question ${this.currentIdx + 1} of ${this.quizWords.length} • Score: ${this.score}/${this.currentIdx}`);
+            
+            // Setup audio control
+            await this.setupAudioControl(word);
+            
+            // Generate answer options
+            await this.generateAnswerOptions(word);
+            
+            // Add control buttons
+            this.addControlButtons(word);
+            
+            // Auto-play audio after a short delay
+            setTimeout(() => this.playAudio(), 800);
+        }
+
+        async setupAudioControl(word) {
+            const container = document.getElementById('audio-control');
+            container.innerHTML = '';
+            
+            // Get audio URL
+            const audioUrl = await LearnShared.getWordSoundUrl(word.id);
+            if (!audioUrl) {
+                throw new Error('No audio available for this word');
+            }
+            
+            // Create audio element
+            this.currentAudio = new Audio(audioUrl);
+            this.currentAudio.preload = 'auto';
+            
+            // Create audio control button
+            const audioButton = document.createElement('button');
+            audioButton.className = 'sound-button';
+            audioButton.id = 'play-audio-btn';
+            audioButton.innerHTML = `
+                <i class="fas fa-volume-up"></i>
+                Play Audio
+            `;
+            
+            // Add click handler
+            audioButton.onclick = () => this.playAudio();
+            
+            // Add keyboard handler
+            audioButton.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.playAudio();
+                }
+            });
+            
+            container.appendChild(audioButton);
+            
+            // Add audio event listeners
+            this.currentAudio.onended = () => {
+                audioButton.innerHTML = `
+                    <i class="fas fa-volume-up"></i>
+                    Play Again
+                `;
+                audioButton.disabled = false;
+            };
+            
+            this.currentAudio.onplay = () => {
+                audioButton.innerHTML = `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Playing...
+                `;
+                audioButton.disabled = true;
+            };
+            
+            this.currentAudio.onerror = () => {
+                audioButton.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Audio Error
+                `;
+                audioButton.disabled = true;
+                this.showNotification('Audio playback failed', '#ef4444');
+            };
+        }
+
+        playAudio() {
+            if (this.currentAudio) {
+                this.currentAudio.currentTime = 0; // Reset to beginning
+                this.currentAudio.play().catch(error => {
+                    console.error('Audio play failed:', error);
+                    this.showNotification('Could not play audio', '#ef4444');
+                });
+                
+                this.autoPlayCount++;
+                
+                // Show hint after multiple plays
+                if (this.autoPlayCount >= 3) {
+                    this.showAudioHint();
+                }
+            }
+        }
+
+        showAudioHint() {
+            const word = this.quizWords[this.currentIdx];
+            const hintContainer = document.getElementById('audio-display');
+            
+            // Add subtle hint without giving away the answer
+            const hintElement = document.createElement('div');
+            hintElement.style.cssText = `
+                margin-top: 1rem;
+                padding: 1rem;
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 12px;
+                font-size: 0.9rem;
+                color: #64748b;
+            `;
+            hintElement.innerHTML = `
+                <i class="fas fa-lightbulb" style="margin-right: 0.5rem; color: #f59e0b;"></i>
+                Hint: This word has ${(word.kazakh_word || word.word || '').length} letters
+            `;
+            
+            // Remove existing hint
+            const existingHint = hintContainer.querySelector('[data-hint]');
+            if (existingHint) existingHint.remove();
+            
+            hintElement.setAttribute('data-hint', 'true');
+            hintContainer.appendChild(hintElement);
+        }
+
+        stopCurrentAudio() {
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio.currentTime = 0;
+            }
+        }
+
+        async generateAnswerOptions(correctWord) {
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+            
+            // Get correct translation
+            const correctAnswer = await LearnShared.getTranslation(correctWord.id, this.languageCode);
+            
+            // Get distractor translations
+            const distractors = await LearnShared.getDistractorTranslations(
+                this.words, 
+                correctWord.id, 
+                this.languageCode, 
+                3 // Get 3 distractors for 4 total options
+            );
+            
+            // Combine and shuffle options
+            const allOptions = [correctAnswer, ...distractors].filter(option => option && option.trim());
+            const shuffledOptions = LearnShared.shuffleArray([...allOptions]);
+            
+            // Create answer buttons
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-outline';
+                button.textContent = option;
+                button.dataset.correct = correctAnswer;
+                button.dataset.isCorrect = option === correctAnswer ? 'true' : 'false';
+                
+                // Add click handler
+                button.onclick = () => this.handleAnswer(button);
+                
+                // Add keyboard navigation
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.handleAnswer(button);
+                    }
+                });
+                
+                container.appendChild(button);
+            });
+        }
+
+        handleAnswer(selectedButton) {
+            if (this.answerSelected) return;
+            
+            this.answerSelected = true;
+            const isCorrect = selectedButton.dataset.isCorrect === 'true';
+            const correctAnswer = selectedButton.dataset.correct;
+            
+            // Stop audio
+            this.stopCurrentAudio();
+            
+            // Update score
+            if (isCorrect) {
+                this.score++;
+            }
+            
+            // Visual feedback
+            const allButtons = document.querySelectorAll('#answers-container .btn-outline');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                
+                if (btn.dataset.isCorrect === 'true') {
+                    // Highlight correct answer
+                    btn.classList.add('correct');
+                    btn.style.background = '#10b981';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = '#10b981';
+                } else if (btn === selectedButton && !isCorrect) {
+                    // Highlight wrong selection
+                    btn.style.background = '#ef4444';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = '#ef4444';
+                }
+            });
+            
+            // Show feedback
+            this.showFeedback(isCorrect, correctAnswer);
+            
+            // Enable next button
+            this.enableNextButton();
+        }
+
+        showFeedback(isCorrect, correctAnswer) {
+            const feedback = document.getElementById('feedback');
+            const currentWord = this.quizWords[this.currentIdx];
+            
+            if (isCorrect) {
+                feedback.innerHTML = `
+                    <div style="color: #10b981; font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+                        Excellent! You got it right!
+                    </div>
+                    <div style="color: #64748b; font-size: 1rem;">
+                        The word was: <strong style="color: #1a202c;">${currentWord.kazakh_word || currentWord.word}</strong>
+                    </div>
+                `;
+            } else {
+                feedback.innerHTML = `
+                    <div style="color: #ef4444; font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>
+                        Not quite right!
+                    </div>
+                    <div style="color: #64748b; font-size: 1rem; margin-bottom: 0.5rem;">
+                        The word was: <strong style="color: #1a202c;">${currentWord.kazakh_word || currentWord.word}</strong>
+                    </div>
+                    <div style="color: #64748b; font-size: 1rem;">
+                        Meaning: <strong>${correctAnswer}</strong>
+                    </div>
+                `;
+            }
+        }
+
+        addControlButtons(word) {
+            const container = document.getElementById('control-buttons');
+            container.innerHTML = `
+                <button id="next-btn" class="btn btn-info" disabled>
+                    <i class="fas fa-arrow-right"></i>
+                    Next Question
+                </button>
+                <button id="replay-btn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    Replay Audio
+                </button>
+                <button id="hard-btn" class="btn btn-danger">
+                    <i class="fas fa-star"></i>
+                    Hard Word
+                </button>
+            `;
+            
+            // Add event listeners
+            document.getElementById('next-btn').onclick = () => this.nextQuestion();
+            document.getElementById('replay-btn').onclick = () => this.playAudio();
+            document.getElementById('hard-btn').onclick = () => this.markAsHard(word.id);
+        }
+
+        enableNextButton() {
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) {
+                nextBtn.disabled = false;
+                
+                // Auto-advance after 4 seconds (longer for audio)
+                setTimeout(() => {
+                    if (!nextBtn.disabled) {
+                        this.nextQuestion();
+                    }
+                }, 4000);
+            }
+        }
+
+        nextQuestion() {
+            this.stopCurrentAudio();
+            this.currentIdx++;
+            this.showQuiz();
+        }
+
+        async markAsHard(wordId) {
+            await LearnShared.updateWordProgress(wordId, { difficulty_rating: 'hard' });
+            this.showNotification('⭐ Marked as hard word!', '#f59e0b');
+        }
+
+        showCompletion() {
+            // Stop any playing audio
+            this.stopCurrentAudio();
+            
+            // Hide main content
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('audio-control').classList.add('hidden');
+            document.getElementById('answers-container').classList.add('hidden');
+            document.getElementById('control-buttons').classList.add('hidden');
+            
+            // Calculate percentage
+            const percentage = Math.round((this.score / this.quizWords.length) * 100);
+            
+            // Update completion screen
+            const completionScreen = document.getElementById('completion-screen');
+            const completionMessage = completionScreen.querySelector('.completion-message');
+            
+            let message = `You scored ${this.score} out of ${this.quizWords.length} (${percentage}%) in the audio exercise. `;
+            if (percentage >= 90) {
+                message += "Outstanding listening skills! 🎧🌟";
+            } else if (percentage >= 75) {
+                message += "Great job! Your ear for Kazakh is developing well! 👂👍";
+            } else if (percentage >= 60) {
+                message += "Good progress! Keep listening to improve recognition. 🎵📚";
+            } else {
+                message += "Keep practicing your listening skills - they'll improve with time! 🎯💪";
+            }
+            
+            completionMessage.textContent = message;
+            completionScreen.classList.remove('hidden');
+            
+            // Update progress
+            this.updateProgress(`Audio exercise completed! Final score: ${this.score}/${this.quizWords.length}`);
+        }
+
+        clearFeedback() {
+            document.getElementById('feedback').innerHTML = '';
+        }
+
+        clearControlButtons() {
+            document.getElementById('control-buttons').innerHTML = '';
+        }
+
+        updateProgress(text) {
+            document.getElementById('progress-text').textContent = text;
+        }
+
+        showError(message) {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = `
+                <div class="word-display" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #fecaca;">
+                    <div style="color: #ef4444; text-align: center;">
+                        <i class="fas fa-volume-mute" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.7;"></i>
+                        <div class="word-text" style="color: #ef4444; font-size: 1.5rem;">${message}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('audio-control').innerHTML = '';
+            document.getElementById('answers-container').innerHTML = '';
+            document.getElementById('control-buttons').innerHTML = `
+                <button class="btn btn-secondary" onclick="window.location.href='1.html'">
+                    <i class="fas fa-home"></i>
+                    Back to Home
+                </button>
+            `;
+            
+            this.updateProgress('Error occurred');
+        }
+
+        showNotification(message, color = '#10b981') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${color};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Cleanup when page is unloaded
+        cleanup() {
+            this.stopCurrentAudio();
+        }
+    }
+
+    // Initialize page
+    let repeatAudioPage;
+    document.addEventListener('DOMContentLoaded', () => {
+        repeatAudioPage = new RepeatAudioPage();
+        repeatAudioPage.init();
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (repeatAudioPage) {
+            repeatAudioPage.cleanup();
+        }
+    });
+
+    // Handle visibility change (pause audio when tab is hidden)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && repeatAudioPage) {
+            repeatAudioPage.stopCurrentAudio();
+        }
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Audio-specific animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        .sound-button:active {
+            animation: pulse 0.3s ease;
+        }
+        
+        /* Loading state for audio */
+        .sound-button .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+</body>
+</html>

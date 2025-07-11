@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repeat Words - KazakhLearn</title>
+    <link href="css/unified-learning.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="learn-container">
+            <div class="learn-header">
+                <h1 class="learn-title">Repeat Words</h1>
+                <p class="learn-subtitle">Match the Kazakh word with its meaning</p>
+            </div>
+            
+            <div class="learn-content">
+                <!-- Quiz container for word and image -->
+                <div class="quiz-container" id="quiz-container">
+                    <div class="word-display" id="word-display">
+                        <div class="word-text" id="quiz-word">Loading...</div>
+                    </div>
+                </div>
+                
+                <!-- Answer options -->
+                <div class="answers-container" id="answers-container"></div>
+                
+                <!-- Feedback area -->
+                <div class="feedback" id="feedback"></div>
+                
+                <!-- Control buttons -->
+                <div class="action-buttons" id="control-buttons"></div>
+                
+                <!-- Completion screen -->
+                <div class="completion-screen hidden" id="completion-screen">
+                    <h2 class="completion-title">🎉 Excellent Work!</h2>
+                    <p class="completion-message">
+                        You've successfully completed this visual recognition exercise. Your vocabulary is improving!
+                    </p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="window.location.href='1.html'">
+                            <i class="fas fa-home"></i>
+                            Back to Home
+                        </button>
+                        <button class="btn btn-success" onclick="window.location.reload()">
+                            <i class="fas fa-redo"></i>
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress indicator -->
+            <div class="progress-indicator" id="progress-indicator">
+                <p class="progress-text" id="progress-text">Loading words...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-learn.js"></script>
+    <script>
+    class RepeatPage {
+        constructor() {
+            this.words = [];
+            this.quizWords = [];
+            this.currentIdx = 0;
+            this.categoryId = LearnShared.getQueryParam('category_id');
+            this.languageCode = LearnShared.getUserLanguageCode();
+            this.answerSelected = false;
+            this.score = 0;
+        }
+
+        async init() {
+            if (!this.categoryId) {
+                this.showError('No category selected. Please go back and choose a category.');
+                return;
+            }
+
+            await this.loadWords();
+            if (this.quizWords && this.quizWords.length > 0) {
+                await this.showQuiz();
+            } else {
+                this.showError('No words with images found in this category.');
+            }
+        }
+
+        async loadWords() {
+            try {
+                this.updateProgress('Loading words...');
+                
+                // Get all words from category
+                const allWords = await LearnShared.fetchWords(this.categoryId, this.languageCode);
+                if (!allWords) return;
+
+                this.words = allWords;
+                
+                // Filter words that have images
+                this.updateProgress('Filtering words with images...');
+                this.quizWords = await LearnShared.filterWordsWithImages(allWords);
+                
+                if (this.quizWords.length === 0) {
+                    throw new Error('No words with images found');
+                }
+                
+                // Shuffle the quiz words
+                this.quizWords = LearnShared.shuffleArray(this.quizWords);
+                this.currentIdx = 0;
+                
+                this.updateProgress(`${this.quizWords.length} visual words loaded`);
+                
+            } catch (error) {
+                console.error('Error loading words:', error);
+                this.showError('Failed to load words with images. Please try again.');
+            }
+        }
+
+        async showQuiz() {
+            if (this.currentIdx >= this.quizWords.length) {
+                this.showCompletion();
+                return;
+            }
+
+            const word = this.quizWords[this.currentIdx];
+            this.answerSelected = false;
+            
+            // Clear previous content
+            this.clearFeedback();
+            this.clearControlButtons();
+            
+            // Update progress
+            this.updateProgress(`Question ${this.currentIdx + 1} of ${this.quizWords.length} • Score: ${this.score}/${this.currentIdx}`);
+            
+            // Show the Kazakh word
+            document.getElementById('quiz-word').textContent = word.kazakh_word || word.word || '[No word]';
+            
+            // Load and show image
+            await this.displayWordImage(word);
+            
+            // Generate answer options
+            await this.generateAnswerOptions(word);
+            
+            // Add control buttons
+            this.addControlButtons(word);
+        }
+
+        async displayWordImage(word) {
+            const container = document.getElementById('quiz-container');
+            
+            // Remove any existing image
+            const existingImage = document.getElementById('word-image');
+            if (existingImage) existingImage.remove();
+            
+            // Get and display image
+            const imageUrl = await LearnShared.getWordImageUrl(word.id);
+            if (imageUrl) {
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'word-media';
+                
+                const img = document.createElement('img');
+                img.id = 'word-image';
+                img.className = 'word-image';
+                img.src = imageUrl;
+                img.alt = 'Word illustration';
+                img.loading = 'lazy';
+                
+                // Add loading state
+                img.onload = () => {
+                    img.style.opacity = '1';
+                };
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.3s ease';
+                
+                imageContainer.appendChild(img);
+                container.appendChild(imageContainer);
+                
+                // Trigger load animation
+                setTimeout(() => img.style.opacity = '1', 100);
+            }
+        }
+
+        async generateAnswerOptions(correctWord) {
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+            
+            // Get correct translation
+            const correctAnswer = await LearnShared.getTranslation(correctWord.id, this.languageCode);
+            
+            // Get distractor translations
+            const distractors = await LearnShared.getDistractorTranslations(
+                this.words, 
+                correctWord.id, 
+                this.languageCode, 
+                3 // Get 3 distractors for 4 total options
+            );
+            
+            // Combine and shuffle options
+            const allOptions = [correctAnswer, ...distractors].filter(option => option && option.trim());
+            const shuffledOptions = LearnShared.shuffleArray([...allOptions]);
+            
+            // Create answer buttons
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-outline';
+                button.textContent = option;
+                button.dataset.correct = correctAnswer;
+                button.dataset.isCorrect = option === correctAnswer ? 'true' : 'false';
+                
+                // Add click handler
+                button.onclick = () => this.handleAnswer(button);
+                
+                // Add keyboard navigation
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.handleAnswer(button);
+                    }
+                });
+                
+                container.appendChild(button);
+            });
+        }
+
+        handleAnswer(selectedButton) {
+            if (this.answerSelected) return;
+            
+            this.answerSelected = true;
+            const isCorrect = selectedButton.dataset.isCorrect === 'true';
+            const correctAnswer = selectedButton.dataset.correct;
+            
+            // Update score
+            if (isCorrect) {
+                this.score++;
+            }
+            
+            // Visual feedback
+            const allButtons = document.querySelectorAll('#answers-container .btn-outline');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                
+                if (btn.dataset.isCorrect === 'true') {
+                    // Highlight correct answer
+                    btn.classList.add('correct');
+                    btn.style.background = '#10b981';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = '#10b981';
+                } else if (btn === selectedButton && !isCorrect) {
+                    // Highlight wrong selection
+                    btn.style.background = '#ef4444';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = '#ef4444';
+                }
+            });
+            
+            // Show feedback
+            this.showFeedback(isCorrect, correctAnswer);
+            
+            // Enable next button
+            this.enableNextButton();
+        }
+
+        showFeedback(isCorrect, correctAnswer) {
+            const feedback = document.getElementById('feedback');
+            
+            if (isCorrect) {
+                feedback.innerHTML = `
+                    <div style="color: #10b981; font-size: 1.2rem; font-weight: 600;">
+                        <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+                        Correct! Well done!
+                    </div>
+                `;
+            } else {
+                feedback.innerHTML = `
+                    <div style="color: #ef4444; font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>
+                        Incorrect!
+                    </div>
+                    <div style="color: #64748b; font-size: 1rem;">
+                        The correct answer is: <strong>${correctAnswer}</strong>
+                    </div>
+                `;
+            }
+        }
+
+        addControlButtons(word) {
+            const container = document.getElementById('control-buttons');
+            container.innerHTML = `
+                <button id="next-btn" class="btn btn-info" disabled>
+                    <i class="fas fa-arrow-right"></i>
+                    Next Question
+                </button>
+                <button id="hard-btn" class="btn btn-danger">
+                    <i class="fas fa-star"></i>
+                    Hard Word
+                </button>
+            `;
+            
+            // Add event listeners
+            document.getElementById('next-btn').onclick = () => this.nextQuestion();
+            document.getElementById('hard-btn').onclick = () => this.markAsHard(word.id);
+        }
+
+        enableNextButton() {
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) {
+                nextBtn.disabled = false;
+                
+                // Auto-advance after 3 seconds
+                setTimeout(() => {
+                    if (!nextBtn.disabled) {
+                        this.nextQuestion();
+                    }
+                }, 3000);
+            }
+        }
+
+        nextQuestion() {
+            this.currentIdx++;
+            this.showQuiz();
+        }
+
+        async markAsHard(wordId) {
+            await LearnShared.updateWordProgress(wordId, { difficulty_rating: 'hard' });
+            this.showNotification('⭐ Marked as hard word!', '#f59e0b');
+        }
+
+        showCompletion() {
+            // Hide main content
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('answers-container').classList.add('hidden');
+            document.getElementById('control-buttons').classList.add('hidden');
+            
+            // Calculate percentage
+            const percentage = Math.round((this.score / this.quizWords.length) * 100);
+            
+            // Update completion screen
+            const completionScreen = document.getElementById('completion-screen');
+            const completionMessage = completionScreen.querySelector('.completion-message');
+            
+            let message = `You scored ${this.score} out of ${this.quizWords.length} (${percentage}%). `;
+            if (percentage >= 90) {
+                message += "Outstanding performance! 🌟";
+            } else if (percentage >= 75) {
+                message += "Great job! Keep practicing! 👍";
+            } else if (percentage >= 60) {
+                message += "Good effort! Try reviewing these words again. 📚";
+            } else {
+                message += "Keep practicing - you'll improve with time! 💪";
+            }
+            
+            completionMessage.textContent = message;
+            completionScreen.classList.remove('hidden');
+            
+            // Update progress
+            this.updateProgress(`Exercise completed! Final score: ${this.score}/${this.quizWords.length}`);
+        }
+
+        clearFeedback() {
+            document.getElementById('feedback').innerHTML = '';
+        }
+
+        clearControlButtons() {
+            document.getElementById('control-buttons').innerHTML = '';
+        }
+
+        updateProgress(text) {
+            document.getElementById('progress-text').textContent = text;
+        }
+
+        showError(message) {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = `
+                <div class="word-display" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #fecaca;">
+                    <div style="color: #ef4444; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.7;"></i>
+                        <div class="word-text" style="color: #ef4444; font-size: 1.5rem;">${message}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('answers-container').innerHTML = '';
+            document.getElementById('control-buttons').innerHTML = `
+                <button class="btn btn-secondary" onclick="window.location.href='1.html'">
+                    <i class="fas fa-home"></i>
+                    Back to Home
+                </button>
+            `;
+            
+            this.updateProgress('Error occurred');
+        }
+
+        showNotification(message, color = '#10b981') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${color};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    // Initialize page
+    let repeatPage;
+    document.addEventListener('DOMContentLoaded', () => {
+        repeatPage = new RepeatPage();
+        repeatPage.init();
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+/* Merged layout.css + responsive.css + layout parts from all.css */
+.navbar {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Footer */
+.footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    padding: var(--space-xl) var(--space-lg);
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-content {
+        padding: var(--space-sm) var(--space-md);
+        flex-wrap: wrap;
+        gap: var(--space-md);
+    }
+    .nav-menu {
+        display: none;
+    }
+    .main-content {
+        padding: var(--space-md);
+    }
+    .auth-card {
+        padding: var(--space-xl);
+        margin: var(--space-md);
+    }
+    .settings-tabs {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+    .language-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .profile-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .profile-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-xs);
+    }
+    .language-buttons {
+        justify-content: center;
+    }
+    .dropdown {
+        left: 0;
+        right: auto;
+        min-width: 180px;
+    }
+}
+@media (max-width: 480px) {
+    .language-settings,
+    .profile-settings {
+        gap: var(--space-lg);
+    }
+    .language-status,
+    .language-info,
+    .profile-info {
+        padding: var(--space-md);
+    }
+    .form-text {
+        font-size: var(--text-xs);
+    }
+    .notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    .notification {
+        min-width: auto;
+    }
+} 

@@ -1,0 +1,49 @@
+{
+    "title": "Recent Activity",
+    "sessionTypes": {
+      "practice": "Practice",
+      "quiz": "Quiz",
+      "review": "Review",
+      "session": "Session"
+    },
+    "sessionInfo": {
+      "words": "{{count}} words",
+      "words_one": "{{count}} word",
+      "words_other": "{{count}} words",
+      "accuracy": "{{rate}}% accuracy",
+      "duration": {
+        "unknown": "Unknown",
+        "minutesSeconds": "{{minutes}}m {{seconds}}s",
+        "seconds": "{{seconds}}s"
+      }
+    },
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutesAgo": "{{minutes}}m ago",
+      "minutesAgo_one": "{{minutes}}m ago",
+      "minutesAgo_other": "{{minutes}}m ago",
+      "hoursAgo": "{{hours}}h ago",
+      "hoursAgo_one": "{{hours}}h ago", 
+      "hoursAgo_other": "{{hours}}h ago",
+      "daysAgo": "{{days}}d ago",
+      "daysAgo_one": "{{days}}d ago",
+      "daysAgo_other": "{{days}}d ago"
+    },
+    "sessionStatus": {
+      "completed": "Session completed"
+    },
+    "actions": {
+      "viewAll": "View all activity",
+      "startLearning": "Start Learning"
+    },
+    "noActivity": {
+      "title": "No recent activity",
+      "description": "Start learning to see your activity here!"
+    },
+    "summary": {
+      "wordsStudied": "Words Studied",
+      "correct": "Correct", 
+      "sessions": "Sessions"
+    }
+  }
+  

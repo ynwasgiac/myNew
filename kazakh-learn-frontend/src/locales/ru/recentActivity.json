@@ -1,0 +1,56 @@
+{
+    "title": "Недавняя активность",
+    "sessionTypes": {
+      "practice": "Практика",
+      "quiz": "Тест",
+      "review": "Повторение",
+      "session": "Сессия"
+    },
+    "sessionInfo": {
+      "words": "{{count}} слов",
+      "words_one": "{{count}} слово",
+      "words_few": "{{count}} слова",
+      "words_many": "{{count}} слов",
+      "words_other": "{{count}} слов",
+      "accuracy": "{{rate}}% точность",
+      "duration": {
+        "unknown": "Неизвестно",
+        "minutesSeconds": "{{minutes}}м {{seconds}}с",
+        "seconds": "{{seconds}}с"
+      }
+    },
+    "timeAgo": {
+      "justNow": "Только что",
+      "minutesAgo": "{{minutes}}м назад",
+      "minutesAgo_one": "{{minutes}}м назад",
+      "minutesAgo_few": "{{minutes}}м назад",
+      "minutesAgo_many": "{{minutes}}м назад",
+      "minutesAgo_other": "{{minutes}}м назад",
+      "hoursAgo": "{{hours}}ч назад",
+      "hoursAgo_one": "{{hours}}ч назад",
+      "hoursAgo_few": "{{hours}}ч назад",
+      "hoursAgo_many": "{{hours}}ч назад",
+      "hoursAgo_other": "{{hours}}ч назад",
+      "daysAgo": "{{days}}д назад",
+      "daysAgo_one": "{{days}}д назад",
+      "daysAgo_few": "{{days}}д назад",
+      "daysAgo_many": "{{days}}д назад",
+      "daysAgo_other": "{{days}}д назад"
+    },
+    "sessionStatus": {
+      "completed": "Сессия завершена"
+    },
+    "actions": {
+      "viewAll": "Посмотреть всю активность",
+      "startLearning": "Начать изучение"
+    },
+    "noActivity": {
+      "title": "Нет недавней активности",
+      "description": "Начните изучение, чтобы увидеть вашу активность здесь!"
+    },
+    "summary": {
+      "wordsStudied": "Изучено слов",
+      "correct": "Правильно",
+      "sessions": "Сессий"
+    }
+  }

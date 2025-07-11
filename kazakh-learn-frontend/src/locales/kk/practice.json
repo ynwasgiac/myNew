@@ -1,0 +1,59 @@
+{
+    "loading": {
+      "startingSession": "Жаттығу сессиясын бастау..."
+    },
+    "errors": {
+      "unableToStart": "Жаттығу сессиясын бастау мүмкін емес",
+      "tryAgain": "Қайталап көріңіз немесе үйрену тізіміңізді тексеріңіз.",
+      "noReviewWords": "Қайталауға сөздер жоқ",
+      "tryLearningFirst": "Алдымен сөздерді үйреніп, содан кейін жаттығуға келіңіз!"
+    },
+    "session": {
+      "title": "Сессия",
+      "types": {
+        "practice": "Жаттығу",
+        "review": "Қайталау",
+        "random": "Кездейсоқ",
+        "category": "Санат"
+      },
+      "questionProgress": "{{current}} сұрақ {{total}} ішінен",
+      "correct": "Дұрыс: {{correct}} / {{total}}",
+      "pause": "Сессияны тоқтату",
+      "resume": "Сессияны жалғастыру"
+    },
+    "word": {
+      "level": "{{level}} деңгей"
+    },
+    "question": {
+      "prompt": "Бұл сөз ағылшын тілінде не дегенді білдіреді?",
+      "placeholder": "Жауабыңызды теріңіз..."
+    },
+    "actions": {
+      "backToLearning": "Үйренуге оралу",
+      "playAudio": "Аудионы ойнату",
+      "skip": "Өткізу",
+      "submitAnswer": "Жауапты жіберу",
+      "nextWord": "Келесі сөз",
+      "finishSession": "Сессияны аяқтау"
+    },
+    "result": {
+      "correct": "Дұрыс!",
+      "incorrect": "Дұрыс емес",
+      "means": "дегенді білдіреді",
+      "yourAnswer": "Сіздің жауабыңыз",
+      "correctAnswer": "Дұрыс жауап"
+    },
+    "stats": {
+      "title": "Сессия прогресі",
+      "current": "Қазіргі",
+      "correct": "Дұрыс",
+      "incorrect": "Дұрыс емес"
+    },
+    "messages": {
+      "sessionStarted": "Жаттығу сессиясы басталды!",
+      "sessionStartError": "Жаттығу сессиясын бастау сәтсіз аяқталды",
+      "submitAnswerError": "Жауапты жіберу сәтсіз аяқталды",
+      "audioComingSoon": "Аудио мүмкіндігі жақында!"
+    }
+  }
+  

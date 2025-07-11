@@ -1,0 +1,33 @@
+{
+    "loading": {
+      "progress": "Loading your progress..."
+    },
+    "page": {
+      "title": "Your Learning Progress"
+    },
+    "sessionComplete": {
+      "title": "Session Completed!",
+      "correct": "Correct",
+      "incorrect": "Incorrect", 
+      "accuracy": "Accuracy",
+      "duration": "Duration",
+      "minutesSuffix": "m"
+    },
+    "stats": {
+      "totalWords": "Total Words",
+      "currentStreak": "Current Streak",
+      "accuracyRate": "Accuracy Rate",
+      "wordsDueReview": "Words Due Review"
+    },
+    "breakdown": {
+      "title": "Learning Status Breakdown",
+      "noData": "No progress data available yet."
+    },
+    "status": {
+      "wantToLearn": "Want to Learn",
+      "learning": "Learning",
+      "learned": "Learned",
+      "mastered": "Mastered",
+      "review": "Review"
+    }
+  }

@@ -1,0 +1,116 @@
+{
+  "navigation": {
+    "backToWords": "Сөздерге қайту",
+    "previous": "Алдыңғы",
+    "next": "Келесі",
+    "previousWord": "Алдыңғы: {{word}}",
+    "nextWord": "Келесі: {{word}}",
+    "noPrevious": "Алдыңғы сөз жоқ",
+    "noNext": "Келесі сөз жоқ",
+    "keyboardHint": "Навигация үшін ← → көрсеткі пернелерін пайдаланыңыз",
+    "context": {
+      "browse": "Барлық сөздерді қарау",
+      "search": "\"{{searchTerm}}\" іздеу нәтижелері",
+      "category": "Санат сөздері",
+      "learning": "Оқу сөздері"
+    }
+  },
+  "loading": {
+    "wordDetails": "Сөз мәліметтері жүктелуде..."
+  },
+  "errors": {
+    "wordNotFound": "Сөз табылмады",
+    "wordNotFoundDescription": "Іздеген сөзіңіз жоқ немесе жойылған."
+  },
+  "actions": {
+    "browseWords": "Сөздерді қарау",
+    "shareWord": "Сөзді бөлісу",
+    "addToLearning": "Оқуға қосу",
+    "removeFromLearning": "Оқудан алып тастау",
+    "markAsLearned": "Үйренілді деп белгілеу",
+    "practiceThisWord": "Осы сөзді жаттығу",
+    "listen": "Тыңдау",
+    "saveNotes": "Жазбаларды сақтау",
+    "addToLearningList": "Оқу тізіміне қосу"
+  },
+  "messages": {
+    "addedToLearning": "Сөз оқу тізіміне қосылды",
+    "removedFromLearning": "Сөз оқу тізімінен алынды",
+    "addToLearningError": "Сөзді оқу тізіміне қосу сәтсіз аяқталды",
+    "removeFromLearningError": "Сөзді оқу тізімінен алу сәтсіз аяқталды",
+    "progressUpdated": "Прогресс сәтті жаңартылды",
+    "progressUpdateError": "Прогрессті жаңарту сәтсіз аяқталды",
+    "audioError": "Аудионы ойнату сәтсіз аяқталды",
+    "audioNotAvailable": "Бұл сөз үшін аудио қолжетімсіз",
+    "linkCopied": "Сілтеме буферге көшірілді"
+  },
+  "share": {
+    "title": "Қазақ тілін үйрену: {{word}}",
+    "text": "{{word}} қазақ тілінде {{translation}} дегенді білдіреді"
+  },
+  "word": {
+    "level": "{{level}} деңгей",
+    "also": "Сондай-ақ"
+  },
+  "status": {
+    "wantToLearn": "Үйренгім келеді",
+    "learning": "Үйренуде",
+    "learned": "Үйренілді",
+    "mastered": "Меңгерілді",
+    "review": "Қайталау"
+  },
+  "difficulty": {
+    "veryEasy": "Өте оңай",
+    "easy": "Оңай",
+    "medium": "Орташа",
+    "hard": "Қиын",
+    "veryHard": "Өте қиын"
+  },
+  "tabs": {
+    "overview": "Шолу",
+    "examples": "Мысалдар",
+    "myProgress": "Менің прогрессім"
+  },
+  "overview": {
+    "wordDetails": "Сөз мәліметтері",
+    "category": "Санат",
+    "wordType": "Сөз түрі",
+    "difficultyLevel": "Қиындық деңгейі",
+    "levelInfo": "{{level}} деңгей - {{name}}",
+    "images": "Суреттер",
+    "allTranslations": "Барлық аудармалар",
+    "pronunciations": "Айтылымдар"
+  },
+  "examples": {
+    "title": "Мысал сөйлемдер",
+    "count": "{{count}} мысал",
+    "context": "Контекст",
+    "otherTranslations": "Басқа аудармалар",
+    "noExamples": "Бұл сөз үшін мысал сөйлемдер қолжетімсіз."
+  },
+  "progress": {
+    "timesSeen": "Көрілген рет",
+    "correctAnswers": "Дұрыс жауаптар",
+    "accuracyRate": "Дәлдік деңгейі",
+    "learningStatus": "Оқу күйі",
+    "currentStatus": "Ағымдағы күй",
+    "added": "Қосылды",
+    "firstLearned": "Алғаш үйренілді",
+    "lastPracticed": "Соңғы жаттығу",
+    "nextReview": "Келесі қайталау",
+    "spacedRepetition": "Аралық қайталау",
+    "interval": "Аралық",
+    "days": "{{count}} күн",
+    "easeFactor": "Жеңілдік коэффициенті",
+    "yourDifficultyRating": "Сіздің қиындық бағаңыз",
+    "rateDifficulty": "Қиындықты бағалау",
+    "difficultyDescription": "Бұл сөз сіз үшін қаншалықты қиын?",
+    "personalNotes": "Жеке жазбалар",
+    "notesPlaceholder": "Бұл сөз туралы жеке жазбаларыңызды қосыңыз...",
+    "addToTrackDescription": "Прогрессті бақылау үшін бұл сөзді оқу тізіміңізге қосыңыз."
+  },
+  "relatedWords": {
+    "title": "Байланысты сөздер",
+    "comingSoon": "Байланысты сөздер мүмкіндігі жақында!"
+  }
+}

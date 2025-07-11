@@ -1,0 +1,81 @@
+{
+    "loading": {
+      "dashboard": "Loading your learning dashboard..."
+    },
+    "header": {
+      "title": "Ready to Learn, {{name}}?",
+      "subtitle": "Choose how you'd like to improve your Kazakh today"
+    },
+    "stats": {
+      "currentStreak": "Current Streak",
+      "wordsLearning": "Words Learning",
+      "accuracyRate": "Accuracy Rate",
+      "thisWeek": "This Week",
+      "day": "day",
+      "days": "days",
+      "sessions": "sessions"
+    },
+    "options": {
+      "newWords": {
+        "title": "Learn New Words",
+        "description": "Discover and add new Kazakh words to your vocabulary",
+        "action": "Browse Words",
+        "info": "Expand your vocabulary"
+      },
+      "practice": {
+        "title": "Practice Session",
+        "description": "Review words you're currently learning",
+        "action": "Start Practice",
+        "info": "Continue your learning progress"
+      },
+      "review": {
+        "title": "Review Due Words",
+        "description": "Practice words that need review based on spaced repetition",
+        "action": "Review Now",
+        "wordsNeedReview": "{{count}} words need review"
+      },
+      "quiz": {
+        "title": "Take a Quiz",
+        "description": "Test your knowledge with interactive quizzes",
+        "action": "Start Quiz",
+        "info": "Test your knowledge"
+      }
+    },
+    "recommendations": {
+      "title": "Today's Learning Plan",
+      "learn": {
+        "title": "Learn",
+        "description": "Add 5-10 new words to your learning list",
+        "action": "Browse words"
+      },
+      "practice": {
+        "title": "Practice",
+        "description": "Review words you're currently learning",
+        "action": "Start practice"
+      },
+      "test": {
+        "title": "Test",
+        "description": "Take a quiz to reinforce your knowledge",
+        "action": "Take quiz"
+      }
+    },
+    "statusBreakdown": {
+      "title": "Learning Status",
+      "noData": "No learning data yet",
+      "startLearning": "Start learning your first words"
+    },
+    "status": {
+      "wantToLearn": "Want to Learn",
+      "learning": "Learning",
+      "learned": "Learned",
+      "mastered": "Mastered",
+      "review": "Review"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "browseCategories": "Browse Categories",
+      "viewProgress": "View Progress",
+      "randomPractice": "Random Practice",
+      "learningSettings": "Learning Settings"
+    }
+  }

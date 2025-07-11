@@ -1,0 +1,61 @@
+{
+    "loading": {
+      "startingSession": "Starting your practice session..."
+    },
+    "errors": {
+      "unableToStart": "Unable to start practice session",
+      "tryAgain": "Please try again or check your learning list.",
+      "noReviewWords": "No words available for review",
+      "tryLearningFirst": "Try learning some words first, then come back to practice!"
+    },
+    "session": {
+      "title": "session",
+      "types": {
+        "practice": "Practice",
+        "review": "Review",
+        "random": "Random",
+        "category": "Category",
+        "mixed": "Mixed",
+        "learning": "Learning"
+      },
+      "questionProgress": "Question {{current}} of {{total}}",
+      "correct": "Correct: {{correct}} / {{total}}",
+      "pause": "Pause session",
+      "resume": "Resume session"
+    },
+    "word": {
+      "level": "Level {{level}}"
+    },
+    "question": {
+      "prompt": "What does this word mean in English?",
+      "placeholder": "Type your answer..."
+    },
+    "actions": {
+      "backToLearning": "Back to Learning",
+      "playAudio": "Play audio",
+      "skip": "Skip",
+      "submitAnswer": "Submit Answer",
+      "nextWord": "Next Word",
+      "finishSession": "Finish Session"
+    },
+    "result": {
+      "correct": "Correct!",
+      "incorrect": "Not quite right",
+      "means": "means",
+      "yourAnswer": "Your answer",
+      "correctAnswer": "Correct answer"
+    },
+    "stats": {
+      "title": "Session Progress",
+      "current": "Current",
+      "correct": "Correct",
+      "incorrect": "Incorrect"
+    },
+    "messages": {
+      "sessionStarted": "Practice session started!",
+      "sessionStartError": "Failed to start practice session",
+      "submitAnswerError": "Failed to submit answer",
+      "audioComingSoon": "Audio feature coming soon!"
+    }
+  }
+  

@@ -1,0 +1,47 @@
+{
+    "greetings": {
+      "morning": "Доброе утро",
+      "afternoon": "Добрый день",
+      "evening": "Добрый вечер"
+    },
+    "welcome": {
+      "subtitle": "Готовы продолжить свое путешествие по изучению казахского языка?",
+      "learningInterface": "Интерфейс обучения: {{language}}",
+      "dayStreak": "дней подряд"
+    },
+    "stats": {
+      "totalWords": "Всего слов",
+      "wordsDueReview": "Слова для повторения",
+      "accuracyRate": "Точность",
+      "sessionsThisWeek": "Сессий на этой неделе"
+    },
+    "quickActions": {
+      "title": "Быстрые действия",
+      "startLearning": {
+        "name": "Начать обучение",
+        "description": "Практиковать новые слова"
+      },
+      "takeQuiz": {
+        "name": "Пройти тест",
+        "description": "Проверить знания"
+      },
+      "reviewWords": {
+        "name": "Повторить слова",
+        "description": "Практиковать сохраненные слова"
+      },
+      "browseWords": {
+        "name": "Просмотреть слова",
+        "description": "Изучить словарь"
+      }
+    },
+    "learningProgress": {
+      "title": "Прогресс обучения",
+      "statuses": {
+        "new": "Новые",
+        "learning": "Изучаются",
+        "review": "Повторение",
+        "learned": "Изучены",
+        "mastered": "Освоены"
+      }
+    }
+  }

@@ -1,0 +1,33 @@
+{
+    "loading": {
+      "progress": "Сіздің прогресіңіз жүктелуде..."
+    },
+    "page": {
+      "title": "Сіздің үйрену прогресіңіз"
+    },
+    "sessionComplete": {
+      "title": "Сессия аяқталды!",
+      "correct": "Дұрыс",
+      "incorrect": "Дұрыс емес",
+      "accuracy": "Дәлдік",
+      "duration": "Ұзақтығы",
+      "minutesSuffix": "м"
+    },
+    "stats": {
+      "totalWords": "Барлық сөздер",
+      "currentStreak": "Қазіргі серия",
+      "accuracyRate": "Дәлдік деңгейі",
+      "wordsDueReview": "Қайталауға тиісті сөздер"
+    },
+    "breakdown": {
+      "title": "Үйрену статусы бойынша бөлу",
+      "noData": "Прогресс деректері әлі қолжетімді емес."
+    },
+    "status": {
+      "wantToLearn": "Үйренгім келеді",
+      "learning": "Үйренуде",
+      "learned": "Үйренген",
+      "mastered": "Меңгерген",
+      "review": "Қайталау"
+    }
+  }

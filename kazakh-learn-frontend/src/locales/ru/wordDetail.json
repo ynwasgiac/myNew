@@ -1,0 +1,117 @@
+{
+    "loading": {
+      "wordDetails": "Загрузка деталей слова..."
+    },
+    "errors": {
+      "wordNotFound": "Слово не найдено",
+      "wordNotFoundDescription": "Слово, которое вы ищете, не существует или было удалено."
+    },
+    "navigation": {
+      "backToWords": "Назад к словам",
+      "previous": "Предыдущее",
+      "next": "Слудеющее",
+      "previousWord": "Предыдущее: {{word}}",
+      "nextWord": "Слудеющее: {{word}}",
+      "noPrevious": "Предыдущего нет",
+      "noNext": "Слудеющего нет",
+      "keyboardHint": "Для навигации используйте клавиши со стрелками ← →",
+      "context": {
+        "browse": "Посмотреть все слова",
+        "search": "\"{{searchTerm}}\" результаты поиска",
+        "category": "Слова категории",
+        "learning": "Чтение слов"
+      }
+    },
+    "actions": {
+      "shareWord": "Поделиться словом",
+      "listen": "Слушать",
+      "addToLearning": "Добавить в изучение",
+      "removeFromLearning": "Удалить из изучения",
+      "markAsLearned": "Отметить как изученное",
+      "practiceThisWord": "Практиковать это слово",
+      "browseWords": "Просмотр слов",
+      "saveNotes": "Сохранить заметки",
+      "addToLearningList": "Добавить в список изучения"
+    },
+    "word": {
+      "also": "Также",
+      "level": "Уровень {{level}}"
+    },
+    "status": {
+      "wantToLearn": "Хочу изучить",
+      "learning": "Изучаю",
+      "learned": "Изучено",
+      "mastered": "Освоено",
+      "review": "Повторение"
+    },
+    "difficulty": {
+      "veryEasy": "Очень легко",
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно",
+      "veryHard": "Очень сложно"
+    },
+    "tabs": {
+      "overview": "Обзор",
+      "examples": "Примеры",
+      "myProgress": "Мой прогресс"
+    },
+    "overview": {
+      "wordDetails": "Детали слова",
+      "category": "Категория",
+      "wordType": "Тип слова",
+      "difficultyLevel": "Уровень сложности",
+      "levelInfo": "Уровень {{level}} - {{name}}",
+      "images": "Изображения",
+      "allTranslations": "Все переводы",
+      "pronunciations": "Произношения"
+    },
+    "examples": {
+      "title": "Примеры предложений",
+      "count": "{{count}} примеров",
+      "context": "Контекст",
+      "otherTranslations": "Другие переводы",
+      "noExamples": "Примеры предложений для этого слова пока недоступны."
+    },
+    "progress": {
+      "timesSeen": "Раз видели",
+      "correctAnswers": "Правильных ответов",
+      "accuracyRate": "Процент точности",
+      "learningStatus": "Статус изучения",
+      "currentStatus": "Текущий статус",
+      "added": "Добавлено",
+      "firstLearned": "Впервые изучено",
+      "lastPracticed": "Последняя практика",
+      "nextReview": "Следующий обзор",
+      "spacedRepetition": "Интервальное повторение",
+      "interval": "Интервал",
+      "days": "{{count}} день",
+      "days_other": "{{count}} дней",
+      "easeFactor": "Коэффициент легкости",
+      "yourDifficultyRating": "Ваша оценка сложности",
+      "rateDifficulty": "Оценить сложность",
+      "difficultyDescription": "Насколько сложно вам запомнить это слово?",
+      "personalNotes": "Личные заметки",
+      "notesPlaceholder": "Добавьте свои личные заметки об этом слове...",
+      "addToTrackDescription": "Добавьте это слово в список изучения, чтобы отслеживать свой прогресс."
+    },
+    "messages": {
+      "addedToLearning": "Слово добавлено в список изучения!",
+      "addToLearningError": "Не удалось добавить слово в список изучения",
+      "removedFromLearning": "Слово удалено из списка изучения!",
+      "removeFromLearningError": "Не удалось удалить слово из списка изучения",
+      "progressUpdated": "Прогресс обновлен!",
+      "progressUpdateError": "Не удалось обновить прогресс",
+      "audioError": "Не удалось воспроизвести аудио",
+      "audioNotAvailable": "Аудио недоступно для этого слова",
+      "linkCopied": "Ссылка скопирована в буфер обмена!"
+    },
+    "share": {
+      "title": "Изучение казахского: {{word}}",
+      "text": "{{word}} означает \"{{translation}}\" на казахском языке"
+    },
+    "relatedWords": {
+      "title": "Похожие слова",
+      "comingSoon": "Функция похожих слов скоро появится!"
+    }
+  }

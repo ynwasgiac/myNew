@@ -1,5 +1,7 @@
 # Environment variables
 alembic
+node_modules
+connection.py
 __pycache__
 .idea
 .venv

@@ -1,0 +1,92 @@
+{
+  "page": {
+    "title": "Просмотр слов",
+    "subtitle": "{{count}} слов доступно",
+    "loading": "Загрузка слов..."
+  },
+  "loading": {
+    "words": "Загрузка слов...",
+    "updating": "Обновление...",
+    "searching": "Поиск..."
+  },
+  "errors": {
+    "loadingError": "Ошибка загрузки слов. Попробуйте снова."
+  },
+  "search": {
+    "placeholder": "Поиск слов..."
+  },
+  "view": {
+    "grid": "Сетка",
+    "list": "Список"
+  },
+  "filters": {
+    "title": "Фильтры",
+    "clear": "Очистить фильтры",
+    "category": {
+      "label": "Категория",
+      "all": "Все категории"
+    },
+    "wordType": {
+      "label": "Тип слова",
+      "all": "Все типы"
+    },
+    "difficulty": {
+      "label": "Сложность",
+      "all": "Все уровни",
+      "level": "Уровень {{level}} - {{name}}"
+    },
+    "translation": {
+      "show": "Показать переводы",
+      "hide": "Скрыть переводы"
+    }
+  },
+  "selection": {
+    "selectedCount": "{{count}} выбрано"
+  },
+  "actions": {
+    "retry": "Повторить",
+    "refresh": "Обновить"
+  },
+  "messages": {
+    "addedToLearning": "Слова добавлены в список изучения!",
+    "addToLearningError": "Не удалось добавить слова в список изучения",
+    "removedFromLearning": "Слова удалены из списка изучения!",
+    "removeFromLearningError": "Не удалось удалить слова из списка изучения"
+  },
+  "results": {
+    "showing": "Показано {{start}}-{{end}} из {{total}} слов",
+    "searchResults": "Найдено {{count}} результатов для \"{{searchTerm}}\"",
+    "noResults": "Слова не найдены",
+    "totalWords": "{{count}} слов всего"
+  },
+  "pagination": {
+    "previous": "Назад",
+    "next": "Далее",
+    "first": "Первая",
+    "last": "Последняя",
+    "page": "Страница",
+    "of": "из",
+    "items": "элементов",
+    "itemsPerPage": "Элементов на странице",
+    "pageInfo": "Страница {{current}} из {{total}}",
+    "showing": "Показано {{start}}-{{end}} из {{total}} слов",
+    "goToPage": "Перейти на страницу",
+    "entriesPerPage": "Записей на странице"
+  },
+  "table": {
+    "headers": {
+      "word": "Слово",
+      "translation": "Перевод",
+      "category": "Категория",
+      "type": "Тип",
+      "level": "Уровень",
+      "actions": "Действия"
+    }
+  },
+  "emptyState": {
+    "searchTitle": "Слова не найдены",
+    "noWordsTitle": "Слова отсутствуют",
+    "searchMessage": "Нет слов, соответствующих вашему запросу \"{{searchTerm}}\". Попробуйте другие ключевые слова.",
+    "noWordsMessage": "Нет слов для отображения с текущими фильтрами."
+  }
+}

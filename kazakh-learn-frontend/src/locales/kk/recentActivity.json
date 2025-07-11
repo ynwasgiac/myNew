@@ -1,0 +1,48 @@
+{
+    "title": "Соңғы белсенділік",
+    "sessionTypes": {
+      "practice": "Жаттығу",
+      "quiz": "Викторина",
+      "review": "Қайталау",
+      "session": "Сессия"
+    },
+    "sessionInfo": {
+      "words": "{{count}} сөз",
+      "words_one": "{{count}} сөз",
+      "words_other": "{{count}} сөз",
+      "accuracy": "{{rate}}% дәлдік",
+      "duration": {
+        "unknown": "Белгісіз",
+        "minutesSeconds": "{{minutes}}м {{seconds}}с",
+        "seconds": "{{seconds}}с"
+      }
+    },
+    "timeAgo": {
+      "justNow": "Дәл қазір",
+      "minutesAgo": "{{minutes}}м бұрын",
+      "minutesAgo_one": "{{minutes}}м бұрын",
+      "minutesAgo_other": "{{minutes}}м бұрын",
+      "hoursAgo": "{{hours}}с бұрын",
+      "hoursAgo_one": "{{hours}}с бұрын",
+      "hoursAgo_other": "{{hours}}с бұрын",
+      "daysAgo": "{{days}}к бұрын",
+      "daysAgo_one": "{{days}}к бұрын",
+      "daysAgo_other": "{{days}}к бұрын"
+    },
+    "sessionStatus": {
+      "completed": "Сессия аяқталды"
+    },
+    "actions": {
+      "viewAll": "Барлық белсенділікті көру",
+      "startLearning": "Үйренуді бастау"
+    },
+    "noActivity": {
+      "title": "Соңғы белсенділік жоқ",
+      "description": "Белсенділігіңізді көру үшін үйренуді бастаңыз!"
+    },
+    "summary": {
+      "wordsStudied": "Үйренілген сөздер",
+      "correct": "Дұрыс",
+      "sessions": "Сессиялар"
+    }
+  }

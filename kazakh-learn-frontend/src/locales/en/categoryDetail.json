@@ -1,0 +1,64 @@
+{
+    "loading": {
+      "category": "Loading category...",
+      "words": "Loading words..."
+    },
+    "errors": {
+      "categoryNotFound": "Category not found",
+      "categoryNotFoundDescription": "The category you're looking for doesn't exist or has been removed."
+    },
+    "navigation": {
+      "backToCategories": "Back to Categories"
+    },
+    "actions": {
+      "browseCategories": "Browse Categories",
+      "addToLearning": "Add to Learning",
+      "practiceCategory": "Practice This Category",
+      "takeQuiz": "Take Quiz",
+      "clearSearch": "Clear Search"
+    },
+    "selection": {
+      "selectedCount": "{{count}} selected"
+    },
+    "stats": {
+      "wordsCount": "{{count}} words",
+      "inLearningList": "{{count}} in learning list",
+      "categoryId": "Category ID: {{id}}"
+    },
+    "search": {
+      "placeholder": "Search words in this category..."
+    },
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "filters": {
+      "title": "Filters",
+      "difficultyLevel": "Difficulty Level",
+      "allLevels": "All Levels",
+      "levels": {
+        "beginner": "Level 1 - Beginner",
+        "elementary": "Level 2 - Elementary",
+        "intermediate": "Level 3 - Intermediate",
+        "advanced": "Level 4 - Advanced",
+        "expert": "Level 5 - Expert"
+      },
+      "clear": "Clear Filters"
+    },
+    "results": {
+      "searchResults": "Found {{count}} results",
+      "showing": "Showing {{count}} words"
+    },
+    "emptyState": {
+      "noWordsFound": "No words found",
+      "noWordsInCategory": "No words in this category",
+      "searchMessage": "No words match your search \"{{searchTerm}}\" in this category.",
+      "categoryMessage": "This category doesn't have any words yet."
+    },
+    "messages": {
+      "addedToLearning": "Words added to learning list!",
+      "addToLearningError": "Failed to add words to learning list",
+      "removedFromLearning": "Words removed from learning list!",
+      "removeFromLearningError": "Failed to remove words from learning list"
+    }
+  }

@@ -1,0 +1,33 @@
+{
+    "loading": {
+      "progress": "Загрузка вашего прогресса..."
+    },
+    "page": {
+      "title": "Ваш прогресс в обучении"
+    },
+    "sessionComplete": {
+      "title": "Сессия завершена!",
+      "correct": "Правильно",
+      "incorrect": "Неправильно",
+      "accuracy": "Точность",
+      "duration": "Продолжительность",
+      "minutesSuffix": "м"
+    },
+    "stats": {
+      "totalWords": "Всего слов",
+      "currentStreak": "Текущая серия",
+      "accuracyRate": "Процент точности",
+      "wordsDueReview": "Слов к повторению"
+    },
+    "breakdown": {
+      "title": "Разбивка по статусу изучения",
+      "noData": "Данные о прогрессе пока недоступны."
+    },
+    "status": {
+      "wantToLearn": "Хочу изучить",
+      "learning": "Изучаю",
+      "learned": "Изучено",
+      "mastered": "Освоено",
+      "review": "Повторение"
+    }
+  }

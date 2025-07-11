@@ -1,0 +1,38 @@
+{
+  "header": {
+    "openSidebar": "Open sidebar",
+    "searchWords": "Search words...",
+    "viewNotifications": "View notifications",
+    "openUserMenu": "Open user menu",
+    "learningIn": "Learning in {{language}}"
+  },
+  "sidebar": {
+    "closeSidebar": "Close sidebar",
+    "appName": "Kazakh Learn",
+    "learningIn": "Learning in {{language}}",
+    "motivation": {
+      "title": "Keep Learning! 🚀",
+      "description": "Practice daily to improve your Kazakh"
+    }
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "words": "Words", 
+    "categories": "Categories",
+    "learn": "Learn",
+    "practice": "Practice",
+    "quiz": "Quiz",
+    "progress": "Progress",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "userMenu": {
+    "yourProfile": "Your Profile",
+    "settings": "Settings", 
+    "signOut": "Sign out"
+  },
+  "search": {
+    "placeholder": "Search words...",
+    "shortcut": "⌘K"
+  }
+}

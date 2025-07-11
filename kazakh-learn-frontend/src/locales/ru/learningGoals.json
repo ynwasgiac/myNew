@@ -1,0 +1,56 @@
+{
+    "title": "Цели обучения",
+    "addNewGoal": "Добавить новую цель",
+    "goalTypes": {
+      "daily_words": "Ежедневные слова",
+      "weekly_practice": "Еженедельная практика",
+      "category_mastery": "Освоение категории",
+      "monthly_streak": "Месячная серия"
+    },
+    "goalUnits": {
+      "words": "слов",
+      "sessions": "сессий"
+    },
+    "progress": {
+      "title": "Прогресс",
+      "completed": "✓ Завершено",
+      "created": "Создано {{date}}",
+      "due": "Срок {{date}}"
+    },
+    "noGoals": {
+      "title": "Цели не установлены",
+      "description": "Установите цели обучения, чтобы отслеживать свой прогресс и поддерживать мотивацию!",
+      "createFirst": "Создать первую цель"
+    },
+    "createGoal": {
+      "title": "Создать новую цель",
+      "goalType": "Тип цели",
+      "targetValue": "Целевое значение",
+      "targetDate": "Целевая дата (Необязательно)",
+      "targetPlaceholder": "Введите целевое число",
+      "creating": "Создание...",
+      "create": "Создать цель",
+      "cancel": "Отмена"
+    },
+    "goalTypeOptions": {
+      "daily_words": "Ежедневные слова",
+      "weekly_practice": "Еженедельные сессии практики",
+      "category_mastery": "Освоение категории",
+      "monthly_streak": "Месячная серия"
+    },
+    "quickGoals": {
+      "title": "Быстрые цели",
+      "beginnerPace": {
+        "title": "5 слов/день",
+        "description": "Темп для начинающих"
+      },
+      "dailyPractice": {
+        "title": "Ежедневная практика",
+        "description": "7 сессий/неделю"
+      }
+    },
+    "messages": {
+      "goalCreated": "Цель успешно создана!",
+      "goalCreateFailed": "Не удалось создать цель"
+    }
+  }
