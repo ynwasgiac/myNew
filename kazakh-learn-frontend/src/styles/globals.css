@@ -660,3 +660,8 @@
 .word-card-audio-overlay {
   @apply absolute top-3 right-3 z-10;
 }
+
+.w-47 {
+  width: 12em;
+  height: 12em;
+}

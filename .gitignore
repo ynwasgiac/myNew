@@ -1,6 +1,7 @@
 # Environment variables
 alembic
 node_modules
+images
 connection.py
 __pycache__
 .idea
