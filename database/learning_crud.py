@@ -1,6 +1,6 @@
 # database/learning_crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete, and_, or_, func, desc
+from sqlalchemy import select, update, delete, and_, or_, func, desc, case
 from sqlalchemy.orm import selectinload, joinedload
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime, timedelta
@@ -615,7 +615,7 @@ class UserLearningStatsCRUD:
                 Category.category_name,
                 func.count(UserWordProgress.id).label('words_learning'),
                 func.sum(
-                    func.case(
+                    case(
                         (UserWordProgress.status == LearningStatus.LEARNED, 1),
                         (UserWordProgress.status == LearningStatus.MASTERED, 1),
                         else_=0

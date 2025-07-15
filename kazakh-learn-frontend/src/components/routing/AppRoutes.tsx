@@ -1,63 +1,61 @@
-// src/components/routing/AppRoutes.tsx - Обновленные маршруты
+// src/components/routing/AppRoutes.tsx - Updated to work properly with React Router nested routes
 
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
-// Lazy loading для оптимизации
+// Your existing pages - using exact imports from your project
 const DashboardPage = React.lazy(() => import('../../pages/DashboardPage'));
 const LearningPage = React.lazy(() => import('../../pages/learning/LearningPage'));
-const GuidedLearningPage = React.lazy(() => import('../../pages/learning/GuidedLearningPage')); // НОВАЯ
-const LearnedWordsPage = React.lazy(() => import('../../pages/learning/LearnedWordsPage')); // НОВАЯ
+const GuidedLearningPage = React.lazy(() => import('../../pages/learning/GuidedLearningPage'));
+const LearnedWordsPage = React.lazy(() => import('../../pages/learning/LearnedWordsPage'));
 const PracticePage = React.lazy(() => import('../../pages/learning/PracticePage'));
 const ProgressPage = React.lazy(() => import('../../pages/learning/ProgressPage'));
 const QuizPage = React.lazy(() => import('../../pages/learning/QuizPage'));
+
+// Words and Categories (your existing)
+const WordsPage = React.lazy(() => import('../../pages/words/WordsPage'));
 const WordDetailPage = React.lazy(() => import('../../pages/words/WordDetailPage'));
 const CategoriesPage = React.lazy(() => import('../../pages/categories/CategoriesPage'));
 const CategoryDetailPage = React.lazy(() => import('../../pages/categories/CategoryDetailPage'));
+
+// Profile and Settings (your existing)
 const ProfilePage = React.lazy(() => import('../../pages/profile/ProfilePage'));
 const SettingsPage = React.lazy(() => import('../../pages/profile/SettingsPage'));
-
-// Админские страницы
-const AdminWordsPage = React.lazy(() => import('../../pages/admin/AdminWordsPage'));
-const AdminCategoriesPage = React.lazy(() => import('../../pages/admin/AdminCategoriesPage'));
 
 const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <Routes>
-        {/* Главная страница - редирект на дашборд */}
-        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+        {/* Root redirect to dashboard */}
+        <Route index element={<Navigate to="dashboard" replace />} />
         
-        {/* Основные страницы */}
-        <Route path="/app" element={<Navigate to="/app/dashboard" replace />} />
-        <Route path="/app/dashboard" element={<DashboardPage />} />
+        {/* Main Dashboard */}
+        <Route path="dashboard" element={<DashboardPage />} />
         
-        {/* Изучение слов */}
-        <Route path="/app/learning" element={<LearningPage />} />
-        <Route path="/app/guides" element={<GuidedLearningPage />} /> {/* НОВАЯ */}
-        <Route path="/app/learned" element={<LearnedWordsPage />} /> {/* НОВАЯ */}
+        {/* Learning Routes - now properly integrated! */}
+        <Route path="learning" element={<LearningPage />} />
+        <Route path="learn" element={<Navigate to="../learning" replace />} /> {/* Redirect old route */}
+        <Route path="guides" element={<GuidedLearningPage />} />
+        <Route path="learned" element={<LearnedWordsPage />} />
         
-        {/* Практика и тестирование */}
-        <Route path="/app/practice" element={<PracticePage />} />
-        <Route path="/app/quiz" element={<QuizPage />} />
-        <Route path="/app/progress" element={<ProgressPage />} />
+        {/* Practice and Testing */}
+        <Route path="practice" element={<PracticePage />} />
+        <Route path="quiz" element={<QuizPage />} />
+        <Route path="progress" element={<ProgressPage />} />
         
-        {/* Слова и категории */}
-        <Route path="/app/words/:id" element={<WordDetailPage />} />
-        <Route path="/app/categories" element={<CategoriesPage />} />
-        <Route path="/app/categories/:id" element={<CategoryDetailPage />} />
+        {/* Words and Categories - your existing system */}
+        <Route path="words" element={<WordsPage />} />
+        <Route path="words/:id" element={<WordDetailPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="categories/:id" element={<CategoryDetailPage />} />
         
-        {/* Профиль и настройки */}
-        <Route path="/app/profile" element={<ProfilePage />} />
-        <Route path="/app/settings" element={<SettingsPage />} />
+        {/* Profile and Settings */}
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="settings" element={<SettingsPage />} />
         
-        {/* Админские страницы */}
-        <Route path="/app/admin/words" element={<AdminWordsPage />} />
-        <Route path="/app/admin/categories" element={<AdminCategoriesPage />} />
-        
-        {/* 404 - несуществующие страницы */}
-        <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+        {/* Catch all - redirect to dashboard */}
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
     </Suspense>
   );

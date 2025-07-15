@@ -1,39 +1,27 @@
-// src/App.tsx
+// src/App.tsx - Fixed to use your existing components and AppRoutes
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider, RequireAuth } from './contexts/AuthContext';
 import { useAuth } from './contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
 
-// Layout Components
+// Layout Components (your existing ones)
 import Layout from './components/layout/Layout';
-import PublicLayout from './components/layout/PublicLayout';
 
-// Public Pages
-import HomePage from './pages/HomePage';
+// Use your existing AppRoutes
+import AppRoutes from './components/routing/AppRoutes';
+
+// Auth Pages (your existing ones)
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-// Protected Pages
-import DashboardPage from './pages/DashboardPage';
-import WordsPage from './pages/words/WordsPage';
-import WordDetailPage from './pages/words/WordDetailPage';
-import CategoriesPage from './pages/categories/CategoriesPage';
-import CategoryDetailPage from './pages/categories/CategoryDetailPage';
-import LearningPage from './pages/learning/LearningPage';
-import PracticePage from './pages/learning/PracticePage';
-import QuizPage from './pages/learning/QuizPage';
-import ProgressPage from './pages/learning/ProgressPage';
-import ProfilePage from './pages/profile/ProfilePage';
-import SettingsPage from './pages/profile/SettingsPage';
-
-// Admin Pages
+// Admin Pages (your existing ones) 
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
 import AdminWordsPage from './pages/admin/AdminWordsPage';
 
-// Error Pages
+// Error Pages (your existing ones)
 import NotFoundPage from './pages/error/NotFoundPage';
 
 import './styles/globals.css';
@@ -49,7 +37,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Admin Route Protection Component
+// Admin Route Protection Component (using your existing useAuth)
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   
@@ -75,15 +63,15 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-// Temporary Setup Checker Component (until you create the full one)
-const TempSetupChecker: React.FC = () => {
+// Simple Setup Checker Component (since TempSetupChecker doesn't exist)
+const SetupChecker: React.FC = () => {
   const { user } = useAuth();
   
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Admin Setup Checker
+          Admin Setup Status
         </h2>
         
         <div className="space-y-4">
@@ -94,7 +82,7 @@ const TempSetupChecker: React.FC = () => {
             <div>
               <h3 className="font-medium text-green-900">Admin Access Verified</h3>
               <p className="text-sm text-green-700">
-                Logged in as: {user?.username} (Role: {user?.role})
+                User: {user?.username} | Role: {user?.role}
               </p>
             </div>
           </div>
@@ -104,44 +92,12 @@ const TempSetupChecker: React.FC = () => {
               <span className="text-white text-xs">i</span>
             </div>
             <div>
-              <h3 className="font-medium text-blue-900">Admin Panel Ready</h3>
+              <h3 className="font-medium text-blue-900">System Ready</h3>
               <p className="text-sm text-blue-700">
-                Admin functionality is working. Navigate to Category or Words Management to start.
+                Frontend and routing configured successfully.
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="h-5 w-5 bg-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">!</span>
-            </div>
-            <div>
-              <h3 className="font-medium text-yellow-900">Backend Setup Needed</h3>
-              <p className="text-sm text-yellow-700">
-                To unlock full admin features, implement the backend endpoints from the setup guide.
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-2">Available Admin Pages:</h4>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>• <a href="/admin/categories" className="text-blue-600 hover:underline">Categories Management</a> - Manage word categories</li>
-            <li>• <a href="/admin/words" className="text-blue-600 hover:underline">Words Management</a> - Manage Kazakh words and translations</li>
-            <li>• Setup guide documentation for backend implementation</li>
-          </ul>
-        </div>
-        
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">Words Management Features:</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Create and edit Kazakh words with multiple translations</li>
-            <li>• Add pronunciations, images, and example sentences</li>
-            <li>• Bulk operations for efficient management</li>
-            <li>• Advanced filtering and search capabilities</li>
-            <li>• Progress tracking and completion statistics</li>
-          </ul>
         </div>
       </div>
     </div>
@@ -155,14 +111,11 @@ function App() {
         <Router>
           <div className="App">
             <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
-              </Route>
+              {/* Public Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected Routes */}
+              {/* Protected App Routes - Now using your AppRoutes component! */}
               <Route
                 path="/app"
                 element={
@@ -171,29 +124,11 @@ function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                
-                {/* Words Routes */}
-                <Route path="words" element={<WordsPage />} />
-                <Route path="words/:id" element={<WordDetailPage />} />
-                
-                {/* Categories Routes */}
-                <Route path="categories" element={<CategoriesPage />} />
-                <Route path="categories/:id" element={<CategoryDetailPage />} />
-                
-                {/* Learning Routes */}
-                <Route path="learn" element={<LearningPage />} />
-                <Route path="practice" element={<PracticePage />} />
-                <Route path="quiz" element={<QuizPage />} />
-                <Route path="progress" element={<ProgressPage />} />
-                
-                {/* Profile Routes */}
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
+                {/* Nested routes inside Layout using Outlet */}
+                <Route path="*" element={<AppRoutes />} />
               </Route>
 
-              {/* Admin Routes - Separate section within the protected app */}
+              {/* Admin Routes */}
               <Route
                 path="/admin"
                 element={
@@ -204,7 +139,6 @@ function App() {
               >
                 <Route index element={<Navigate to="/admin/categories" replace />} />
                 
-                {/* Admin Categories Management */}
                 <Route 
                   path="categories" 
                   element={
@@ -214,37 +148,27 @@ function App() {
                   } 
                 />
 
-                <Route path="/admin/words" element={<AdminWordsPage />} />
+                <Route 
+                  path="words" 
+                  element={
+                    <AdminRoute>
+                      <AdminWordsPage />
+                    </AdminRoute>
+                  } 
+                />
                 
-                {/* Temporary Setup Checker */}
                 <Route 
                   path="setup-check" 
                   element={
                     <AdminRoute>
-                      <TempSetupChecker />
+                      <SetupChecker />
                     </AdminRoute>
                   } 
                 />
-                
-                {/* Future admin routes can be added here:
-                <Route 
-                  path="users" 
-                  element={
-                    <AdminRoute>
-                      <AdminUsersPage />
-                    </AdminRoute>
-                  } 
-                />
-                <Route 
-                  path="analytics" 
-                  element={
-                    <AdminRoute>
-                      <AdminAnalyticsPage />
-                    </AdminRoute>
-                  } 
-                />
-                */}
               </Route>
+
+              {/* Root redirect */}
+              <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
 
               {/* 404 Route */}
               <Route path="*" element={<NotFoundPage />} />

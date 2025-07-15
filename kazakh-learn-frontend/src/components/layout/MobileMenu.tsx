@@ -1,7 +1,7 @@
-// src/components/layout/MobileMenu.tsx
+// src/components/layout/MobileMenu.tsx - Create this missing component
+
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { useTranslation } from 'react-i18next';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Sidebar from './Sidebar';
 
@@ -11,8 +11,6 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
-  const { t } = useTranslation('navigation');
-
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50 lg:hidden" onClose={onClose}>
@@ -54,7 +52,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                     className="-m-2.5 p-2.5"
                     onClick={onClose}
                   >
-                    <span className="sr-only">{t('sidebar.closeSidebar')}</span>
+                    <span className="sr-only">Close sidebar</span>
                     <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
                   </button>
                 </div>
