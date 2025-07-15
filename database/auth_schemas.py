@@ -108,7 +108,7 @@ class UserResponse(UserBase):
     id: int
     role: UserRoleEnum
     is_active: bool
-    is_superuser: bool
+    #is_superuser: bool
     created_at: datetime
     main_language: Optional[UserMainLanguageResponse] = None
 

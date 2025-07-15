@@ -119,6 +119,13 @@ class UserLearningSession(Base):
     user = relationship("User", back_populates="learning_sessions")
     session_details = relationship("UserSessionDetail", back_populates="session", cascade="all, delete-orphan")
 
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
+
+    # Add these relationships
+    category = relationship("Category", foreign_keys=[category_id])
+    difficulty_level = relationship("DifficultyLevel", foreign_keys=[difficulty_level_id])
+                                    
     __table_args__ = (
         Index('idx_learning_sessions_user', 'user_id'),
         Index('idx_learning_sessions_started', 'started_at'),

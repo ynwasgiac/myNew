@@ -36,6 +36,8 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
 
+    is_superuser = Column(Boolean, default=False)
+
     # Relationships - ИСПРАВЛЕНО: добавлены все необходимые связи
     sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
     main_language = relationship("Language", foreign_keys=[main_language_id])
@@ -71,4 +73,4 @@ class UserSession(Base):
     user = relationship("User", back_populates="sessions")
 
     def __repr__(self):
-        return f"<UserSession(id={self.id}, user_id={self.user_id}, token_jti='{self.jti}')>"
+        return f"<UserSession(id={self.id}, user_id={self.user_id}, token_jti='{self.token_jti}')>"
