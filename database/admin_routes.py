@@ -10,13 +10,13 @@ from typing import Dict, List, Optional, Union, Any
 from sqlalchemy.sql.elements import or_
 
 from database import get_db
-from database.models import Category, CategoryTranslation, Language, KazakhWord, WordSound, LearningGuide, GuideWordMapping
+from database.models import (Category, CategoryTranslation, Language, KazakhWord, WordSound, LearningGuide, GuideWordMapping, 
+                            KazakhWord, WordImage, Translation, Pronunciation, WordType, DifficultyLevel)
 from database.crud import CategoryCRUD, LanguageCRUD
 from auth.dependencies import get_current_admin
 from database.auth_models import User
 from database.crud import KazakhWordCRUD, TranslationCRUD, PronunciationCRUD
 from database.schemas import KazakhWordCreate, KazakhWordSummary, KazakhWordSimpleResponse
-from database.models import KazakhWord, WordImage, Translation, Pronunciation, WordType, DifficultyLevel
 from sqlalchemy.orm import joinedload, selectinload
 from pathlib import Path
 from PIL import Image
@@ -24,6 +24,11 @@ import logging
 import os
 from pydantic import BaseModel
 from typing import List, Optional
+
+from database.learning_models import (
+    LearningGuide, UserGuideProgress, GuideWordMapping,
+    GuideStatus  
+)
 
 from services.translation_service import (
     translation_service, 
