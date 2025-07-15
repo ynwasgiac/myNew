@@ -333,12 +333,16 @@ class UserStreak(Base):
     __tablename__ = "user_streaks"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
-
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    
+    # Add the missing streak_type field
+    streak_type = Column(String(20), default="daily", nullable=False)
+    
     # Streak data
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
     last_activity_date = Column(DateTime, nullable=True)
+    streak_start_date = Column(DateTime, nullable=True)  # Added this field too as it's used in CRUD
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -349,5 +353,8 @@ class UserStreak(Base):
 
     __table_args__ = (
         Index('idx_streaks_user', 'user_id'),
+        Index('idx_streaks_type', 'streak_type'),  # Index for streak_type
         Index('idx_streaks_last_activity', 'last_activity_date'),
+        # Make user_id + streak_type unique together
+        UniqueConstraint('user_id', 'streak_type', name='uq_user_streak_type'),
     )
