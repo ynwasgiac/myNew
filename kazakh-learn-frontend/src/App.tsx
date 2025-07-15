@@ -1,4 +1,4 @@
-// src/App.tsx - Fixed to use your existing components and AppRoutes
+// src/App.tsx - Updated with only existing admin pages
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -7,25 +7,27 @@ import { Toaster } from 'sonner';
 import { AuthProvider, RequireAuth } from './contexts/AuthContext';
 import { useAuth } from './contexts/AuthContext';
 
-// Layout Components (your existing ones)
+// Layout Components
 import Layout from './components/layout/Layout';
 
-// Use your existing AppRoutes
+// App Routes
 import AppRoutes from './components/routing/AppRoutes';
 
-// Auth Pages (your existing ones)
+// Auth Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-// Admin Pages (your existing ones) 
+// Admin Pages - ONLY EXISTING ONES
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
 import AdminWordsPage from './pages/admin/AdminWordsPage';
-
-// Error Pages (your existing ones)
-import NotFoundPage from './pages/error/NotFoundPage';
-
 import GuidesAdminPage from './pages/admin/GuidesAdminPage';
 import GuideWordsAdminPage from './pages/admin/GuideWordsAdminPage';
+
+// Error Pages
+import NotFoundPage from './pages/error/NotFoundPage';
+
+// Utils Components (if exists)
+// import SetupChecker from './components/utils/SetupChecker';
 
 import './styles/globals.css';
 
@@ -40,7 +42,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Admin Route Protection Component (using your existing useAuth)
+// Admin Route Protection Component
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   
@@ -55,56 +57,18 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <p className="text-gray-600 mb-4">
             Administrator permissions required to access this page.
           </p>
-          <p className="text-sm text-gray-500">
-            Current role: {user?.role || 'none'}
-          </p>
+          <button
+            onClick={() => window.location.href = '/app/dashboard'}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );
   }
-  
-  return <>{children}</>;
-};
 
-// Simple Setup Checker Component (since TempSetupChecker doesn't exist)
-const SetupChecker: React.FC = () => {
-  const { user } = useAuth();
-  
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Admin Setup Status
-        </h2>
-        
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">✓</span>
-            </div>
-            <div>
-              <h3 className="font-medium text-green-900">Admin Access Verified</h3>
-              <p className="text-sm text-green-700">
-                User: {user?.username} | Role: {user?.role}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="h-5 w-5 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">i</span>
-            </div>
-            <div>
-              <h3 className="font-medium text-blue-900">System Ready</h3>
-              <p className="text-sm text-blue-700">
-                Frontend and routing configured successfully.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 };
 
 function App() {
@@ -118,7 +82,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected App Routes - Now using your AppRoutes component! */}
+              {/* Protected App Routes */}
               <Route
                 path="/app"
                 element={
@@ -131,7 +95,7 @@ function App() {
                 <Route path="*" element={<AppRoutes />} />
               </Route>
 
-              {/* Admin Routes */}
+              {/* Admin Routes - Only existing pages */}
               <Route
                 path="/admin"
                 element={
@@ -140,17 +104,29 @@ function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<Navigate to="/admin/categories" replace />} />
+                {/* Admin Dashboard - redirect to guides */}
+                <Route index element={<Navigate to="/admin/guides" replace />} />
                 
+                {/* Learning Guides Admin */}
                 <Route 
-                  path="categories" 
+                  path="guides" 
                   element={
                     <AdminRoute>
-                      <AdminCategoriesPage />
+                      <GuidesAdminPage />
+                    </AdminRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="guides/:guideId/words" 
+                  element={
+                    <AdminRoute>
+                      <GuideWordsAdminPage />
                     </AdminRoute>
                   } 
                 />
 
+                {/* Words and Categories Admin */}
                 <Route 
                   path="words" 
                   element={
@@ -161,6 +137,17 @@ function App() {
                 />
                 
                 <Route 
+                  path="categories" 
+                  element={
+                    <AdminRoute>
+                      <AdminCategoriesPage />
+                    </AdminRoute>
+                  } 
+                />
+                
+                {/* Uncomment if you have SetupChecker component */}
+                {/* 
+                <Route 
                   path="setup-check" 
                   element={
                     <AdminRoute>
@@ -168,10 +155,8 @@ function App() {
                     </AdminRoute>
                   } 
                 />
+                */}
               </Route>
-
-              <Route path="guides" element={<GuidesAdminPage />} />
-              <Route path="guides/:guideId/words" element={<GuideWordsAdminPage />} />
 
               {/* Root redirect */}
               <Route path="/" element={<Navigate to="/app/dashboard" replace />} />

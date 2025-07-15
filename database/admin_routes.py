@@ -4,13 +4,13 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete, func, and_
-from typing import Dict, List, Optional, Union
+from sqlalchemy import select, update, delete, func, or_, and_
+from typing import Dict, List, Optional, Union, Any
 
 from sqlalchemy.sql.elements import or_
 
 from database import get_db
-from database.models import Category, CategoryTranslation, Language, KazakhWord, WordSound
+from database.models import Category, CategoryTranslation, Language, KazakhWord, WordSound, LearningGuide, GuideWordMapping
 from database.crud import CategoryCRUD, LanguageCRUD
 from auth.dependencies import get_current_admin
 from database.auth_models import User
