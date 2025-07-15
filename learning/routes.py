@@ -4,6 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
+from database.guide_crud import (
+    LearningGuideCRUD, UserGuideCRUD, GuideWordSearchCRUD
+)
+from database.learning_models import LearningStatus, DifficultyRating, GuideStatus
+
 from database import get_db
 from database.learning_crud import (
     UserWordProgressCRUD, UserLearningSessionCRUD, UserLearningGoalCRUD,
@@ -41,6 +46,8 @@ from database.auth_models import User
 from auth.dependencies import get_current_user
 from auth.token_refresh import get_current_user_with_refresh, TokenRefreshResponse
 import random
+from database.learning_models import LearningStatus, DifficultyRating, GuideStatus
+
 
 router = APIRouter(prefix="/learning", tags=["Learning Progress"])
 
@@ -1159,104 +1166,6 @@ async def get_learning_guides(
     Получить список доступных путеводителей
     """
     # Предопределенные путеводители (можно перенести в базу данных)
-    guides = [
-        {
-            'id': 'greetings',
-            'title': 'Приветствие и знакомство',
-            'description': 'Основные фразы для знакомства и приветствия',
-            'icon': 'Users',
-            'color': 'blue',
-            'difficulty': 'beginner',
-            'estimated_time': '15-20 мин',
-            'word_count': 15,
-            'topics': ['Приветствие', 'Знакомство', 'Вежливость'],
-            'keywords': ['сәлем', 'кешіріңіз', 'рахмет', 'қоштасу', 'таныстыру']
-        },
-        {
-            'id': 'family',
-            'title': 'Семья и родственники',
-            'description': 'Слова для описания семейных отношений',
-            'icon': 'Heart',
-            'color': 'red',
-            'difficulty': 'beginner',
-            'estimated_time': '20-25 мин',
-            'word_count': 20,
-            'topics': ['Семья', 'Родственники', 'Отношения'],
-            'keywords': ['отбасы', 'ата', 'ана', 'бала', 'туыс', 'жұбайлас']
-        },
-        {
-            'id': 'home',
-            'title': 'Дом и быт',
-            'description': 'Предметы домашнего обихода и комнаты',
-            'icon': 'Home',
-            'color': 'green',
-            'difficulty': 'beginner',
-            'estimated_time': '25-30 мин',
-            'word_count': 25,
-            'topics': ['Дом', 'Мебель', 'Комнаты', 'Быт'],
-            'keywords': ['үй', 'бөлме', 'жиһаз', 'ас үй', 'жатын бөлме']
-        },
-        {
-            'id': 'food',
-            'title': 'Еда и напитки',
-            'description': 'Названия блюд, продуктов и напитков',
-            'icon': 'Utensils',
-            'color': 'orange',
-            'difficulty': 'intermediate',
-            'estimated_time': '30-35 мин',
-            'word_count': 30,
-            'topics': ['Еда', 'Напитки', 'Кухня', 'Рестораны'],
-            'keywords': ['тамақ', 'ас', 'сусын', 'нан', 'ет', 'көкөніс']
-        },
-        {
-            'id': 'transport',
-            'title': 'Транспорт и путешествия',
-            'description': 'Виды транспорта и слова для поездок',
-            'icon': 'Car',
-            'color': 'purple',
-            'difficulty': 'intermediate',
-            'estimated_time': '25-30 мин',
-            'word_count': 22,
-            'topics': ['Транспорт', 'Путешествия', 'Дорога'],
-            'keywords': ['көлік', 'жол', 'саяхат', 'аэропорт', 'автобус']
-        },
-        {
-            'id': 'work',
-            'title': 'Работа и профессии',
-            'description': 'Названия профессий и рабочая лексика',
-            'icon': 'Briefcase',
-            'color': 'indigo',
-            'difficulty': 'intermediate',
-            'estimated_time': '35-40 мин',
-            'word_count': 28,
-            'topics': ['Профессии', 'Работа', 'Офис', 'Карьера'],
-            'keywords': ['жұмыс', 'маман', 'кеңсе', 'мансап', 'қызмет']
-        },
-        {
-            'id': 'education',
-            'title': 'Образование и учеба',
-            'description': 'Школьная и университетская лексика',
-            'icon': 'GraduationCap',
-            'color': 'blue',
-            'difficulty': 'advanced',
-            'estimated_time': '40-45 мин',
-            'word_count': 35,
-            'topics': ['Школа', 'Университет', 'Наука', 'Учеба'],
-            'keywords': ['білім', 'мектеп', 'университет', 'сабақ', 'ғылым']
-        },
-        {
-            'id': 'time',
-            'title': 'Время и календарь',
-            'description': 'Дни недели, месяцы, время суток',
-            'icon': 'Clock',
-            'color': 'teal',
-            'difficulty': 'beginner',
-            'estimated_time': '20-25 мин',
-            'word_count': 18,
-            'topics': ['Время', 'Календарь', 'Дни недели', 'Месяцы'],
-            'keywords': ['уақыт', 'күн', 'ай', 'жыл', 'сағат', 'апта']
-        }
-    ]
 
     # Фильтрация по сложности
     if difficulty:
@@ -1333,3 +1242,346 @@ async def start_learning_guide(
         "words_added": added_count,
         "words_already_in_list": len(unique_words) - added_count
     }
+
+# ===== ПУТЕВОДИТЕЛИ - DATABASE DRIVEN =====
+
+@router.get("/guides", response_model=List[Dict[str, Any]])
+async def get_learning_guides(
+        difficulty: Optional[str] = Query(None),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Получить список доступных путеводителей из базы данных
+    """
+    try:
+        # Get guides with user progress
+        guides_with_progress = await UserGuideCRUD.get_guides_with_progress(
+            db, current_user.id, difficulty
+        )
+        
+        # Format response
+        formatted_guides = []
+        for item in guides_with_progress:
+            guide = item['guide']
+            progress = item['progress']
+            
+            formatted_guides.append({
+                'id': guide.guide_key,
+                'title': guide.title,
+                'description': guide.description,
+                'icon': guide.icon_name,
+                'color': guide.color,
+                'difficulty': guide.difficulty_level,
+                'estimated_time': f"{guide.estimated_minutes} мин" if guide.estimated_minutes else "30 мин",
+                'word_count': guide.target_word_count,
+                'topics': guide.topics or [],
+                'keywords': guide.keywords or [],
+                'status': item['status'].value if item['status'] else 'not_started',
+                'progress': {
+                    'words_completed': item['words_completed'],
+                    'total_words_added': item['total_words_added'],
+                    'completion_percentage': item['completion_percentage']
+                },
+                'last_accessed': progress.last_accessed_at.isoformat() if progress and progress.last_accessed_at else None
+            })
+        
+        return formatted_guides
+        
+    except Exception as e:
+        print(f"Error getting guides: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get learning guides")
+
+
+@router.post("/guides/{guide_id}/start")
+async def start_learning_guide(
+        guide_id: str,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Начать изучение путеводителя - получить слова из базы данных
+    """
+    try:
+        # Get guide from database
+        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Start guide progress
+        progress = await UserGuideCRUD.start_guide(db, current_user.id, guide.id)
+        
+        # Method 1: Get pre-mapped words for this guide
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        
+        # Method 2: If no pre-mapped words, search by keywords
+        if not guide_words and guide.keywords:
+            print(f"No pre-mapped words found, searching by keywords: {guide.keywords}")
+            found_words = await GuideWordSearchCRUD.search_words_by_keywords(
+                db, guide.keywords, limit=guide.target_word_count
+            )
+            
+            # Optionally add these words to guide mapping for future use
+            if found_words:
+                word_ids = [w.id for w in found_words]
+                await LearningGuideCRUD.add_words_to_guide(db, guide.id, word_ids)
+                
+                # Get the mapped words
+                guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        
+        # Method 3: If still no words, search by topics
+        if not guide_words and guide.topics:
+            print(f"No keywords found, searching by topics: {guide.topics}")
+            found_words = await GuideWordSearchCRUD.get_words_by_topics(
+                db, guide.topics, limit=guide.target_word_count
+            )
+            
+            if found_words:
+                word_ids = [w.id for w in found_words]
+                await LearningGuideCRUD.add_words_to_guide(db, guide.id, word_ids)
+                guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        
+        if not guide_words:
+            raise HTTPException(
+                status_code=404, 
+                detail="No words found for this guide. Please contact administrator."
+            )
+        
+        # Add words to user's learning list
+        added_count = 0
+        already_added = 0
+        
+        for word_item in guide_words:
+            word = word_item['word']
+            
+            try:
+                # Check if word already in user's learning list
+                existing = await UserWordProgressCRUD.get_user_word_progress(
+                    db, current_user.id, word.id
+                )
+                
+                if not existing:
+                    await UserWordProgressCRUD.add_word_to_learning_list(
+                        db, current_user.id, word.id, LearningStatus.WANT_TO_LEARN
+                    )
+                    added_count += 1
+                else:
+                    already_added += 1
+                    
+            except Exception as e:
+                print(f"Warning: Could not add word {word.id}: {e}")
+        
+        # Update guide progress
+        total_words = len(guide_words)
+        await UserGuideCRUD.update_guide_progress(
+            db, current_user.id, guide.id, 
+            words_completed=0, 
+            total_words_added=total_words
+        )
+        
+        return {
+            "message": f"Guide '{guide.title}' started successfully",
+            "guide_id": guide_id,
+            "guide_title": guide.title,
+            "words_found": total_words,
+            "words_added": added_count,
+            "words_already_in_list": already_added,
+            "progress": {
+                "status": "in_progress",
+                "words_completed": 0,
+                "total_words_added": total_words,
+                "completion_percentage": 0
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error starting guide: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to start guide: {str(e)}")
+
+
+@router.get("/guides/{guide_id}/words")
+async def get_guide_words(
+        guide_id: str,
+        limit: int = Query(50, ge=1, le=100),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Получить слова для конкретного путеводителя
+    """
+    try:
+        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, limit)
+        
+        # Format words for response
+        formatted_words = []
+        for word_item in guide_words:
+            word = word_item['word']
+            mapping = word_item['mapping']
+            
+            # Get user's progress for this word
+            user_progress = await UserWordProgressCRUD.get_user_word_progress(
+                db, current_user.id, word.id
+            )
+            
+            formatted_words.append({
+                'word': {
+                    'id': word.id,
+                    'kazakh_word': word.kazakh_word,
+                    'kazakh_cyrillic': word.kazakh_cyrillic,
+                    'category': word.category.name if word.category else None,
+                    'difficulty': word.difficulty_level.name if word.difficulty_level else None,
+                    'translations': [
+                        {
+                            'language': t.language.language_code,
+                            'translation': t.translation
+                        } for t in word.translations
+                    ]
+                },
+                'guide_info': {
+                    'importance_score': mapping.importance_score,
+                    'order_in_guide': mapping.order_in_guide
+                },
+                'user_progress': {
+                    'status': user_progress.status.value if user_progress else None,
+                    'is_in_learning_list': user_progress is not None,
+                    'correct_count': user_progress.correct_count if user_progress else 0,
+                    'total_attempts': user_progress.total_attempts if user_progress else 0
+                }
+            })
+        
+        return {
+            'guide_id': guide_id,
+            'guide_title': guide.title,
+            'words': formatted_words,
+            'total_words': len(formatted_words)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting guide words: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get guide words")
+
+
+@router.post("/guides/{guide_id}/complete")
+async def complete_guide(
+        guide_id: str,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Отметить путеводитель как завершенный
+    """
+    try:
+        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Get current progress
+        progress = await UserGuideCRUD.get_user_guide_progress(db, current_user.id, guide.id)
+        if not progress:
+            raise HTTPException(status_code=404, detail="Guide not started")
+        
+        # Count completed words (words with LEARNED status)
+        completed_words_query = select(func.count(UserWordProgress.id)).where(
+            and_(
+                UserWordProgress.user_id == current_user.id,
+                UserWordProgress.status == LearningStatus.LEARNED
+            )
+        )
+        
+        # Get guide words to check completion
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        guide_word_ids = [w['word'].id for w in guide_words]
+        
+        if guide_word_ids:
+            completed_words_query = completed_words_query.where(
+                UserWordProgress.kazakh_word_id.in_(guide_word_ids)
+            )
+        
+        completed_count_result = await db.execute(completed_words_query)
+        completed_count = completed_count_result.scalar()
+        
+        # Update progress
+        updated_progress = await UserGuideCRUD.update_guide_progress(
+            db, current_user.id, guide.id,
+            words_completed=completed_count,
+            total_words_added=progress.total_words_added
+        )
+        
+        return {
+            'message': f"Guide '{guide.title}' progress updated",
+            'guide_id': guide_id,
+            'status': updated_progress.status.value,
+            'words_completed': completed_count,
+            'total_words': progress.total_words_added,
+            'completion_percentage': (
+                (completed_count / progress.total_words_added * 100) 
+                if progress.total_words_added > 0 
+                else 0
+            )
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error completing guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete guide")
+
+
+@router.get("/guides/{guide_id}/progress")
+async def get_guide_progress(
+        guide_id: str,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Получить прогресс по конкретному путеводителю
+    """
+    try:
+        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        progress = await UserGuideCRUD.get_user_guide_progress(db, current_user.id, guide.id)
+        
+        if not progress:
+            return {
+                'guide_id': guide_id,
+                'status': 'not_started',
+                'words_completed': 0,
+                'total_words_added': 0,
+                'completion_percentage': 0,
+                'started_at': None,
+                'completed_at': None,
+                'last_accessed_at': None
+            }
+        
+        return {
+            'guide_id': guide_id,
+            'status': progress.status.value,
+            'words_completed': progress.words_completed,
+            'total_words_added': progress.total_words_added,
+            'completion_percentage': (
+                (progress.words_completed / progress.total_words_added * 100) 
+                if progress.total_words_added > 0 
+                else 0
+            ),
+            'started_at': progress.started_at.isoformat() if progress.started_at else None,
+            'completed_at': progress.completed_at.isoformat() if progress.completed_at else None,
+            'last_accessed_at': progress.last_accessed_at.isoformat() if progress.last_accessed_at else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting guide progress: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get guide progress")

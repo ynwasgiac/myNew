@@ -4,257 +4,118 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
   Map, 
-  Star, 
   Play, 
   BookOpen, 
   Users, 
-  Coffee, 
   Home, 
   Car,
   Heart,
-  Globe,
   Utensils,
   GraduationCap,
   Briefcase,
   Clock,
-  Target,
   CheckCircle,
-  Plus
+  Plus,
+  Search
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import { wordsAPI } from '../../services/api';
-import { learningAPI } from '../../services/learningAPI';
-import type { KazakhWordSummary } from '../../types/api';
-import { LEARNING_STATUSES } from '../../types/learning';
-import { useAuth } from '../../contexts/AuthContext'; // Добавляем импорт useAuth
+import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import api from '../../services/api';  // ✅ Use global API instance
 
-// Типы для путеводителей
-interface LearningGuide {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ComponentType<any>;
-  color: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  estimatedTime: string;
-  wordCount: number;
-  topics: string[];
-  keywords: string[]; // Ключевые слова для поиска в базе
-}
+// Icon mapping
+const iconMap = {
+  'Users': Users,
+  'Heart': Heart,
+  'Home': Home,
+  'Utensils': Utensils,
+  'Car': Car,
+  'Briefcase': Briefcase,
+  'GraduationCap': GraduationCap,
+  'Clock': Clock,
+  'BookOpen': BookOpen,
+};
 
-interface GuideProgress {
-  guideId: string;
-  completedWords: number;
-  totalWords: number;
-  isStarted: boolean;
-  isCompleted: boolean;
-}
+// Simple API functions using global api instance
+const fetchGuides = async (difficulty?: string, languageCode?: string) => {
+  const params = new URLSearchParams();
+  if (difficulty && difficulty !== 'all') {
+    params.append('difficulty', difficulty);
+  }
+  if (languageCode) {
+    params.append('language_code', languageCode);
+  }
 
-const GuidedLearningPage: React.FC = () => {
+  const response = await api.get(`/learning/guides?${params}`);
+  return response.data;
+};
+
+const startGuide = async (guideId: string) => {
+  const response = await api.post(`/learning/guides/${guideId}/start`);
+  return response.data;
+};
+
+const GuidedLearningPage = () => {
   const { t } = useTranslation(['learning', 'guides']);
-  const { user } = useAuth(); // Добавляем user из useAuth
+  const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Предопределенные путеводители
-  const learningGuides: LearningGuide[] = [
-    {
-      id: 'greetings',
-      title: t('guides.greetings.title', 'Приветствие и знакомство'),
-      description: t('guides.greetings.description', 'Основные фразы для знакомства и приветствия'),
-      icon: Users,
-      color: 'blue',
-      difficulty: 'beginner',
-      estimatedTime: '15-20 мин',
-      wordCount: 15,
-      topics: ['Приветствие', 'Знакомство', 'Вежливость'],
-      keywords: ['сәлем', 'кешіріңіз', 'рахмет', 'қоштасу', 'таныстыру']
-    },
-    {
-      id: 'family',
-      title: t('guides.family.title', 'Семья и родственники'),
-      description: t('guides.family.description', 'Слова для описания семейных отношений'),
-      icon: Heart,
-      color: 'red',
-      difficulty: 'beginner',
-      estimatedTime: '20-25 мин',
-      wordCount: 20,
-      topics: ['Семья', 'Родственники', 'Отношения'],
-      keywords: ['отбасы', 'ата', 'ана', 'бала', 'туыс', 'жұбайлас']
-    },
-    {
-      id: 'home',
-      title: t('guides.home.title', 'Дом и быт'),
-      description: t('guides.home.description', 'Предметы домашнего обихода и комнаты'),
-      icon: Home,
-      color: 'green',
-      difficulty: 'beginner',
-      estimatedTime: '25-30 мин',
-      wordCount: 25,
-      topics: ['Дом', 'Мебель', 'Комнаты', 'Быт'],
-      keywords: ['үй', 'бөлме', 'жиһаз', 'ас үй', 'жатын бөлме']
-    },
-    {
-      id: 'food',
-      title: t('guides.food.title', 'Еда и напитки'),
-      description: t('guides.food.description', 'Названия блюд, продуктов и напитков'),
-      icon: Utensils,
-      color: 'orange',
-      difficulty: 'intermediate',
-      estimatedTime: '30-35 мин',
-      wordCount: 30,
-      topics: ['Еда', 'Напитки', 'Кухня', 'Рестораны'],
-      keywords: ['тамақ', 'ас', 'сусын', 'нан', 'ет', 'көкөніс']
-    },
-    {
-      id: 'transport',
-      title: t('guides.transport.title', 'Транспорт и путешествия'),
-      description: t('guides.transport.description', 'Виды транспорта и слова для поездок'),
-      icon: Car,
-      color: 'purple',
-      difficulty: 'intermediate',
-      estimatedTime: '25-30 мин',
-      wordCount: 22,
-      topics: ['Транспорт', 'Путешествия', 'Дорога'],
-      keywords: ['көлік', 'жол', 'саяхат', 'аэропорт', 'автобус']
-    },
-    {
-      id: 'work',
-      title: t('guides.work.title', 'Работа и профессии'),
-      description: t('guides.work.description', 'Названия профессий и рабочая лексика'),
-      icon: Briefcase,
-      color: 'indigo',
-      difficulty: 'intermediate',
-      estimatedTime: '35-40 мин',
-      wordCount: 28,
-      topics: ['Профессии', 'Работа', 'Офис', 'Карьера'],
-      keywords: ['жұмыс', 'маман', 'кеңсе', 'мансап', 'қызмет']
-    },
-    {
-      id: 'education',
-      title: t('guides.education.title', 'Образование и учеба'),
-      description: t('guides.education.description', 'Школьная и университетская лексика'),
-      icon: GraduationCap,
-      color: 'blue',
-      difficulty: 'advanced',
-      estimatedTime: '40-45 мин',
-      wordCount: 35,
-      topics: ['Школа', 'Университет', 'Наука', 'Учеба'],
-      keywords: ['білім', 'мектеп', 'университет', 'сабақ', 'ғылым']
-    },
-    {
-      id: 'time',
-      title: t('guides.time.title', 'Время и календарь'),
-      description: t('guides.time.description', 'Дни недели, месяцы, время суток'),
-      icon: Clock,
-      color: 'teal',
-      difficulty: 'beginner',
-      estimatedTime: '20-25 мин',
-      wordCount: 18,
-      topics: ['Время', 'Календарь', 'Дни недели', 'Месяцы'],
-      keywords: ['уақыт', 'күн', 'ай', 'жыл', 'сағат', 'апта']
-    }
-  ];
+  // Get user's language preference
+  const userLanguage = user?.main_language?.language_code || 'en';
 
-  // Получаем прогресс по путеводителям
-  const { data: guideProgress, isLoading: progressLoading } = useQuery({
-    queryKey: ['guide-progress'],
-    queryFn: async () => {
-      // Здесь можно реализовать API для получения прогресса
-      // Пока используем mock данные
-      const mockProgress: GuideProgress[] = learningGuides.map(guide => ({
-        guideId: guide.id,
-        completedWords: Math.floor(Math.random() * guide.wordCount),
-        totalWords: guide.wordCount,
-        isStarted: Math.random() > 0.5,
-        isCompleted: Math.random() > 0.8
-      }));
-      return mockProgress;
-    }
+  // Fetch guides from database with user's language
+  const { data: guides = [], isLoading, error } = useQuery({
+    queryKey: ['learning-guides', selectedDifficulty, userLanguage],
+    queryFn: () => fetchGuides(selectedDifficulty, userLanguage),
+    staleTime: 5 * 60 * 1000,
+    retry: 2
   });
 
-  // Мутация для поиска слов по путеводителю
-  const searchWordsMutation = useMutation({
-    mutationFn: async (guide: LearningGuide) => {
-      const promises = guide.keywords.map(keyword =>
-        wordsAPI.searchWords(
-          keyword, 
-          user?.main_language?.language_code || 'en',
-          10 // limit
-        )
-      );
-      
-      const results = await Promise.all(promises);
-      const allWords = results.flatMap(result => result || []);
-      
-      // Удаляем дубликаты
-      const uniqueWords = allWords.filter((word, index, self) =>
-        index === self.findIndex(w => w.id === word.id)
-      );
-      
-      return uniqueWords.slice(0, guide.wordCount);
-    }
-  });
-
-  // Мутация для добавления слов в список изучения
-  const addToLearningMutation = useMutation({
-    mutationFn: async (wordIds: number[]) => {
-      return learningAPI.addMultipleWords({
-        word_ids: wordIds,
-        status: LEARNING_STATUSES.WANT_TO_LEARN
-      });
-    },
-    onSuccess: (_, wordIds) => {
+  // Start guide mutation
+  const startGuideMutation = useMutation({
+    mutationFn: startGuide,
+    onSuccess: (data, guideId) => {
+      queryClient.invalidateQueries({ queryKey: ['learning-guides'] });
       queryClient.invalidateQueries({ queryKey: ['learning-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['guide-progress'] });
-      toast.success(t('messages.addedToLearning', {
-        count: wordIds.length,
-        defaultValue: `Добавлено ${wordIds.length} слов в список изучения`
-      }));
+      
+      toast.success(`Путеводитель "${data.guide_title}" начат! Добавлено ${data.words_added} слов.`);
+      navigate(`/app/practice?type=learning&guide=${guideId}`);
     },
-    onError: () => {
-      toast.error(t('errors.addToLearningFailed', 'Не удалось добавить слова'));
+    onError: (error: Error) => {
+      console.error('Error starting guide:', error);
+      toast.error(error.message || 'Не удалось начать путеводитель');
     }
   });
 
-  const handleStartGuide = async (guide: LearningGuide) => {
+  const handleStartGuide = async (guide: any) => {
     try {
-      const words = await searchWordsMutation.mutateAsync(guide);
-      
-      if (words.length === 0) {
-        toast.error(t('errors.noWordsFound', 'Не найдено слов для этого путеводителя'));
-        return;
-      }
-
-      // Добавляем слова в список изучения
-      const wordIds = words.map(word => word.id);
-      await addToLearningMutation.mutateAsync(wordIds);
-      
-      // Переходим к практике с этими словами
-      navigate(`/app/practice?type=learning&guide=${guide.id}`);
+      await startGuideMutation.mutateAsync(guide.id);
     } catch (error) {
-      console.error('Error starting guide:', error);
-      toast.error(t('errors.guideStartFailed', 'Не удалось начать путеводитель'));
+      // Error handled in mutation
     }
   };
 
-  const handleContinueGuide = (guide: LearningGuide) => {
+  const handleContinueGuide = (guide: any) => {
     navigate(`/app/practice?type=learning&guide=${guide.id}`);
   };
 
-  const filteredGuides = learningGuides.filter(guide => {
-    const matchesDifficulty = selectedDifficulty === 'all' || guide.difficulty === selectedDifficulty;
+  const handleViewGuideWords = (guide: any) => {
+    navigate(`/app/guides/${guide.id}/words`);
+  };
+
+  // Filter guides based on search term
+  const filteredGuides = guides.filter((guide: any) => {
     const matchesSearch = !searchTerm || 
       guide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guide.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guide.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()));
+      guide.topics.some((topic: string) => topic.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesDifficulty && matchesSearch;
+    return matchesSearch;
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -266,107 +127,109 @@ const GuidedLearningPage: React.FC = () => {
     }
   };
 
-  const getGuideProgress = (guideId: string) => {
-    return guideProgress?.find(p => p.guideId === guideId);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'text-green-600';
+      case 'in_progress': return 'text-blue-600';
+      default: return 'text-gray-600';
+    }
   };
 
-  if (progressLoading) {
-    return <LoadingSpinner fullScreen text={t('loading.guides')} />;
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed': return 'Завершен';
+      case 'in_progress': return 'В процессе';
+      default: return 'Не начат';
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner fullScreen text="Загрузка путеводителей..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            Ошибка загрузки
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Не удалось загрузить путеводители
+          </p>
+          <button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['learning-guides'] })}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Заголовок */}
+      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Map className="w-8 h-8 text-blue-500" />
           <h1 className="text-3xl font-bold text-gray-900">
-            {t('guides.title', 'Путеводители по изучению')}
+            Путеводители по изучению
           </h1>
+          {/* Language indicator */}
+          {userLanguage && userLanguage !== 'en' && (
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              {userLanguage.toUpperCase()}
+            </span>
+          )}
         </div>
         <p className="text-gray-600 max-w-3xl">
-          {t('guides.description', 'Структурированные коллекции слов по темам. Каждый путеводитель поможет вам выучить необходимую лексику для конкретных ситуаций.')}
+          Структурированные коллекции слов по темам. Каждый путеводитель поможет вам выучить необходимую лексику для конкретных ситуаций.
         </p>
       </div>
 
-      {/* Статистика */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-blue-50 p-6 rounded-lg">
-          <div className="flex items-center gap-3">
-            <Target className="w-8 h-8 text-blue-600" />
-            <div>
-              <div className="text-2xl font-bold text-blue-600">
-                {guideProgress?.filter(p => p.isStarted).length || 0}
-              </div>
-              <div className="text-sm text-blue-600">{t('stats.guidesStarted', 'Начато путеводителей')}</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-green-50 p-6 rounded-lg">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {guideProgress?.filter(p => p.isCompleted).length || 0}
-              </div>
-              <div className="text-sm text-green-600">{t('stats.guidesCompleted', 'Завершено путеводителей')}</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-purple-50 p-6 rounded-lg">
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-purple-600" />
-            <div>
-              <div className="text-2xl font-bold text-purple-600">
-                {guideProgress?.reduce((sum, p) => sum + p.completedWords, 0) || 0}
-              </div>
-              <div className="text-sm text-purple-600">{t('stats.wordsLearned', 'Слов изучено')}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Фильтры */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
+      {/* Filters */}
+      <div className="mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Поиск */}
-          <div className="flex-1">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder={t('search.guides', 'Поиск путеводителей...')}
+              placeholder="Поиск путеводителей..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {/* Фильтр сложности */}
+          {/* Difficulty filter */}
           <select
             value={selectedDifficulty}
             onChange={(e) => setSelectedDifficulty(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">{t('filters.allLevels', 'Все уровни')}</option>
-            <option value="beginner">{t('levels.beginner', 'Начинающий')}</option>
-            <option value="intermediate">{t('levels.intermediate', 'Средний')}</option>
-            <option value="advanced">{t('levels.advanced', 'Продвинутый')}</option>
+            <option value="all">Все уровни</option>
+            <option value="beginner">Начинающий</option>
+            <option value="intermediate">Средний</option>
+            <option value="advanced">Продвинутый</option>
           </select>
         </div>
       </div>
 
-      {/* Список путеводителей */}
+      {/* Guides Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredGuides.map((guide) => {
-          const IconComponent = guide.icon;
-          const progress = getGuideProgress(guide.id);
-          const progressPercentage = progress ? 
-            Math.round((progress.completedWords / progress.totalWords) * 100) : 0;
+        {filteredGuides.map((guide: any) => {
+          const IconComponent = iconMap[guide.icon as keyof typeof iconMap] || BookOpen;
+          const progressPercentage = guide.progress?.completion_percentage || 0;
+          const isStarted = guide.status !== 'not_started';
+          const isCompleted = guide.status === 'completed';
 
           return (
             <div key={guide.id} className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-              {/* Заголовок */}
+              {/* Header */}
               <div className="flex items-start gap-4 mb-4">
                 <div className={`p-3 rounded-lg bg-${guide.color}-100`}>
                   <IconComponent className={`w-6 h-6 text-${guide.color}-600`} />
@@ -381,97 +244,130 @@ const GuidedLearningPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Метаданные */}
+              {/* Metadata */}
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(guide.difficulty)}`}>
-                  {t(`levels.${guide.difficulty}`)}
+                  {guide.difficulty}
                 </span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
-                  {guide.wordCount} {t('common.words', 'слов')}
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                  {guide.word_count} слов
                 </span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
-                  {guide.estimatedTime}
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  {guide.estimated_time}
                 </span>
               </div>
 
-              {/* Темы */}
+              {/* Progress */}
+              {isStarted && (
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">
+                      Прогресс
+                    </span>
+                    <span className={`text-sm font-medium ${getStatusColor(guide.status)}`}>
+                      {getStatusText(guide.status)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`bg-${guide.color}-600 h-2 rounded-full transition-all duration-300`}
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>
+                      {guide.progress?.words_completed || 0} / {guide.progress?.total_words_added || 0}
+                    </span>
+                    <span>{Math.round(progressPercentage)}%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Topics */}
               <div className="mb-4">
-                <div className="text-xs text-gray-500 mb-2">{t('guide.topics', 'Темы:')}</div>
                 <div className="flex flex-wrap gap-1">
-                  {guide.topics.slice(0, 3).map((topic, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                  {guide.topics?.slice(0, 3).map((topic: string, index: number) => (
+                    <span key={index} className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
                       {topic}
                     </span>
                   ))}
-                  {guide.topics.length > 3 && (
-                    <span className="px-2 py-1 bg-gray-50 text-gray-500 rounded text-xs">
+                  {guide.topics?.length > 3 && (
+                    <span className="text-xs text-gray-400">
                       +{guide.topics.length - 3}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Прогресс */}
-              {progress?.isStarted && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>{t('progress.completed', 'Прогресс')}</span>
-                    <span>{progress.completedWords}/{progress.totalWords}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`bg-${guide.color}-600 h-2 rounded-full`}
-                      style={{ width: `${progressPercentage}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Действия */}
+              {/* Actions */}
               <div className="flex gap-2">
-                {!progress?.isStarted ? (
+                {!isStarted ? (
                   <button
                     onClick={() => handleStartGuide(guide)}
-                    disabled={searchWordsMutation.isPending || addToLearningMutation.isPending}
+                    disabled={startGuideMutation.isPending}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-${guide.color}-600 text-white rounded-md hover:bg-${guide.color}-700 transition-colors disabled:opacity-50`}
                   >
                     <Plus className="w-4 h-4" />
-                    {t('actions.startGuide', 'Начать')}
+                    {startGuideMutation.isPending ? 'Запуск...' : 'Начать'}
                   </button>
-                ) : progress.isCompleted ? (
-                  <div className="flex-1 flex gap-2">
+                ) : isCompleted ? (
+                  <div className="flex gap-2 w-full">
                     <button
                       onClick={() => handleContinueGuide(guide)}
-                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors`}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                     >
                       <CheckCircle className="w-4 h-4" />
-                      {t('actions.review', 'Повторить')}
+                      Повторить
+                    </button>
+                    <button
+                      onClick={() => handleViewGuideWords(guide)}
+                      className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                      <BookOpen className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => handleContinueGuide(guide)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-${guide.color}-600 text-white rounded-md hover:bg-${guide.color}-700 transition-colors`}
-                  >
-                    <Play className="w-4 h-4" />
-                    {t('actions.continue', 'Продолжить')}
-                  </button>
+                  <div className="flex gap-2 w-full">
+                    <button
+                      onClick={() => handleContinueGuide(guide)}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-${guide.color}-600 text-white rounded-md hover:bg-${guide.color}-700 transition-colors`}
+                    >
+                      <Play className="w-4 h-4" />
+                      Продолжить
+                    </button>
+                    <button
+                      onClick={() => handleViewGuideWords(guide)}
+                      className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
               </div>
+
+              {/* Last accessed */}
+              {guide.last_accessed && (
+                <div className="mt-3 text-xs text-gray-400">
+                  Последний доступ: {new Date(guide.last_accessed).toLocaleDateString()}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Пустое состояние */}
-      {filteredGuides.length === 0 && (
+      {/* Empty state */}
+      {filteredGuides.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🗺️</div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {t('guides.noResults', 'Путеводители не найдены')}
+            {searchTerm ? 'Путеводители не найдены' : 'Нет доступных путеводителей'}
           </h3>
           <p className="text-gray-600">
-            {t('guides.tryDifferentSearch', 'Попробуйте изменить параметры поиска')}
+            {searchTerm ? 
+              'Попробуйте изменить параметры поиска' :
+              'Проверьте позже или обратитесь к администратору'
+            }
           </p>
         </div>
       )}

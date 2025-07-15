@@ -24,9 +24,16 @@ from .models import (
     WordImage, ExampleSentence, ExampleSentenceTranslation
 )
 
+# === GUIDE CRUD ===
+from .guide_crud import (
+    LearningGuideCRUD,
+    UserGuideCRUD,
+    GuideWordSearchCRUD
+)
+
 # Learning progress models
 from .learning_models import (
-    LearningStatus, DifficultyRating,
+    LearningStatus, DifficultyRating, GuideStatus,  # ✅ Add these
     UserWordProgress, UserLearningSession, UserSessionDetail,
     UserLearningGoal, UserAchievement, UserStreak
 )
@@ -180,6 +187,11 @@ __all__ = [
     "get_db",
     "Base",
 
+    # === GUIDE CRUD ===
+    "LearningGuideCRUD",
+    "UserGuideCRUD", 
+    "GuideWordSearchCRUD",
+
     # === AUTH MODELS ===
     "User",
     "UserSession",
@@ -310,6 +322,11 @@ __all__ = [
     "__version__",
     "__author__",
     "__description__"
+
+    # === LEARNING ENUMS === 
+    "LearningStatus",
+    "DifficultyRating", 
+    "GuideStatus",
 ]
 
 # === MODULE DOCUMENTATION ===

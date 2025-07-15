@@ -10,11 +10,10 @@ from .connection import Base
 from .auth_models import UserRole, User, UserSession
 
 # Import learning models
-from .learning_models import (
-    LearningStatus, DifficultyRating, UserWordProgress, UserLearningSession,
-    UserSessionDetail, UserLearningGoal, UserAchievement, UserStreak
+from database.learning_models import (
+    LearningGuide, UserGuideProgress, GuideWordMapping,
+    GuideStatus  # ✅ Add all needed enums
 )
-
 
 class Language(Base):
     __tablename__ = "languages"
