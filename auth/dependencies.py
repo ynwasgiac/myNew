@@ -32,8 +32,6 @@ async def get_current_user(
         user_id = payload.get("user_id")
         jti = payload.get("jti")
 
-        print(f"DEBUG: Extracted - username: {username}, user_id: {user_id}, jti: {jti}")
-
         # Validate required fields
         if not username or not user_id or not jti:
             print("DEBUG: Missing required token fields")

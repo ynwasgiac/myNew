@@ -168,7 +168,7 @@ class UserCRUD:
 
 class UserSessionCRUD:
     @staticmethod
-    (
+    async def create_session(
             db: AsyncSession,
             user_id: int,
             expires_at: datetime

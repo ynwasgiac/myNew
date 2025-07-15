@@ -115,12 +115,12 @@ class UserLearningSession(Base):
     finished_at = Column(DateTime, nullable=True)
     duration_seconds = Column(Integer, nullable=True)
 
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
+
     # Relationships - ИСПРАВЛЕНО
     user = relationship("User", back_populates="learning_sessions")
     session_details = relationship("UserSessionDetail", back_populates="session", cascade="all, delete-orphan")
-
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
 
     # Add these relationships
     category = relationship("Category", foreign_keys=[category_id])
