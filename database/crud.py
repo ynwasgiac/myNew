@@ -1202,47 +1202,38 @@ class KazakhWordCRUD:
 
     @staticmethod
     async def get_random_words(
-            db: AsyncSession,
-            count: int = 10,
-            difficulty_level_id: Optional[int] = None,
-            category_id: Optional[int] = None,
-            language_code: str = "en"
+    db: AsyncSession,
+    limit: int = 10,
+    difficulty_level_id: Optional[int] = None,
+    category_id: Optional[int] = None,
+    language_code: Optional[str] = None,
+    exclude_word_ids: Optional[List[int]] = None
     ) -> List[KazakhWord]:
-        """Get random words for practice"""
-        query = (
-            select(KazakhWord)
-            .options(
-                joinedload(KazakhWord.difficulty_level),
-                selectinload(KazakhWord.translations).joinedload(Translation.language),
-                selectinload(KazakhWord.pronunciations).joinedload(Pronunciation.language),
-                selectinload(KazakhWord.images)
-            )
-            .order_by(func.random())
-            .limit(count)
+        """
+        Получить случайные слова с исключением уже выбранных
+        """
+        query = select(KazakhWord).options(
+            selectinload(KazakhWord.translations),
+            selectinload(KazakhWord.difficulty_level),
+            selectinload(KazakhWord.category)
         )
-
-        # Apply filters
+        
+        # Исключаем уже выбранные слова
+        if exclude_word_ids:
+            query = query.where(KazakhWord.id.not_in(exclude_word_ids))
+        
+        # Фильтры
         if difficulty_level_id:
             query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+        
         if category_id:
             query = query.where(KazakhWord.category_id == category_id)
-
+        
+        # Случайная сортировка
+        query = query.order_by(func.random()).limit(limit)
+        
         result = await db.execute(query)
-        words = result.scalars().all()
-
-        # Post-process to filter translations and images
-        for word in words:
-            word.translations = [
-                t for t in word.translations
-                if t.language.language_code == language_code
-            ]
-            word.pronunciations = [
-                p for p in word.pronunciations
-                if p.language.language_code == language_code
-            ]
-            word.images = [img for img in word.images if img.is_primary]
-
-        return words
+        return result.scalars().all()
 
     @staticmethod
     async def count_words(

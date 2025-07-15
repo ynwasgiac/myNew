@@ -1,6 +1,6 @@
 # database/learning_models.py
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Enum, UniqueConstraint, Index, \
-    Float
+    Float, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -24,6 +24,18 @@ class DifficultyRating(enum.Enum):
     HARD = "hard"
     VERY_HARD = "very_hard"
 
+class GuideStatus(enum.Enum):
+    """Статус прохождения путеводителя"""
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+
+class WordSource(enum.Enum):
+    """Источник слова в практике"""
+    LEARNING_LIST = "learning_list"  # Из списка изучения
+    RANDOM = "random"  # Случайное слово
+    GUIDE = "guide"  # Из путеводителя
+
 
 class UserWordProgress(Base):
     """Track user's progress with individual words"""
@@ -37,33 +49,36 @@ class UserWordProgress(Base):
     status = Column(Enum(LearningStatus), default=LearningStatus.WANT_TO_LEARN, nullable=False)
 
     # Progress tracking
-    times_seen = Column(Integer, default=0)  # How many times word was shown
-    times_correct = Column(Integer, default=0)  # How many times answered correctly
-    times_incorrect = Column(Integer, default=0)  # How many times answered incorrectly
+    times_seen = Column(Integer, default=0)
+    times_correct = Column(Integer, default=0)
+    times_incorrect = Column(Integer, default=0)
 
     # User ratings
-    difficulty_rating = Column(Enum(DifficultyRating), nullable=True)  # User's perceived difficulty
+    difficulty_rating = Column(Enum(DifficultyRating), nullable=True)
+
+    # Избранное - ДОБАВЛЕНО
+    is_favorite = Column(Boolean, default=False)
+    user_notes = Column(Text, nullable=True)
 
     # Important dates
-    added_at = Column(DateTime, default=datetime.utcnow)  # When added to learning list
-    first_learned_at = Column(DateTime, nullable=True)  # When first marked as learned
-    last_practiced_at = Column(DateTime, nullable=True)  # Last time practiced
-    next_review_at = Column(DateTime, nullable=True)  # When should be reviewed next
+    added_at = Column(DateTime, default=datetime.utcnow)
+    first_learned_at = Column(DateTime, nullable=True)
+    last_practiced_at = Column(DateTime, nullable=True)
+    next_review_at = Column(DateTime, nullable=True)
+    marked_favorite_at = Column(DateTime, nullable=True)
 
     # Spaced repetition data
-    repetition_interval = Column(Integer, default=1)  # Days until next review
-    ease_factor = Column(Float, default=2.5)  # Spaced repetition ease factor
-
-    # Notes
-    user_notes = Column(Text, nullable=True)  # User's personal notes
+    repetition_interval = Column(Integer, default=1)
+    ease_factor = Column(Float, default=2.5)
+    consecutive_correct = Column(Integer, default=0)
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", backref="word_progress")
-    kazakh_word = relationship("KazakhWord", backref="user_progress")
+    # Relationships - ИСПРАВЛЕНО
+    user = relationship("User", back_populates="word_progress")
+    kazakh_word = relationship("KazakhWord")
 
     __table_args__ = (
         UniqueConstraint('user_id', 'kazakh_word_id', name='unique_user_word'),
@@ -71,6 +86,7 @@ class UserWordProgress(Base):
         Index('idx_user_word_progress_word', 'kazakh_word_id'),
         Index('idx_user_word_progress_status', 'status'),
         Index('idx_user_word_progress_next_review', 'next_review_at'),
+        Index('idx_user_word_progress_favorite', 'user_id', 'is_favorite'),
     )
 
 
@@ -82,59 +98,157 @@ class UserLearningSession(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     # Session info
-    session_type = Column(String(50), nullable=False)  # 'practice', 'review', 'quiz', etc.
-    words_studied = Column(Integer, default=0)  # Number of words in session
-    correct_answers = Column(Integer, default=0)  # Correct answers
-    incorrect_answers = Column(Integer, default=0)  # Incorrect answers
+    session_type = Column(String(50), nullable=False)
 
-    # Session metadata
-    duration_seconds = Column(Integer, nullable=True)  # Session duration
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)  # Category focused on
-    difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
+    # Источник слов - ДОБАВЛЕНО
+    word_source = Column(String(20), default="learning_list")  # learning_list, random, guide
+    guide_id = Column(Integer, nullable=True)  # Ссылка на путеводитель
 
-    # Timestamps
+    # Session stats
+    total_questions = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)
+    learning_words_count = Column(Integer, default=0)  # ДОБАВЛЕНО
+    random_words_count = Column(Integer, default=0)  # ДОБАВЛЕНО
+
+    # Session timing
     started_at = Column(DateTime, default=datetime.utcnow)
     finished_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    duration_seconds = Column(Integer, nullable=True)
 
-    # Relationships
-    user = relationship("User", backref="learning_sessions")
-    category = relationship("Category", backref="learning_sessions")
-    difficulty_level = relationship("DifficultyLevel", backref="learning_sessions")
+    # Relationships - ИСПРАВЛЕНО
+    user = relationship("User", back_populates="learning_sessions")
     session_details = relationship("UserSessionDetail", back_populates="session", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index('idx_learning_sessions_user', 'user_id'),
         Index('idx_learning_sessions_started', 'started_at'),
-        Index('idx_learning_sessions_category', 'category_id'),
+        Index('idx_learning_sessions_type', 'session_type'),
+    )
+
+# НОВАЯ модель: Путеводители
+class LearningGuide(Base):
+    """Тематические путеводители для изучения"""
+    __tablename__ = "learning_guides"
+
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Основная информация
+    guide_key = Column(String(50), unique=True, nullable=False)  # greetings, family, etc.
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    icon_name = Column(String(50), nullable=True)  # Название иконки
+    color = Column(String(20), nullable=True)  # Цвет темы
+    
+    # Метаданные
+    difficulty_level = Column(String(20), nullable=False)  # beginner, intermediate, advanced
+    estimated_minutes = Column(Integer, nullable=True)  # Примерное время изучения
+    target_word_count = Column(Integer, default=20)  # Целевое количество слов
+    
+    # Поисковые данные
+    keywords = Column(JSON, nullable=True)  # Ключевые слова для поиска
+    topics = Column(JSON, nullable=True)  # Связанные темы
+    
+    # Управление
+    is_active = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+    
+    # Даты
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Связи
+    user_progress = relationship("UserGuideProgress", back_populates="guide")
+
+# НОВАЯ модель: Прогресс по путеводителям
+class UserGuideProgress(Base):
+    """Прогресс пользователя по путеводителям"""
+    __tablename__ = "user_guide_progress"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    guide_id = Column(Integer, ForeignKey("learning_guides.id", ondelete="CASCADE"), nullable=False)
+    
+    # Статус прохождения
+    status = Column(Enum(GuideStatus), default=GuideStatus.NOT_STARTED, nullable=False)
+    
+    # Прогресс
+    words_completed = Column(Integer, default=0)  # Количество изученных слов
+    total_words_added = Column(Integer, default=0)  # Всего слов добавлено из путеводителя
+    
+    # Даты
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    last_accessed_at = Column(DateTime, nullable=True)
+    
+    # Метаданные
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Связи
+    user = relationship("User")
+    guide = relationship("LearningGuide", back_populates="user_progress")
+
+    # Ограничения
+    __table_args__ = (
+        UniqueConstraint('user_id', 'guide_id', name='unique_user_guide'),
+        Index('idx_user_guide_status', 'user_id', 'status'),
+    )
+
+# НОВАЯ модель: Связь слов с путеводителями
+class GuideWordMapping(Base):
+    """Связь слов с путеводителями"""
+    __tablename__ = "guide_word_mappings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    guide_id = Column(Integer, ForeignKey("learning_guides.id", ondelete="CASCADE"), nullable=False)
+    kazakh_word_id = Column(Integer, ForeignKey("kazakh_words.id", ondelete="CASCADE"), nullable=False)
+    
+    # Метаданные для слова в путеводителе
+    importance_score = Column(Float, default=1.0)  # Важность слова в путеводителе
+    order_in_guide = Column(Integer, nullable=True)  # Порядок изучения
+    
+    # Управление
+    is_active = Column(Boolean, default=True)
+    
+    # Даты
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Связи
+    guide = relationship("LearningGuide")
+    kazakh_word = relationship("KazakhWord")
+
+    # Ограничения
+    __table_args__ = (
+        UniqueConstraint('guide_id', 'kazakh_word_id', name='unique_guide_word'),
+        Index('idx_guide_words', 'guide_id', 'is_active'),
     )
 
 
 class UserSessionDetail(Base):
-    """Detailed tracking of each word interaction in a session"""
+    """Detailed results for each word in a session"""
     __tablename__ = "user_session_details"
 
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("user_learning_sessions.id", ondelete="CASCADE"), nullable=False)
     kazakh_word_id = Column(Integer, ForeignKey("kazakh_words.id", ondelete="CASCADE"), nullable=False)
 
-    # Interaction details
+    # Answer details
     was_correct = Column(Boolean, nullable=False)
-    response_time_ms = Column(Integer, nullable=True)  # Time to answer in milliseconds
-    user_answer = Column(String(200), nullable=True)  # What user answered
-    correct_answer = Column(String(200), nullable=True)  # What the correct answer was
+    user_answer = Column(Text, nullable=True)
+    correct_answer = Column(Text, nullable=True)
+    response_time_ms = Column(Integer, nullable=True)
 
-    # Question details
-    question_type = Column(String(50), nullable=True)  # 'translation', 'pronunciation', 'multiple_choice', etc.
-    question_language = Column(String(5), nullable=True)  # Language code of question
-    answer_language = Column(String(5), nullable=True)  # Language code of expected answer
+    # Question metadata
+    question_type = Column(String(50), nullable=True)
+    question_language = Column(String(5), nullable=True)
+    answer_language = Column(String(5), nullable=True)
 
-    # Timestamps
+    # Timestamp
     answered_at = Column(DateTime, default=datetime.utcnow)
 
-    # Relationships
+    # Relationships - ИСПРАВЛЕНО
     session = relationship("UserLearningSession", back_populates="session_details")
-    kazakh_word = relationship("KazakhWord", backref="session_details")
+    kazakh_word = relationship("KazakhWord")
 
     __table_args__ = (
         Index('idx_session_details_session', 'session_id'),
@@ -151,12 +265,12 @@ class UserLearningGoal(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     # Goal details
-    goal_type = Column(String(50), nullable=False)  # 'daily_words', 'weekly_practice', 'category_mastery', etc.
-    target_value = Column(Integer, nullable=False)  # Target number
-    current_value = Column(Integer, default=0)  # Current progress
+    goal_type = Column(String(50), nullable=False)
+    target_value = Column(Integer, nullable=False)
+    current_value = Column(Integer, default=0)
 
     # Goal metadata
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)  # If goal is category-specific
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
 
     # Status
@@ -172,10 +286,10 @@ class UserLearningGoal(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", backref="learning_goals")
-    category = relationship("Category", backref="learning_goals")
-    difficulty_level = relationship("DifficultyLevel", backref="learning_goals")
+    # Relationships - ИСПРАВЛЕНО
+    user = relationship("User", back_populates="learning_goals")
+    category = relationship("Category")
+    difficulty_level = relationship("DifficultyLevel")
 
     __table_args__ = (
         Index('idx_learning_goals_user', 'user_id'),
@@ -192,23 +306,14 @@ class UserAchievement(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     # Achievement details
-    achievement_type = Column(String(50), nullable=False)  # 'first_word', 'streak_7', 'category_complete', etc.
-    achievement_name = Column(String(100), nullable=False)
-    description = Column(Text, nullable=True)
-
-    # Achievement metadata
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    difficulty_level_id = Column(Integer, ForeignKey("difficulty_levels.id"), nullable=True)
-    value = Column(Integer, nullable=True)  # Achievement value (e.g., streak length)
+    achievement_type = Column(String(50), nullable=False)
+    achievement_data = Column(Text, nullable=True)  # JSON data for achievement details
 
     # Timestamps
     earned_at = Column(DateTime, default=datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", backref="achievements")
-    category = relationship("Category", backref="achievements")
-    difficulty_level = relationship("DifficultyLevel", backref="achievements")
+    # Relationships - ИСПРАВЛЕНО
+    user = relationship("User", back_populates="achievements")
 
     __table_args__ = (
         Index('idx_achievements_user', 'user_id'),
@@ -216,32 +321,26 @@ class UserAchievement(Base):
         Index('idx_achievements_earned', 'earned_at'),
     )
 
-
 class UserStreak(Base):
     """Track user's learning streaks"""
     __tablename__ = "user_streaks"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
 
-    # Streak details
-    streak_type = Column(String(50), default="daily")  # 'daily', 'weekly'
+    # Streak data
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
-
-    # Dates
     last_activity_date = Column(DateTime, nullable=True)
-    streak_start_date = Column(DateTime, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", backref="streaks")
+    # Relationships - ИСПРАВЛЕНО
+    user = relationship("User", back_populates="streak")
 
     __table_args__ = (
-        UniqueConstraint('user_id', 'streak_type', name='unique_user_streak_type'),
         Index('idx_streaks_user', 'user_id'),
         Index('idx_streaks_last_activity', 'last_activity_date'),
     )

@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 # Import from our database package
 from database import get_db, init_database, WordImage, KazakhWord, ExampleSentence, ExampleSentenceTranslation, \
-    WordType, Translation
+    WordType, Translation, Language
 from database.crud import (
     LanguageCRUD, CategoryCRUD, WordTypeCRUD, DifficultyLevelCRUD,
     KazakhWordCRUD, TranslationCRUD, PronunciationCRUD, WordSoundCRUD
