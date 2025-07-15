@@ -573,8 +573,8 @@ class UserLearningStatsCRUD:
         if accuracy_data.total_seen and accuracy_data.total_seen > 0:
             accuracy_rate = (accuracy_data.total_correct / accuracy_data.total_seen) * 100
 
-        # Current streak
-        streak = await UserStreakCRUD.get_user_streak(db, user_id)
+        # Current streak - ADD THE MISSING PARAMETER
+        streak = await UserStreakCRUD.get_user_streak(db, user_id, "daily")  # Added "daily" parameter
         current_streak = streak.current_streak if streak else 0
 
         # Words due for review
