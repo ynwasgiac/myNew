@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Union, Any
 from sqlalchemy.sql.elements import or_
 
 from database import get_db
-from database.models import (Category, CategoryTranslation, Language, KazakhWord, WordSound, LearningGuide, GuideWordMapping, 
+from database.models import (Category, CategoryTranslation, Language, KazakhWord, WordSound,
                             KazakhWord, WordImage, Translation, Pronunciation, WordType, DifficultyLevel)
 from database.crud import CategoryCRUD, LanguageCRUD
 from auth.dependencies import get_current_admin
@@ -29,6 +29,7 @@ from database.learning_models import (
     LearningGuide, UserGuideProgress, GuideWordMapping,
     GuideStatus  
 )
+
 
 from services.translation_service import (
     translation_service, 
@@ -1043,7 +1044,6 @@ async def delete_word(
         raise HTTPException(status_code=404, detail="Word not found")
 
     # Check if word has learning progress (optional - you might want to prevent deletion)
-    from database.learning_models import UserWordProgress
     progress_result = await db.execute(
         select(func.count(UserWordProgress.id))
         .where(UserWordProgress.kazakh_word_id == word_id)
@@ -1150,7 +1150,6 @@ async def bulk_delete_words(
         raise HTTPException(status_code=400, detail="No word IDs provided")
 
     # Check for learning progress
-    from database.learning_models import UserWordProgress
     progress_result = await db.execute(
         select(
             UserWordProgress.kazakh_word_id,
@@ -2069,7 +2068,6 @@ async def delete_word_with_media(
 
     # Check for user progress unless force delete
     if not force_delete:
-        from database.learning_models import UserWordProgress
         progress_result = await db.execute(
             select(func.count(UserWordProgress.id))
             .where(UserWordProgress.kazakh_word_id == word_id)
