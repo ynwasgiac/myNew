@@ -61,6 +61,7 @@ class UserSession(Base):
     expires_at = Column(DateTime, nullable=False)
     last_used = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    is_revoked = Column(Boolean, default=False)
 
     # Optional: track device/browser info
     user_agent = Column(String(500), nullable=True)

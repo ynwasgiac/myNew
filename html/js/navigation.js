@@ -163,7 +163,7 @@ async function loadCategories() {
     try {
         categoriesLoading = true;
         
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) {
             showNotification('Please log in to view categories', Config.NOTIFICATION.TYPES.ERROR);
             return;
@@ -791,7 +791,7 @@ let selectedDifficulty = null;
 
 async function loadAllWordsCategories() {
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) return;
         const userLanguage = Auth.getCurrentUserLanguage();
         const response = await fetch(`${Config.API.BASE_URL}/categories/?language_code=${userLanguage}&active_only=true`, {
@@ -853,7 +853,7 @@ function getCategoryTranslatedName(categoryName) {
 
 async function loadAllWordsTypes() {
     try {
-        const token = localStorage.getItem('auth_token');
+        ('access_token');
         if (!token) return;
         const userLanguage = Auth.getCurrentUserLanguage();
         const response = await fetch(`${Config.API.BASE_URL}/word-types/?language_code=${userLanguage}&active_only=true`, {
@@ -915,7 +915,7 @@ function getTypeTranslatedName(typeName) {
 
 async function loadAllWords() {
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) return;
         const userLanguage = Auth.getCurrentUserLanguage();
         // Fetch all words
@@ -1009,7 +1009,7 @@ function renderDifficultyBadge(difficulty) {
 
 async function loadAllWordsDifficultyLevels() {
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) return;
         const userLanguage = Auth.getCurrentUserLanguage();
         const response = await fetch(`${Config.API.BASE_URL}/difficulty-levels/?language_code=${userLanguage}&active_only=true`, {
@@ -1151,7 +1151,7 @@ function renderAllWordsTable() {
 
 async function fetchLearningStatus(wordId, cell, cache) {
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) {
             cell.textContent = '-';
             return;
@@ -1209,7 +1209,7 @@ function resetAllWordsPage() {
 
 window.addWordToFavorites = async function(wordId, btn) {
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) {
             showNotification('Please log in to add words', Config.NOTIFICATION.TYPES.ERROR);
             return;
@@ -1245,7 +1245,7 @@ window.addWordToFavorites = async function(wordId, btn) {
 window.playWordSound = async function(wordId, btn) {
     try {
         btn.disabled = true;
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const response = await fetch(`${Config.API.BASE_URL}/word-sounds/${wordId}`, { headers });
         if (!response.ok) throw new Error('No sound available');
@@ -1278,7 +1278,7 @@ async function loadMyWords() {
     if (!tbody) return;
     tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) {
             tbody.innerHTML = '<tr><td colspan="6">Please log in to see your words.</td></tr>';
             return;
@@ -1504,7 +1504,7 @@ async function loadTripCategories() {
         language = Auth.getCurrentUserLanguage() || 'ru';
     }
     try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         const resp = await fetch(`${Config.API.BASE_URL}/categories/?language_code=${language}&active_only=true`, {
             headers: {
                 'Authorization': `Bearer ${token}`

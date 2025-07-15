@@ -20,18 +20,23 @@ async def get_current_user(
     Get the current authenticated user from JWT token
     """
     token = credentials.credentials
+    print(f"DEBUG: Received token: {token[:20]}..." if len(token) > 20 else f"DEBUG: Received token: {token}")
 
     try:
         # Decode JWT token
         payload = decode_access_token(token)
+        print(f"DEBUG: Decoded payload: {payload}")
 
         # Extract user data from token
         username = payload.get("sub")
         user_id = payload.get("user_id")
         jti = payload.get("jti")
 
+        print(f"DEBUG: Extracted - username: {username}, user_id: {user_id}, jti: {jti}")
+
         # Validate required fields
         if not username or not user_id or not jti:
+            print("DEBUG: Missing required token fields")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token data",
@@ -40,7 +45,10 @@ async def get_current_user(
 
         # Check if session is valid
         session = await UserSessionCRUD.get_session_by_jti(db, jti)
+        print(f"DEBUG: Session lookup result: {session}")
+        
         if not session:
+            print("DEBUG: Session not found or expired")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Session expired or revoked",
@@ -49,7 +57,10 @@ async def get_current_user(
 
         # Get user from database
         user = await UserCRUD.get_user_by_id(db, user_id)
+        print(f"DEBUG: User lookup result: {user}")
+        
         if not user:
+            print("DEBUG: User not found")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
@@ -58,17 +69,20 @@ async def get_current_user(
 
         # Check if user is active
         if not user.is_active:
+            print("DEBUG: User account disabled")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User account disabled",
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
+        print(f"DEBUG: Authentication successful for user: {user.username}")
         return user
 
     except HTTPException:
         raise
     except Exception as e:
+        print(f"DEBUG: Authentication exception: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",

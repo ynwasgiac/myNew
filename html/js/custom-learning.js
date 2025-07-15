@@ -33,7 +33,7 @@ const BATCH_SIZE = 2;
 
 async function fetchWords() {
     // Fetch words for the category (API endpoint may need adjustment)
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('access_token');
     const userLanguage = localStorage.getItem('user_language') || 'kk';
     const resp = await fetch(`/api/categories/${categoryId}/words?language_code=${userLanguage}&skip=0&limit=100`, {
         headers: { 'Authorization': `Bearer ${token}` }

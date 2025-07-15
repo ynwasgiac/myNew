@@ -27,7 +27,7 @@ const Auth = {
     },
 
     async checkAuth() {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token');
         if (!token) {
             this.showAuthScreen();
             return;
@@ -52,7 +52,7 @@ const Auth = {
 
     async setMainLanguage(languageCode) {
         try {
-            const token = localStorage.getItem('auth_token');
+            const token = localStorage.getItem('access_token');
             if (!token) throw new Error('Not authenticated');
 
             const response = await fetch(`${Config.API.BASE_URL}/user/language`, {
@@ -90,7 +90,7 @@ const Auth = {
 
     async clearMainLanguage() {
         try {
-            const token = localStorage.getItem('auth_token');
+            const token = localStorage.getItem('access_token');
             if (!token) throw new Error('Not authenticated');
 
             const response = await fetch(`${Config.API.BASE_URL}/user/language`, {
@@ -250,12 +250,12 @@ const Auth = {
     },
 
     isAuthenticated() {
-        return !!localStorage.getItem('auth_token');
+        return !!localStorage.getItem('access_token');
     },
 
     logout() {
         // Clear all auth-related data
-        localStorage.removeItem('auth_token');
+        localStorage.removeItem('access_token');
         localStorage.removeItem('username');
         localStorage.removeItem('user_role');
         //localStorage.removeItem('user_language');
@@ -331,7 +331,7 @@ async function handleLogin(event) {
         const data = await response.json();
         
         // Store auth data
-        localStorage.setItem('auth_token', data.access_token);
+        localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('username', username);
         localStorage.setItem('user_role', data.user_role);
         if (data.user_language) {

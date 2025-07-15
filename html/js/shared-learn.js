@@ -5,7 +5,7 @@ const LearnShared = {
     
     // Common utility functions
     getToken() {
-        return localStorage.getItem('auth_token');
+        return localStorage.getItem('access_token');
     },
 
     getQueryParam(name) {

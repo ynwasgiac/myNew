@@ -78,7 +78,7 @@ async def check_and_refresh_token(
                     "sub": user.username,
                     "user_id": user.id,
                     "role": user.role.value,
-                    "jti": new_session.jti
+                    "jti": new_session.token_jti
                 }
             )
 
@@ -185,7 +185,7 @@ async def refresh_token(
                 "sub": user.username,
                 "user_id": user.id,
                 "role": user.role.value,
-                "jti": new_session.jti
+                "jti": new_session.token_jti
             }
         )
 
