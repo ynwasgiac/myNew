@@ -56,7 +56,7 @@ class UserSession(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    jti = Column(String(36), unique=True, nullable=False)  # JWT ID for token revocation
+    token_jti = Column(String(36), unique=True, nullable=False)  # JWT ID for token revocation
     created_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime, nullable=False)
     last_used = Column(DateTime, default=datetime.utcnow)
