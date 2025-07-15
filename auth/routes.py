@@ -98,7 +98,7 @@ async def login_user(
             "sub": user.username,
             "user_id": user.id,
             "role": user.role.value,
-            "jti": session.jti
+            "jti": session.token_jti
         },
         expires_delta=access_token_expires
     )

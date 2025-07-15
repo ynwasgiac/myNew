@@ -70,4 +70,4 @@ class UserSession(Base):
     user = relationship("User", back_populates="sessions")
 
     def __repr__(self):
-        return f"<UserSession(id={self.id}, user_id={self.user_id}, jti='{self.jti}')>"
+        return f"<UserSession(id={self.id}, user_id={self.user_id}, token_jti='{self.jti}')>"

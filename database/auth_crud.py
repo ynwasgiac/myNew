@@ -178,7 +178,7 @@ class UserSessionCRUD:
 
         db_session = UserSession(
             user_id=user_id,
-            jti=jti,
+            token_jti=jti,
             expires_at=expires_at
         )
         db.add(db_session)
@@ -192,7 +192,7 @@ class UserSessionCRUD:
         result = await db.execute(
             select(UserSession).where(
                 and_(
-                    UserSession.jti == jti,
+                    UserSession.token_jti == jti,
                     UserSession.is_revoked == False,
                     UserSession.expires_at > datetime.utcnow()
                 )
@@ -205,7 +205,7 @@ class UserSessionCRUD:
         """Revoke a session"""
         stmt = (
             update(UserSession)
-            .where(UserSession.jti == jti)
+            .where(UserSession.token_jti == jti)
             .values(is_revoked=True)
         )
         result = await db.execute(stmt)
