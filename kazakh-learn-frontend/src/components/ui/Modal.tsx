@@ -1,4 +1,4 @@
-// src/components/ui/Modal.tsx
+// src/components/ui/Modal.tsx - Updated version
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -6,7 +6,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | 'small' | 'medium' | 'large' | 'xlarge';
   title?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
@@ -24,6 +24,19 @@ const Modal: React.FC<ModalProps> = ({
   closeOnBackdropClick = true,
   className = ''
 }) => {
+  // Support both old and new size naming conventions
+  const normalizeSize = (size: string) => {
+    switch (size) {
+      case 'small': return 'sm';
+      case 'medium': return 'md';  
+      case 'large': return '2xl';
+      case 'xlarge': return '4xl';
+      default: return size;
+    }
+  };
+
+  const normalizedSize = normalizeSize(size);
+
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -40,9 +53,21 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
+  // Handle escape key
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
+      <Dialog 
+        as="div" 
+        className="relative z-50" 
+        onClose={handleClose}
+        onKeyDown={handleKeyDown}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -52,7 +77,7 @@ const Modal: React.FC<ModalProps> = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -68,13 +93,15 @@ const Modal: React.FC<ModalProps> = ({
             >
               <Dialog.Panel
                 className={`
-                  w-full ${sizeClasses[size]} transform overflow-hidden rounded-lg 
-                  bg-white text-left align-middle shadow-xl transition-all ${className}
+                  w-full ${sizeClasses[normalizedSize as keyof typeof sizeClasses]} 
+                  transform overflow-hidden rounded-lg bg-white text-left 
+                  align-middle shadow-xl transition-all max-h-[90vh] 
+                  flex flex-col ${className}
                 `}
               >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
                     {title && (
                       <Dialog.Title
                         as="h3"
@@ -87,9 +114,9 @@ const Modal: React.FC<ModalProps> = ({
                       <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 p-1 transition-colors"
+                        aria-label="Close modal"
                       >
-                        <span className="sr-only">Close</span>
                         <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
@@ -97,7 +124,10 @@ const Modal: React.FC<ModalProps> = ({
                 )}
 
                 {/* Content */}
-                <div className={title || showCloseButton ? '' : 'p-6'}>
+                <div className={`
+                  ${title || showCloseButton ? 'p-6' : 'p-6'} 
+                  overflow-y-auto flex-1
+                `}>
                   {children}
                 </div>
               </Dialog.Panel>

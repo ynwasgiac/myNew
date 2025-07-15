@@ -1,6 +1,6 @@
-// src/i18n/resources.ts - Updated to handle locale variations
+// src/i18n/resources.ts - Updated to include guides translations
 
-// import commonEn from '../locales/en/common.json';
+// Import all existing translations
 import categoriesEn from '../locales/en/categories.json';
 import wordsEn from '../locales/en/words.json';
 import wordDetailEn from '../locales/en/wordDetail.json';
@@ -18,8 +18,8 @@ import learningGoalsEn from '../locales/en/learningGoals.json';
 import recentActivityEn from '../locales/en/recentActivity.json';
 import wordsToReviewEn from '../locales/en/wordsToReview.json';
 import navigationEn from '../locales/en/navigation.json';
+import guidesEn from '../locales/en/guides.json'; // ← New import
 
-// import commonKk from '../locales/kk/common.json';
 import categoriesKk from '../locales/kk/categories.json';
 import wordsKk from '../locales/kk/words.json';
 import wordDetailKk from '../locales/kk/wordDetail.json';
@@ -37,9 +37,8 @@ import learningGoalsKk from '../locales/kk/learningGoals.json';
 import recentActivityKk from '../locales/kk/recentActivity.json';
 import wordsToReviewKk from '../locales/kk/wordsToReview.json';
 import navigationKk from '../locales/kk/navigation.json';
+import guidesKk from '../locales/kk/guides.json'; // ← New import
 
-
-// import commonRu from '../locales/ru/common.json';
 import categoriesRu from '../locales/ru/categories.json';
 import wordsRu from '../locales/ru/words.json';
 import wordDetailRu from '../locales/ru/wordDetail.json';
@@ -57,12 +56,11 @@ import learningGoalsRu from '../locales/ru/learningGoals.json';
 import recentActivityRu from '../locales/ru/recentActivity.json';
 import wordsToReviewRu from '../locales/ru/wordsToReview.json';
 import navigationRu from '../locales/ru/navigation.json';
-
+import guidesRu from '../locales/ru/guides.json'; // ← New import
 
 // Create the base resources
 const baseResources = {
   en: {
-    // common: commonEn,
     categories: categoriesEn,
     words: wordsEn,
     wordDetail: wordDetailEn,
@@ -80,9 +78,9 @@ const baseResources = {
     recentActivity: recentActivityEn,
     wordsToReview: wordsToReviewEn,
     navigation: navigationEn,
+    guides: guidesEn, // ← New addition
   },
   kk: {
-    // common: commonKk,
     categories: categoriesKk,
     words: wordsKk,
     wordDetail: wordDetailKk,
@@ -100,9 +98,9 @@ const baseResources = {
     recentActivity: recentActivityKk,
     wordsToReview: wordsToReviewKk,
     navigation: navigationKk,
+    guides: guidesKk, // ← New addition
   },
   ru: {
-    // common: commonRu,
     categories: categoriesRu,
     words: wordsRu,
     wordDetail: wordDetailRu,
@@ -120,6 +118,7 @@ const baseResources = {
     recentActivity: recentActivityRu,
     wordsToReview: wordsToReviewRu,
     navigation: navigationRu,
+    guides: guidesRu, // ← New addition
   },
 };
 
@@ -129,7 +128,7 @@ export const resources = {
   // Handle locale variations
   'en-US': baseResources.en,
   'en-GB': baseResources.en,
-  'ru-RU': baseResources.ru, // ← This fixes your issue
+  'ru-RU': baseResources.ru,
   'ru-KZ': baseResources.ru,
   'kk-KZ': baseResources.kk,
   'kk-Cyrl': baseResources.kk,

@@ -1,0 +1,89 @@
+{
+    "page": {
+      "title": "Learning Guides",
+      "subtitle": "Structured learning paths for Kazakh language",
+      "description": "Choose a guided learning path to master specific topics in Kazakh. Each guide contains carefully selected vocabulary and interactive exercises."
+    },
+    "search": {
+      "placeholder": "Search guides...",
+      "noResults": "No guides found",
+      "noResultsDescription": "Try changing your search terms"
+    },
+    "difficulty": {
+      "all": "All levels",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate", 
+      "advanced": "Advanced"
+    },
+    "filters": {
+      "difficulty": "Difficulty Level"
+    },
+    "guides": {
+      "greetings": {
+        "title": "Greeting and Introduction",
+        "description": "Basic phrases for meeting and greeting people",
+        "topics": ["Greeting", "Introduction", "Politeness"]
+      },
+      "family": {
+        "title": "Family and Relatives", 
+        "description": "Words to describe family relationships",
+        "topics": ["Family", "Relatives", "Relationships"]
+      },
+      "home": {
+        "title": "Home and Household",
+        "description": "Household items and rooms", 
+        "topics": ["Home", "Furniture", "Rooms", "Household"]
+      },
+      "food": {
+        "title": "Food and Drinks",
+        "description": "Names of dishes, products and beverages",
+        "topics": ["Food", "Drinks", "Kitchen", "Restaurants"]
+      },
+      "transport": {
+        "title": "Transport and Travel",
+        "description": "Types of transport and travel words",
+        "topics": ["Transport", "Travel", "Road"]
+      },
+      "work": {
+        "title": "Work and Professions", 
+        "description": "Job titles and work vocabulary",
+        "topics": ["Professions", "Work", "Office", "Career"]
+      },
+      "education": {
+        "title": "Education and Learning",
+        "description": "School and university vocabulary", 
+        "topics": ["School", "University", "Science", "Learning"]
+      },
+      "time": {
+        "title": "Time and Calendar",
+        "description": "Days of the week, months, time of day",
+        "topics": ["Time", "Calendar", "Days", "Months"]
+      }
+    },
+    "status": {
+      "not_started": "Not started",
+      "in_progress": "In progress", 
+      "completed": "Completed"
+    },
+    "actions": {
+      "start": "Start Guide",
+      "continue": "Continue",
+      "restart": "Restart",
+      "view_words": "View Words",
+      "practice": "Practice"
+    },
+    "stats": {
+      "estimatedTime": "Estimated time",
+      "wordCount": "words",
+      "progress": "Progress",
+      "wordsCompleted": "words completed"
+    },
+    "messages": {
+      "guideStarted": "Guide \"{title}\" started!",
+      "wordsAdded": "Added {count} words",
+      "startError": "Failed to start guide",
+      "loadError": "Failed to load guides",
+      "noGuides": "No guides available",
+      "checkLater": "Check back later or contact administrator"
+    }
+  }

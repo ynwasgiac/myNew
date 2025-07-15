@@ -24,6 +24,9 @@ import AdminWordsPage from './pages/admin/AdminWordsPage';
 // Error Pages (your existing ones)
 import NotFoundPage from './pages/error/NotFoundPage';
 
+import GuidesAdminPage from './pages/admin/GuidesAdminPage';
+import GuideWordsAdminPage from './pages/admin/GuideWordsAdminPage';
+
 import './styles/globals.css';
 
 // Create React Query client
@@ -166,6 +169,9 @@ function App() {
                   } 
                 />
               </Route>
+
+              <Route path="guides" element={<GuidesAdminPage />} />
+              <Route path="guides/:guideId/words" element={<GuideWordsAdminPage />} />
 
               {/* Root redirect */}
               <Route path="/" element={<Navigate to="/app/dashboard" replace />} />

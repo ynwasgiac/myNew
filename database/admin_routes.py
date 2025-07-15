@@ -190,7 +190,58 @@ class TranslationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+# ===== GUIDE WORD MANAGEMENT SCHEMAS =====
 
+class GuideWordMappingResponse(BaseModel):
+    id: int
+    guide_id: int
+    kazakh_word_id: int
+    importance_score: float
+    order_in_guide: Optional[int]
+    is_active: bool
+    created_at: str
+    
+    # Word details
+    kazakh_word: str
+    kazakh_cyrillic: Optional[str]
+    category_name: str
+    difficulty_level: int
+    primary_translation: Optional[str]
+    
+    class Config:
+        from_attributes = True
+
+class GuideWordMappingCreate(BaseModel):
+    guide_id: int
+    kazakh_word_id: int
+    importance_score: float = 1.0
+    order_in_guide: Optional[int] = None
+
+class GuideWordMappingUpdate(BaseModel):
+    importance_score: Optional[float] = None
+    order_in_guide: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class AddWordsToGuideRequest(BaseModel):
+    word_ids: List[int]
+    importance_score: float = 1.0
+    auto_order: bool = True  # Automatically assign order_in_guide
+
+class GuideWithWordsResponse(BaseModel):
+    id: int
+    guide_key: str
+    title: str
+    description: Optional[str]
+    difficulty_level: str
+    target_word_count: int
+    current_word_count: int
+    is_active: bool
+    words: List[GuideWordMappingResponse]
+    
+    class Config:
+        from_attributes = True
+
+# ===== GUIDE WORD MANAGEMENT ENDPOINTS =====
 
 # ===== ADMIN CATEGORY ENDPOINTS =====
 
@@ -3597,6 +3648,416 @@ async def get_translation_analytics(
     except Exception as e:
         logger.error(f"Error getting translation analytics: {e}")
         raise HTTPException(status_code=500, detail="Failed to get translation analytics")
+
+# ===== GUIDE WORD MANAGEMENT ENDPOINTS =====
+
+@admin_router.get("/guides", response_model=List[Dict[str, Any]])
+async def get_admin_guides(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    difficulty: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
+    search: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get all learning guides for admin management"""
+    try:
+        query = select(LearningGuide)
+        
+        # Apply filters
+        if difficulty:
+            query = query.where(LearningGuide.difficulty_level == difficulty)
+        if is_active is not None:
+            query = query.where(LearningGuide.is_active == is_active)
+        if search:
+            query = query.where(
+                or_(
+                    LearningGuide.title.ilike(f"%{search}%"),
+                    LearningGuide.description.ilike(f"%{search}%"),
+                    LearningGuide.guide_key.ilike(f"%{search}%")
+                )
+            )
+        
+        # Get count for each guide
+        word_count_subquery = (
+            select(
+                GuideWordMapping.guide_id,
+                func.count(GuideWordMapping.id).label('word_count')
+            )
+            .where(GuideWordMapping.is_active == True)
+            .group_by(GuideWordMapping.guide_id)
+            .subquery()
+        )
+        
+        query = (
+            query
+            .outerjoin(word_count_subquery, LearningGuide.id == word_count_subquery.c.guide_id)
+            .add_columns(func.coalesce(word_count_subquery.c.word_count, 0).label('current_word_count'))
+            .order_by(LearningGuide.sort_order, LearningGuide.id)
+            .offset(skip)
+            .limit(limit)
+        )
+        
+        result = await db.execute(query)
+        guides_data = result.all()
+        
+        guides = []
+        for guide, word_count in guides_data:
+            guides.append({
+                'id': guide.id,
+                'guide_key': guide.guide_key,
+                'title': guide.title,
+                'description': guide.description,
+                'difficulty_level': guide.difficulty_level,
+                'estimated_minutes': guide.estimated_minutes,
+                'target_word_count': guide.target_word_count,
+                'current_word_count': word_count,
+                'is_active': guide.is_active,
+                'created_at': guide.created_at.isoformat(),
+                'updated_at': guide.updated_at.isoformat()
+            })
+        
+        return guides
+        
+    except Exception as e:
+        logger.error(f"Error getting admin guides: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch guides")
+
+@admin_router.get("/guides/{guide_id}/words", response_model=List[GuideWordMappingResponse])
+async def get_guide_words(
+    guide_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    search: Optional[str] = Query(None),
+    sort_by: str = Query("order_in_guide"),
+    sort_direction: str = Query("asc"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get words assigned to a specific guide"""
+    try:
+        # Check if guide exists
+        guide = await db.get(LearningGuide, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Build query with joins
+        query = (
+            select(GuideWordMapping, KazakhWord, Category, DifficultyLevel)
+            .join(KazakhWord, GuideWordMapping.kazakh_word_id == KazakhWord.id)
+            .join(Category, KazakhWord.category_id == Category.id)
+            .join(DifficultyLevel, KazakhWord.difficulty_level_id == DifficultyLevel.id)
+            .where(GuideWordMapping.guide_id == guide_id)
+        )
+        
+        # Apply search filter
+        if search:
+            query = query.where(
+                or_(
+                    KazakhWord.kazakh_word.ilike(f"%{search}%"),
+                    KazakhWord.kazakh_cyrillic.ilike(f"%{search}%"),
+                    Category.category_name.ilike(f"%{search}%")
+                )
+            )
+        
+        # Apply sorting
+        if sort_by == "order_in_guide":
+            sort_column = GuideWordMapping.order_in_guide
+        elif sort_by == "importance_score":
+            sort_column = GuideWordMapping.importance_score
+        elif sort_by == "kazakh_word":
+            sort_column = KazakhWord.kazakh_word
+        elif sort_by == "difficulty":
+            sort_column = DifficultyLevel.level_number
+        else:
+            sort_column = GuideWordMapping.order_in_guide
+        
+        if sort_direction == "desc":
+            query = query.order_by(desc(sort_column))
+        else:
+            query = query.order_by(asc(sort_column))
+        
+        query = query.offset(skip).limit(limit)
+        
+        result = await db.execute(query)
+        mappings_data = result.all()
+        
+        # Get primary translations
+        word_ids = [mapping.kazakh_word_id for mapping, _, _, _ in mappings_data]
+        translations_query = (
+            select(Translation)
+            .join(Language, Translation.language_id == Language.id)
+            .where(
+                and_(
+                    Translation.kazakh_word_id.in_(word_ids),
+                    Language.language_code == 'en'  # Default to English
+                )
+            )
+        )
+        translations_result = await db.execute(translations_query)
+        translations = {t.kazakh_word_id: t.translation for t in translations_result.scalars().all()}
+        
+        # Build response
+        guide_words = []
+        for mapping, word, category, difficulty in mappings_data:
+            guide_words.append(GuideWordMappingResponse(
+                id=mapping.id,
+                guide_id=mapping.guide_id,
+                kazakh_word_id=mapping.kazakh_word_id,
+                importance_score=mapping.importance_score,
+                order_in_guide=mapping.order_in_guide,
+                is_active=mapping.is_active,
+                created_at=mapping.created_at.isoformat(),
+                kazakh_word=word.kazakh_word,
+                kazakh_cyrillic=word.kazakh_cyrillic,
+                category_name=category.category_name,
+                difficulty_level=difficulty.level_number,
+                primary_translation=translations.get(word.id)
+            ))
+        
+        return guide_words
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting guide words: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch guide words")
+
+@admin_router.post("/guides/{guide_id}/words", response_model=Dict[str, Any])
+async def add_words_to_guide(
+    guide_id: int,
+    request: AddWordsToGuideRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Add multiple words to a guide"""
+    try:
+        # Check if guide exists
+        guide = await db.get(LearningGuide, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Check if words exist
+        words_query = select(KazakhWord).where(KazakhWord.id.in_(request.word_ids))
+        words_result = await db.execute(words_query)
+        existing_words = {w.id for w in words_result.scalars().all()}
+        
+        missing_words = set(request.word_ids) - existing_words
+        if missing_words:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Words not found: {list(missing_words)}"
+            )
+        
+        # Check for existing mappings
+        existing_mappings_query = (
+            select(GuideWordMapping.kazakh_word_id)
+            .where(
+                and_(
+                    GuideWordMapping.guide_id == guide_id,
+                    GuideWordMapping.kazakh_word_id.in_(request.word_ids)
+                )
+            )
+        )
+        existing_mappings_result = await db.execute(existing_mappings_query)
+        already_mapped = {m for m in existing_mappings_result.scalars().all()}
+        
+        new_word_ids = set(request.word_ids) - already_mapped
+        
+        if not new_word_ids:
+            return {
+                "message": "All words are already in the guide",
+                "added_count": 0,
+                "skipped_count": len(already_mapped),
+                "total_requested": len(request.word_ids)
+            }
+        
+        # Get current max order if auto_order is enabled
+        current_max_order = 0
+        if request.auto_order:
+            max_order_query = (
+                select(func.max(GuideWordMapping.order_in_guide))
+                .where(GuideWordMapping.guide_id == guide_id)
+            )
+            max_order_result = await db.execute(max_order_query)
+            current_max_order = max_order_result.scalar() or 0
+        
+        # Create new mappings
+        new_mappings = []
+        for i, word_id in enumerate(new_word_ids):
+            order_in_guide = current_max_order + i + 1 if request.auto_order else None
+            
+            mapping = GuideWordMapping(
+                guide_id=guide_id,
+                kazakh_word_id=word_id,
+                importance_score=request.importance_score,
+                order_in_guide=order_in_guide,
+                is_active=True
+            )
+            new_mappings.append(mapping)
+        
+        db.add_all(new_mappings)
+        await db.commit()
+        
+        return {
+            "message": f"Successfully added {len(new_mappings)} words to guide",
+            "added_count": len(new_mappings),
+            "skipped_count": len(already_mapped),
+            "total_requested": len(request.word_ids),
+            "guide_id": guide_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error adding words to guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add words to guide")
+
+@admin_router.put("/guides/{guide_id}/words/{mapping_id}", response_model=GuideWordMappingResponse)
+async def update_guide_word_mapping(
+    guide_id: int,
+    mapping_id: int,
+    request: GuideWordMappingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Update a word mapping in a guide"""
+    try:
+        # Get the mapping
+        mapping = await db.get(GuideWordMapping, mapping_id)
+        if not mapping or mapping.guide_id != guide_id:
+            raise HTTPException(status_code=404, detail="Mapping not found")
+        
+        # Update fields
+        if request.importance_score is not None:
+            mapping.importance_score = request.importance_score
+        if request.order_in_guide is not None:
+            mapping.order_in_guide = request.order_in_guide
+        if request.is_active is not None:
+            mapping.is_active = request.is_active
+        
+        await db.commit()
+        await db.refresh(mapping)
+        
+        # Get additional data for response
+        word_query = (
+            select(KazakhWord, Category, DifficultyLevel, Translation)
+            .join(Category, KazakhWord.category_id == Category.id)
+            .join(DifficultyLevel, KazakhWord.difficulty_level_id == DifficultyLevel.id)
+            .outerjoin(Translation, 
+                and_(
+                    Translation.kazakh_word_id == KazakhWord.id,
+                    Translation.language_id == 1  # Assuming English is language_id 1
+                )
+            )
+            .where(KazakhWord.id == mapping.kazakh_word_id)
+        )
+        word_result = await db.execute(word_query)
+        word_data = word_result.first()
+        
+        if not word_data:
+            raise HTTPException(status_code=404, detail="Word not found")
+        
+        word, category, difficulty, translation = word_data
+        
+        return GuideWordMappingResponse(
+            id=mapping.id,
+            guide_id=mapping.guide_id,
+            kazakh_word_id=mapping.kazakh_word_id,
+            importance_score=mapping.importance_score,
+            order_in_guide=mapping.order_in_guide,
+            is_active=mapping.is_active,
+            created_at=mapping.created_at.isoformat(),
+            kazakh_word=word.kazakh_word,
+            kazakh_cyrillic=word.kazakh_cyrillic,
+            category_name=category.category_name,
+            difficulty_level=difficulty.level_number,
+            primary_translation=translation.translation if translation else None
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error updating guide word mapping: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update mapping")
+
+@admin_router.delete("/guides/{guide_id}/words/{mapping_id}")
+async def remove_word_from_guide(
+    guide_id: int,
+    mapping_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Remove a word from a guide"""
+    try:
+        # Get the mapping
+        mapping = await db.get(GuideWordMapping, mapping_id)
+        if not mapping or mapping.guide_id != guide_id:
+            raise HTTPException(status_code=404, detail="Mapping not found")
+        
+        await db.delete(mapping)
+        await db.commit()
+        
+        return {"message": "Word removed from guide successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error removing word from guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to remove word from guide")
+
+@admin_router.post("/guides/{guide_id}/words/reorder")
+async def reorder_guide_words(
+    guide_id: int,
+    word_orders: List[Dict[str, int]],  # [{"mapping_id": 1, "order": 1}, ...]
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Reorder words in a guide"""
+    try:
+        # Validate guide exists
+        guide = await db.get(LearningGuide, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Get mapping IDs
+        mapping_ids = [item["mapping_id"] for item in word_orders]
+        
+        # Get existing mappings
+        mappings_query = (
+            select(GuideWordMapping)
+            .where(
+                and_(
+                    GuideWordMapping.guide_id == guide_id,
+                    GuideWordMapping.id.in_(mapping_ids)
+                )
+            )
+        )
+        mappings_result = await db.execute(mappings_query)
+        mappings = {m.id: m for m in mappings_result.scalars().all()}
+        
+        # Update orders
+        for item in word_orders:
+            mapping_id = item["mapping_id"]
+            new_order = item["order"]
+            
+            if mapping_id in mappings:
+                mappings[mapping_id].order_in_guide = new_order
+        
+        await db.commit()
+        
+        return {"message": f"Reordered {len(word_orders)} words successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error reordering guide words: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reorder words")
 
 # Add the admin router to your main app
 # In your main.py, add:
