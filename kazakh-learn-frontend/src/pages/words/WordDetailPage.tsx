@@ -30,6 +30,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import type { KazakhWord, UserWordProgress, WordSound } from '../../types/api';
+import { useLearningMutations } from '../../hooks/useLearningMutations';
 
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
@@ -525,24 +526,23 @@ const WordDetailPage: React.FC = () => {
   };
 
   // Mutations (keeping existing code)
-  const addToLearningMutation = useMutation({
-    mutationFn: (wordIds: number[]) => learningAPI.addWordToLearning(wordIds),
-    onSuccess: () => {
+  const { addToLearningMutation, removeFromLearningMutation } = useLearningMutations({
+    onAddSuccess: (data: any, variables: any) => {
       toast.success(t('messages.addedToLearning'));
       queryClient.invalidateQueries({ queryKey: ['word-progress', wordId] });
       queryClient.invalidateQueries({ queryKey: ['learning-progress'] });
     },
-    onError: () => toast.error(t('messages.addToLearningError')),
-  });
-
-  const removeFromLearningMutation = useMutation({
-    mutationFn: (wordIds: number[]) => learningAPI.removeWordFromLearning(wordIds),
-    onSuccess: () => {
+    onRemoveSuccess: (data: any, variables: any) => {
       toast.success(t('messages.removedFromLearning'));
       queryClient.invalidateQueries({ queryKey: ['word-progress', wordId] });
       queryClient.invalidateQueries({ queryKey: ['learning-progress'] });
     },
-    onError: () => toast.error(t('messages.removeFromLearningError')),
+    onAddError: (error: any) => {
+      toast.error(t('messages.addToLearningError'));
+    },
+    onRemoveError: (error: any) => {
+      toast.error(t('messages.removeFromLearningError'));
+    }
   });
 
   const updateProgressMutation = useMutation({
@@ -559,7 +559,7 @@ const WordDetailPage: React.FC = () => {
     if (progress) {
       removeFromLearningMutation.mutate([wordId]);
     } else {
-      addToLearningMutation.mutate([wordId]);
+      addToLearningMutation.mutate({ wordIds: [wordId], status: 'want_to_learn' });
     }
   };
 
@@ -1210,7 +1210,7 @@ const WordDetailPage: React.FC = () => {
                     {t('progress.addToTrackDescription')}
                   </p>
                   <button
-                    onClick={() => addToLearningMutation.mutate([wordId])}
+                    onClick={() => addToLearningMutation.mutate({ wordIds: [wordId], status: 'want_to_learn' })}
                     disabled={addToLearningMutation.isPending}
                     className="btn-primary"
                   >
