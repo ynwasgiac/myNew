@@ -230,10 +230,14 @@ class UserStreak(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
+    # ✅ ADD THIS LINE - Missing streak_type column
+    streak_type = Column(String(20), default="daily", nullable=False)  # daily, weekly, monthly
+
     # Streak data
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
     last_activity_date = Column(DateTime, nullable=True)
+    streak_start_date = Column(DateTime, nullable=True)  # Also add this if missing
 
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -244,7 +248,8 @@ class UserStreak(Base):
 
     __table_args__ = (
         Index('idx_streaks_user', 'user_id'),
-        UniqueConstraint('user_id', name='unique_user_streak'),
+        Index('idx_streaks_type', 'streak_type'),  # Add index for streak_type
+        UniqueConstraint('user_id', 'streak_type', name='unique_user_streak_type'),  # Update constraint
     )
 
 
