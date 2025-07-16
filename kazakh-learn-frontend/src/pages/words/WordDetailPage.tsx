@@ -587,7 +587,7 @@ const WordDetailPage: React.FC = () => {
     if (progress) {
       updateProgressMutation.mutate({ status: 'learned' });
     } else {
-      addToLearningMutation.mutate([wordId]);
+      addToLearningMutation.mutate({ wordIds: [wordId], status: 'want_to_learn' });
       setTimeout(() => {
         updateProgressMutation.mutate({ status: 'learned' });
       }, 1000);
