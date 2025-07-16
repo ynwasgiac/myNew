@@ -14,7 +14,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
-import { practiceAPI, learningAPI, wordsAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
+import { wordsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -335,7 +336,7 @@ const PracticePage: React.FC = () => {
       // Only try backend submission for review words
       if (wordSource === 'review') {
         try {
-          return practiceAPI.submitPracticeAnswer(
+          return learningAPI.submitPracticeAnswer2(
             data.sessionId,
             data.wordId,
             data.wasCorrect,
@@ -367,7 +368,7 @@ const PracticePage: React.FC = () => {
     mutationFn: (data: { sessionId: number; duration: number }) => {
       if (wordSource === 'review') {
         try {
-          return practiceAPI.finishPracticeSession(data.sessionId, data.duration);
+          return learningAPI.finishPracticeSession(data.sessionId, data.duration);
         } catch (error) {
           return Promise.resolve({ success: true, message: 'Local completion' });
         }

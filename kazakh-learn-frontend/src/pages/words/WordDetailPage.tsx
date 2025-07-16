@@ -24,7 +24,8 @@ import {
 } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';
 
-import { wordsAPI, learningAPI } from '../../services/api';
+import { wordsAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';

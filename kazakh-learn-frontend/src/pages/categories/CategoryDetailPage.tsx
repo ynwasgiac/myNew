@@ -12,7 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
-import { categoriesAPI, wordsAPI, learningAPI } from '../../services/api';
+import { categoriesAPI, wordsAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { Category, KazakhWordSummary } from '../../types/api';

@@ -1,6 +1,7 @@
 // src/hooks/useWords.ts - Updated with pagination support
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { wordsAPI, learningAPI } from '../services/api';
+import { wordsAPI } from '../services/api';
+import { learningAPI } from '../services/learningAPI';
 import type { WordFilters, PaginatedWordsResponse } from '../types/api';
 
 // New hook for paginated words

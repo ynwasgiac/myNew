@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { learningAPI, practiceAPI } from '../../services/api';
+import { learningAPI  } from '../../services/learningAPI';
 import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
 import type { UserWordProgressWithWord } from '../../types/api';
 import { toast } from 'sonner';

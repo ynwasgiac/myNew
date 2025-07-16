@@ -109,6 +109,38 @@ export const learningAPI = {
     });
     return response.data;
   },
+  async submitPracticeAnswer2(
+    sessionId: number,
+    wordId: number,
+    wasCorrect: boolean,
+    userAnswer?: string,
+    correctAnswer?: string,
+    responseTimeMs?: number
+  ): Promise<void> {
+    // Build query parameters exactly as your backend expects
+    const params = new URLSearchParams();
+    params.append('word_id', wordId.toString());
+    params.append('was_correct', wasCorrect.toString());
+    
+    if (userAnswer) {
+      params.append('user_answer', userAnswer);
+    }
+    
+    if (correctAnswer) {
+      params.append('correct_answer', correctAnswer);
+    }
+    
+    if (responseTimeMs !== undefined) {
+      params.append('response_time_ms', responseTimeMs.toString());
+    }
+
+    const url = `/learning/practice/${sessionId}/answer?${params}`;
+    
+    console.log('🚀 Submitting to URL:', url);
+    
+    // POST request with empty body since all data is in query parameters
+    await api.post(url);
+  },
 
   // Завершить сессию практики
   async finishPracticeSession(sessionId: number, durationSeconds?: number): Promise<any> {
@@ -122,7 +154,8 @@ export const learningAPI = {
   async getDashboard(): Promise<any> {
     const response = await api.get('/learning/dashboard');
     return response.data;
-  }
+  },
+  
 };
 
 export default learningAPI;

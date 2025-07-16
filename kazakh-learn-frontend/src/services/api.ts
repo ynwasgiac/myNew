@@ -276,36 +276,6 @@ export const languagesAPI = {
 
 // Learning Progress API
 export const learningAPI = {
-  async getDashboard(): Promise<any> {
-    const response = await api.get('/learning/dashboard');
-    return response.data;
-  },
-
-  async getStats(): Promise<LearningStats> {
-    const response = await api.get<LearningStats>('/learning/stats');
-    return response.data;
-  },
-
-  async getProgress(filters: LearningFilters = {}): Promise<UserWordProgress[]> {
-    // Get ALL learning words, not just want_to_learn
-    const params = new URLSearchParams();
-    params.append('limit', '1000'); // Get all learning words
-    params.append('offset', '0');
-    
-    // Only add status filter if specifically requested
-    if (filters.status) {
-      params.append('status', filters.status);
-    }
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && key !== 'status') {
-        params.append(key, value.toString());
-      }
-    });
-    
-    const response = await api.get<UserWordProgress[]>(`/learning/words/my-list?${params}`);
-    return response.data;
-  },
   
   // Single word - uses the endpoint with word_id in URL
   async addSingleWordToLearning(wordId: number, status?: string): Promise<void> {
@@ -324,17 +294,6 @@ export const learningAPI = {
     });
   },
 
-  // Smart function that chooses the right endpoint based on array length
-  async addWordToLearning(wordIds: number[], status?: string): Promise<void> {
-    if (wordIds.length === 1) {
-      // Single word - use the single word endpoint
-      await this.addSingleWordToLearning(wordIds[0], status);
-    } else {
-      // Multiple words - use the bulk endpoint
-      await this.addMultipleWordsToLearning(wordIds, status);
-    }
-  },
-
   // Single word removal - uses DELETE with word_id in URL
   async removeSingleWordFromLearning(wordId: number): Promise<void> {
     await api.delete(`/learning/words/${wordId}`);
@@ -347,31 +306,6 @@ export const learningAPI = {
         word_ids: wordIds,
       }
     });
-  },
-
-  // Smart function that chooses the right endpoint based on array length
-  async removeWordFromLearning(wordIds: number[]): Promise<void> {
-    if (wordIds.length === 1) {
-      // Single word - use the single word endpoint
-      await this.removeSingleWordFromLearning(wordIds[0]);
-    } else {
-      // Multiple words - use the bulk endpoint
-      await this.removeMultipleWordsFromLearning(wordIds);
-    }
-  },
-
-  async updateWordProgress(
-    wordId: number,
-    data: {
-      status?: string;
-      was_correct?: boolean;
-      difficulty_rating?: string;
-      user_notes?: string;
-    }
-  ): Promise<UserWordProgress> {
-    // FIXED: Use the correct endpoint /learning/words/{word_id}/progress
-    const response = await api.put<UserWordProgress>(`/learning/words/${wordId}/progress`, data);
-    return response.data;
   },
 
   async getWordsForReview(limit: number = 20): Promise<UserWordProgress[]> {
@@ -391,69 +325,6 @@ export const learningAPI = {
 // Replace your existing practiceAPI section with this:
 
 // CORRECTED Practice API section for src/services/api.ts
-// Replace your existing practiceAPI section with this:
-
-export const practiceAPI = {
-  async startPracticeSession(
-    sessionType: string = 'practice',
-    wordCount: number = 10,
-    categoryId?: number,
-    difficultyLevelId?: number,
-    includeReview: boolean = true,
-    languageCode: string = 'en'
-  ): Promise<PracticeSession> {
-    const response = await api.post<PracticeSession>('/learning/practice/start', {
-      session_type: sessionType,
-      word_count: wordCount,
-      category_id: categoryId,
-      difficulty_level_id: difficultyLevelId,
-      include_review: includeReview,
-      language_code: languageCode,
-    });
-    return response.data;
-  },
-
-  // FIXED: Send query parameters correctly for your FastAPI backend
-  async submitPracticeAnswer(
-    sessionId: number,
-    wordId: number,
-    wasCorrect: boolean,
-    userAnswer?: string,
-    correctAnswer?: string,
-    responseTimeMs?: number
-  ): Promise<void> {
-    // Build query parameters exactly as your backend expects
-    const params = new URLSearchParams();
-    params.append('word_id', wordId.toString());
-    params.append('was_correct', wasCorrect.toString());
-    
-    if (userAnswer) {
-      params.append('user_answer', userAnswer);
-    }
-    
-    if (correctAnswer) {
-      params.append('correct_answer', correctAnswer);
-    }
-    
-    if (responseTimeMs !== undefined) {
-      params.append('response_time_ms', responseTimeMs.toString());
-    }
-
-    const url = `/learning/practice/${sessionId}/answer?${params}`;
-    
-    console.log('🚀 Submitting to URL:', url);
-    
-    // POST request with empty body since all data is in query parameters
-    await api.post(url);
-  },
-
-  async finishPracticeSession(sessionId: number, durationSeconds?: number): Promise<any> {
-    const response = await api.post(`/learning/practice/${sessionId}/finish`, {
-      duration_seconds: durationSeconds,
-    });
-    return response.data;
-  },
-};
 
 // Quiz API
 // Replace your existing quizAPI in api.ts with this enhanced version:

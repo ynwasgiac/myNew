@@ -11,7 +11,7 @@ import {
   AcademicCapIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
-import { learningAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
 import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface NewGoal {

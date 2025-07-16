@@ -11,7 +11,7 @@ import {
   ClockIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
-import { learningAPI } from '../services/api';
+import { learningAPI } from '../services/learningAPI';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import StatsCard from '../components/ui/StatsCard';

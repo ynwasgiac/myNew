@@ -3,7 +3,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChartBarIcon, TrophyIcon, FireIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { learningAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import StatsCard from '../../components/ui/StatsCard';

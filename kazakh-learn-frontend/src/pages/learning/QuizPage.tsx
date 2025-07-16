@@ -5,7 +5,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { CheckCircleIcon, XCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
-import { quizAPI, learningAPI, wordsAPI } from '../../services/api';
+import { quizAPI, wordsAPI } from '../../services/api';
+import { learningAPI } from '../../services/learningAPI';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
