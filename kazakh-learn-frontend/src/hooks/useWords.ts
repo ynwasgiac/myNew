@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { wordsAPI } from '../services/api';
 import { learningAPI } from '../services/learningAPI';
 import type { WordFilters, PaginatedWordsResponse } from '../types/api';
+import type { LearningStatus } from '../types/learning';
 
 // New hook for paginated words
 export const useWordsPaginated = (filters: WordFilters = {}) => {
@@ -70,8 +71,18 @@ export const useAddToLearning = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ wordIds, status }: { wordIds: number[], status?: string }) =>
-      learningAPI.addWordToLearning(wordIds, status),
+    mutationFn: async ({ wordIds, status }: { wordIds: number[], status?: string }) => {
+      if (wordIds.length === 1) {
+        // Single word - use the single word API
+        return await learningAPI.addWordToLearning(wordIds[0], (status || 'want_to_learn') as LearningStatus);
+      } else {
+        // Multiple words - use the multiple words API
+        return await learningAPI.addMultipleWords({
+          word_ids: wordIds,
+          status: (status || 'want_to_learn') as LearningStatus
+        });
+      }
+    },
     onSuccess: () => {
       // Invalidate learning progress
       queryClient.invalidateQueries({ queryKey: ['learning-progress'] });
@@ -85,7 +96,10 @@ export const useRemoveFromLearning = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (wordIds: number[]) => learningAPI.removeWordFromLearning(wordIds),
+    mutationFn: async (wordIds: number[]) => {
+      // Handle multiple words by calling the single word API for each
+      await Promise.all(wordIds.map(id => learningAPI.removeWordFromLearning(id)));
+    },
     onSuccess: () => {
       // Invalidate learning progress
       queryClient.invalidateQueries({ queryKey: ['learning-progress'] });
@@ -118,8 +132,18 @@ export const useWordManagement = () => {
   const queryClient = useQueryClient();
   
   const addToLearning = useMutation({
-    mutationFn: ({ wordIds, status }: { wordIds: number[], status?: string }) =>
-      learningAPI.addWordToLearning(wordIds, status),
+    mutationFn: async ({ wordIds, status }: { wordIds: number[], status?: string }) => {
+      if (wordIds.length === 1) {
+        // Single word - use the single word API
+        return await learningAPI.addWordToLearning(wordIds[0], (status || 'want_to_learn') as LearningStatus);
+      } else {
+        // Multiple words - use the multiple words API
+        return await learningAPI.addMultipleWords({
+          word_ids: wordIds,
+          status: (status || 'want_to_learn') as LearningStatus
+        });
+      }
+    },
     onMutate: async ({ wordIds }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['learning-progress'] });
@@ -165,7 +189,10 @@ export const useWordManagement = () => {
   });
   
   const removeFromLearning = useMutation({
-    mutationFn: (wordIds: number[]) => learningAPI.removeWordFromLearning(wordIds),
+    mutationFn: async (wordIds: number[]) => {
+      // Handle multiple words by calling the single word API for each
+      await Promise.all(wordIds.map(id => learningAPI.removeWordFromLearning(id)));
+    },
     onMutate: async (wordIds) => {
       await queryClient.cancelQueries({ queryKey: ['learning-progress'] });
       
