@@ -1,92 +1,82 @@
 {
-  "page": {
-    "title": "Просмотр слов",
-    "subtitle": "{{count}} слов доступно",
-    "loading": "Загрузка слов..."
-  },
+  "title": "Слова",
+  "subtitle": "Просматривайте и управляйте своим словарем",
   "loading": {
     "words": "Загрузка слов...",
-    "updating": "Обновление...",
-    "searching": "Поиск..."
+    "updating": "Обновление..."
   },
   "errors": {
-    "loadingError": "Ошибка загрузки слов. Попробуйте снова."
+    "title": "Ошибка загрузки слов",
+    "failedToLoadWords": "Не удалось загрузить слова. Пожалуйста, попробуйте снова.",
+    "loadingFailed": "Ошибка загрузки слов"
+  },
+  "actions": {
+    "retry": "Повторить",
+    "selectAll": "Выбрать все",
+    "addToLearning": "Добавить в изучение",
+    "removeFromLearning": "Удалить из изучения",
+    "playPronunciation": "Воспроизвести произношение",
+    "viewDetails": "Просмотр деталей",
+    "clear": "Очистить"
   },
   "search": {
     "placeholder": "Поиск слов..."
   },
-  "view": {
-    "grid": "Сетка",
-    "list": "Список"
-  },
   "filters": {
-    "title": "Фильтры",
-    "clear": "Очистить фильтры",
-    "category": {
-      "label": "Категория",
-      "all": "Все категории"
-    },
-    "wordType": {
-      "label": "Тип слова",
-      "all": "Все типы"
-    },
-    "difficulty": {
-      "label": "Сложность",
-      "all": "Все уровни",
-      "level": "Уровень {{level}} - {{name}}"
-    },
-    "translation": {
-      "show": "Показать переводы",
-      "hide": "Скрыть переводы"
-    }
+    "toggle": "Фильтры",
+    "category": "Категория",
+    "allCategories": "Все категории",
+    "wordType": "Тип слова",
+    "allTypes": "Все типы",
+    "difficulty": "Сложность",
+    "allDifficulties": "Все уровни",
+    "showTranslations": "Показать переводы"
+  },
+  "viewMode": {
+    "grid": "Вид сетки",
+    "list": "Вид списка"
   },
   "selection": {
-    "selectedCount": "{{count}} выбрано"
-  },
-  "actions": {
-    "retry": "Повторить",
-    "refresh": "Обновить"
-  },
-  "messages": {
-    "addedToLearning": "Слова добавлены в список изучения!",
-    "addToLearningError": "Не удалось добавить слова в список изучения",
-    "removedFromLearning": "Слова удалены из списка изучения!",
-    "removeFromLearningError": "Не удалось удалить слова из списка изучения"
-  },
-  "results": {
-    "showing": "Показано {{start}}-{{end}} из {{total}} слов",
-    "searchResults": "Найдено {{count}} результатов для \"{{searchTerm}}\"",
-    "noResults": "Слова не найдены",
-    "totalWords": "{{count}} слов всего"
+    "selected": "выбрано",
+    "noWordsSelected": "Слова не выбраны",
+    "allWordsAlreadyInLearning": "Все выбранные слова уже изучаются",
+    "noWordsInLearning": "Нет выбранных слов в изучении"
   },
   "pagination": {
-    "previous": "Назад",
-    "next": "Далее",
-    "first": "Первая",
-    "last": "Последняя",
-    "page": "Страница",
+    "previous": "Предыдущая",
+    "next": "Следующая",
+    "showing": "Показано",
+    "to": "по",
     "of": "из",
-    "items": "элементов",
+    "words": "слов",
     "itemsPerPage": "Элементов на странице",
-    "pageInfo": "Страница {{current}} из {{total}}",
-    "showing": "Показано {{start}}-{{end}} из {{total}} слов",
-    "goToPage": "Перейти на страницу",
-    "entriesPerPage": "Записей на странице"
+    "pageInfo": "Страница {{current}} из {{total}}"
   },
-  "table": {
-    "headers": {
-      "word": "Слово",
-      "translation": "Перевод",
-      "category": "Категория",
-      "type": "Тип",
-      "level": "Уровень",
-      "actions": "Действия"
-    }
+  "word": {
+    "translation": "Перевод",
+    "category": "Категория",
+    "type": "Тип",
+    "difficulty": "Сложность",
+    "level": "Уровень",
+    "noTranslation": "Перевод недоступен",
+    "primaryTranslation": "Основной перевод"
   },
-  "emptyState": {
-    "searchTitle": "Слова не найдены",
-    "noWordsTitle": "Слова отсутствуют",
-    "searchMessage": "Нет слов, соответствующих вашему запросу \"{{searchTerm}}\". Попробуйте другие ключевые слова.",
-    "noWordsMessage": "Нет слов для отображения с текущими фильтрами."
+  "noWords": {
+    "title": "Слова не найдены",
+    "description": "Попробуйте изменить поиск или фильтры"
+  },
+  "messages": {
+    "wordAddedToLearning": "Слово добавлено в изучение",
+    "wordsAddedToLearning": "{{count}} слов добавлено в изучение",
+    "wordRemovedFromLearning": "Слово удалено из изучения",
+    "wordsRemovedFromLearning": "{{count}} слов удалено из изучения",
+    "failedToAddWords": "Не удалось добавить слова в изучение",
+    "failedToRemoveWords": "Не удалось удалить слова из изучения",
+    "pronunciationNotImplemented": "Функция произношения скоро появится",
+    "pronunciationError": "Не удалось воспроизвести произношение"
+  },
+  "status": {
+    "inLearning": "В изучении",
+    "notInLearning": "Не изучается"
   }
 }

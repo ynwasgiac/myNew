@@ -1,4 +1,3 @@
-// src/pages/words/WordsPage.tsx - Enhanced with Images, Sounds & Media Features
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -136,12 +135,12 @@ const WordsPage: React.FC = () => {
     },
     onSuccess: (data, variables) => {
       const count = variables.length;
-      toast.success(count === 1 ? 'Word added to learning' : `${count} words added to learning`);
+      toast.success(count === 1 ? t('messages.wordAddedToLearning') : t('messages.wordsAddedToLearning', { count }));
       queryClient.invalidateQueries({ queryKey: ['learning-progress-all'] });
       setSelectedWords([]);
     },
     onError: () => {
-      toast.error('Failed to add words to learning');
+      toast.error(t('messages.failedToAddWords'));
     }
   });
 
@@ -151,11 +150,11 @@ const WordsPage: React.FC = () => {
     },
     onSuccess: (data, variables) => {
       const count = variables.length;
-      toast.success(count === 1 ? 'Word removed from learning' : `${count} words removed from learning`);
+      toast.success(count === 1 ? t('messages.wordRemovedFromLearning') : t('messages.wordsRemovedFromLearning', { count }));
       queryClient.invalidateQueries({ queryKey: ['learning-progress-all'] });
     },
     onError: () => {
-      toast.error('Failed to remove words from learning');
+      toast.error(t('messages.failedToRemoveWords'));
     }
   });
 
@@ -204,13 +203,13 @@ const WordsPage: React.FC = () => {
 
   const handleBatchAddToLearning = () => {
     if (selectedWords.length === 0) {
-      toast.error('No words selected');
+      toast.error(t('selection.noWordsSelected'));
       return;
     }
     
     const wordsNotInLearning = selectedWords.filter(id => !learningWordIds.has(id));
     if (wordsNotInLearning.length === 0) {
-      toast('All selected words are already in learning');
+      toast(t('selection.allWordsAlreadyInLearning'));
       return;
     }
     
@@ -219,13 +218,13 @@ const WordsPage: React.FC = () => {
 
   const handleBatchRemoveFromLearning = () => {
     if (selectedWords.length === 0) {
-      toast.error('No words selected');
+      toast.error(t('selection.noWordsSelected'));
       return;
     }
     
     const wordsInLearning = selectedWords.filter(id => learningWordIds.has(id));
     if (wordsInLearning.length === 0) {
-      toast('No selected words are in learning');
+      toast(t('selection.noWordsInLearning'));
       return;
     }
     
@@ -254,13 +253,13 @@ const WordsPage: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Words</h2>
-          <p className="text-gray-600 mb-4">Failed to load words. Please try again.</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('errors.title')}</h2>
+          <p className="text-gray-600 mb-4">{t('errors.failedToLoadWords')}</p>
           <button 
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Retry
+            {t('actions.retry')}
           </button>
         </div>
       </div>
@@ -269,7 +268,7 @@ const WordsPage: React.FC = () => {
 
   // Loading state
   if (isLoading) {
-    return <LoadingSpinner fullScreen text="Loading words..." />;
+    return <LoadingSpinner fullScreen text={t('loading.words')} />;
   }
 
   const selectedWordsInLearning = selectedWords.filter(id => learningWordIds.has(id)).length;
@@ -282,16 +281,16 @@ const WordsPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Words</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
               <p className="mt-2 text-gray-600">
-                Browse and manage your vocabulary {totalWords > 0 && `(${totalWords.toLocaleString()} words)`}
+                {t('subtitle')} {totalWords > 0 && `(${totalWords.toLocaleString()} ${t('pagination.words')})`}
               </p>
             </div>
             
             {selectedWords.length > 0 && (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-600">
-                  {selectedWords.length} selected
+                  {selectedWords.length} {t('selection.selected')}
                 </span>
                 <div className="flex space-x-2">
                   {selectedWordsNotInLearning > 0 && (
@@ -301,7 +300,7 @@ const WordsPage: React.FC = () => {
                       className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4" />
-                      <span>Add to Learning ({selectedWordsNotInLearning})</span>
+                      <span>{t('actions.addToLearning')} ({selectedWordsNotInLearning})</span>
                     </button>
                   )}
                   {selectedWordsInLearning > 0 && (
@@ -311,7 +310,7 @@ const WordsPage: React.FC = () => {
                       className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
                     >
                       <XMarkIcon className="h-4 w-4" />
-                      <span>Remove from Learning ({selectedWordsInLearning})</span>
+                      <span>{t('actions.removeFromLearning')} ({selectedWordsInLearning})</span>
                     </button>
                   )}
                 </div>
@@ -330,7 +329,7 @@ const WordsPage: React.FC = () => {
                   <MagnifyingGlassIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search words..."
+                    placeholder={t('search.placeholder')}
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -347,6 +346,7 @@ const WordsPage: React.FC = () => {
                       ? 'bg-white text-blue-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
+                  title={t('viewMode.grid')}
                 >
                   <ViewColumnsIcon className="h-5 w-5" />
                 </button>
@@ -357,6 +357,7 @@ const WordsPage: React.FC = () => {
                       ? 'bg-white text-blue-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
+                  title={t('viewMode.list')}
                 >
                   <ListBulletIcon className="h-5 w-5" />
                 </button>
@@ -368,7 +369,7 @@ const WordsPage: React.FC = () => {
                 className="flex items-center justify-center space-x-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <FunnelIcon className="h-5 w-5" />
-                <span>Filters</span>
+                <span>{t('filters.toggle')}</span>
               </button>
             </div>
 
@@ -379,14 +380,14 @@ const WordsPage: React.FC = () => {
                   {/* Category Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category
+                      {t('filters.category')}
                     </label>
                     <select
                       value={filters.category_id || ''}
                       onChange={(e) => handleFilterChange('category_id', e.target.value ? parseInt(e.target.value) : undefined)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="">All Categories</option>
+                      <option value="">{t('filters.allCategories')}</option>
                       {categories.map((category: Category) => (
                         <option key={category.id} value={category.id}>
                           {category.category_name}
@@ -398,14 +399,14 @@ const WordsPage: React.FC = () => {
                   {/* Word Type Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Word Type
+                      {t('filters.wordType')}
                     </label>
                     <select
                       value={filters.word_type_id || ''}
                       onChange={(e) => handleFilterChange('word_type_id', e.target.value ? parseInt(e.target.value) : undefined)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="">All Types</option>
+                      <option value="">{t('filters.allTypes')}</option>
                       {wordTypes.map((type: WordType) => (
                         <option key={type.id} value={type.id}>
                           {type.type_name}
@@ -417,14 +418,14 @@ const WordsPage: React.FC = () => {
                   {/* Difficulty Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Difficulty
+                      {t('filters.difficulty')}
                     </label>
                     <select
                       value={filters.difficulty_level_id || ''}
                       onChange={(e) => handleFilterChange('difficulty_level_id', e.target.value ? parseInt(e.target.value) : undefined)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="">All Difficulties</option>
+                      <option value="">{t('filters.allDifficulties')}</option>
                       {difficultyLevels.map((level: DifficultyLevel) => (
                         <option key={level.id} value={level.id}>
                           {level.level_name}
@@ -440,7 +441,7 @@ const WordsPage: React.FC = () => {
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       <XMarkIcon className="h-4 w-4" />
-                      <span>Clear</span>
+                      <span>{t('actions.clear')}</span>
                     </button>
                   </div>
                 </div>
@@ -455,7 +456,7 @@ const WordsPage: React.FC = () => {
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="show-translation" className="ml-2 text-sm text-gray-700">
-                    Show translations
+                    {t('filters.showTranslations')}
                   </label>
                 </div>
               </div>
@@ -468,8 +469,8 @@ const WordsPage: React.FC = () => {
           {words.length === 0 ? (
             <div className="text-center py-12">
               <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Words Found</h3>
-              <p className="text-gray-600">Try adjusting your search or filters</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noWords.title')}</h3>
+              <p className="text-gray-600">{t('noWords.description')}</p>
             </div>
           ) : (
             <>
@@ -484,11 +485,11 @@ const WordsPage: React.FC = () => {
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      Select All
+                      {t('actions.selectAll')}
                     </span>
                   </div>
                   <span className="text-sm text-gray-500">
-                    Showing {wordsData?.pagination.start_index || 0} to {wordsData?.pagination.end_index || 0} of {totalWords} words
+                    {t('pagination.showing')} {wordsData?.pagination.start_index || 0} {t('pagination.to')} {wordsData?.pagination.end_index || 0} {t('pagination.of')} {totalWords} {t('pagination.words')}
                   </span>
                 </div>
               </div>
@@ -527,7 +528,7 @@ const WordsPage: React.FC = () => {
                       className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeftIcon className="h-5 w-5" />
-                      <span>Previous</span>
+                      <span>{t('pagination.previous')}</span>
                     </button>
 
                     {/* Page Numbers */}
@@ -591,7 +592,7 @@ const WordsPage: React.FC = () => {
                       disabled={!hasNext || isUpdating}
                       className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <span>Next</span>
+                      <span>{t('pagination.next')}</span>
                       <ChevronRightIcon className="h-5 w-5" />
                     </button>
                   </div>
@@ -627,7 +628,7 @@ const WordsPage: React.FC = () => {
         {isUpdating && (
           <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg">
-              <LoadingSpinner text="Updating..." />
+              <LoadingSpinner text={t('loading.updating')} />
             </div>
           </div>
         )}
@@ -733,6 +734,7 @@ const WordCard: React.FC<WordCardProps> = ({
   isUpdating
 }) => {
   const { playAudio } = useAudioPlayer({ wordId: word.id, word });
+  const { t } = useTranslation('words'); // ← Added this  
 
   const getImageFallback = () => {
     return `/images/words/categories/${word.category_name?.toLowerCase() || 'general'}/placeholder.jpg`;
@@ -837,13 +839,13 @@ const WordCard: React.FC<WordCardProps> = ({
             <button
               onClick={(e) => handleActionClick(e, () => playAudio())}
               className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50"
-              title="Play pronunciation"
+              title={t('actions.playPronunciation')}
             >
               <SpeakerWaveIcon className="h-4 w-4" />
             </button>
             
             {/* View Details Icon */}
-            <div className="p-2 text-gray-400">
+            <div className="p-2 text-gray-400" title={t('actions.viewDetails')}>
               <EyeIcon className="h-4 w-4" />
             </div>
           </div>
@@ -857,7 +859,7 @@ const WordCard: React.FC<WordCardProps> = ({
                 ? 'text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-600'
                 : 'text-gray-400 bg-gray-50 hover:bg-red-50 hover:text-red-500'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
-            title={isInLearning ? 'Remove from Learning' : 'Add to Learning'}
+            title={isInLearning ? t('actions.removeFromLearning') : t('actions.addToLearning')}
           >
             {isInLearning ? (
               <HeartIconSolid className="h-5 w-5" />
@@ -891,6 +893,7 @@ const WordListItem: React.FC<WordListItemProps> = ({
   onToggleLearning,
   isUpdating
 }) => {
+  const { t } = useTranslation('words'); // ← Added this  
   const { playAudio } = useAudioPlayer({ wordId: word.id, word });
 
   const getImageFallback = () => {
@@ -999,13 +1002,13 @@ const WordListItem: React.FC<WordListItemProps> = ({
               <button
                 onClick={(e) => handleActionClick(e, () => playAudio())}
                 className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50"
-                title="Play pronunciation"
+                title={t('actions.playPronunciation')}
               >
                 <SpeakerWaveIcon className="h-5 w-5" />
               </button>
               
               {/* View Details Icon */}
-              <div className="p-2 text-gray-400">
+              <div className="p-2 text-gray-400" title={t('actions.viewDetails')}>
                 <EyeIcon className="h-5 w-5" />
               </div>
 
@@ -1018,7 +1021,7 @@ const WordListItem: React.FC<WordListItemProps> = ({
                     ? 'text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-600'
                     : 'text-gray-400 bg-gray-50 hover:bg-red-50 hover:text-red-500'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
-                title={isInLearning ? 'Remove from Learning' : 'Add to Learning'}
+                title={isInLearning ? t('actions.removeFromLearning') : t('actions.addToLearning')}
               >
                 {isInLearning ? (
                   <HeartIconSolid className="h-6 w-6" />
