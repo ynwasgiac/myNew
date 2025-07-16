@@ -285,6 +285,27 @@ export const learningAPI = {
     const response = await api.get<LearningStats>('/learning/stats');
     return response.data;
   },
+
+  async getProgress(filters: LearningFilters = {}): Promise<UserWordProgress[]> {
+    // Get ALL learning words, not just want_to_learn
+    const params = new URLSearchParams();
+    params.append('limit', '1000'); // Get all learning words
+    params.append('offset', '0');
+    
+    // Only add status filter if specifically requested
+    if (filters.status) {
+      params.append('status', filters.status);
+    }
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && key !== 'status') {
+        params.append(key, value.toString());
+      }
+    });
+    
+    const response = await api.get<UserWordProgress[]>(`/learning/words/my-list?${params}`);
+    return response.data;
+  },
   
   // Single word - uses the endpoint with word_id in URL
   async addSingleWordToLearning(wordId: number, status?: string): Promise<void> {

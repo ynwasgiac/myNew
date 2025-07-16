@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { learningAPI } from '../../services/api';
+import { learningAPI, practiceAPI } from '../../services/api';
 import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
+import type { UserWordProgressWithWord } from '../../types/api';
 import { toast } from 'sonner';
 import LearningModule from '../../components/learning/LearningModule';
 import { 
@@ -110,19 +111,19 @@ const LearningModulePage: React.FC = () => {
             category_id: selectedCategory,
             difficulty_level_id: selectedDifficulty,
             limit: 100
-          }),
+          }) as Promise<UserWordProgressWithWord[]>,
           learningAPI.getProgress({
             status: LEARNING_STATUSES.LEARNING,
             category_id: selectedCategory,
             difficulty_level_id: selectedDifficulty,
             limit: 100
-          }),
+          }) as Promise<UserWordProgressWithWord[]>,
           learningAPI.getProgress({
             status: LEARNING_STATUSES.REVIEW,
             category_id: selectedCategory,
             difficulty_level_id: selectedDifficulty,
             limit: 100
-          })
+          }) as Promise<UserWordProgressWithWord[]>
         ]);
 
         return {
