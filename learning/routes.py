@@ -1496,3 +1496,74 @@ async def get_guide_progress(
     except Exception as e:
         print(f"Error getting guide progress: {e}")
         raise HTTPException(status_code=500, detail="Failed to get guide progress")
+    
+@router.get("/words", response_model=List[UserWordProgressWithWord])
+async def get_learning_words(
+        response: Response,
+        status: Optional[LearningStatusEnum] = None,
+        category_id: Optional[int] = None,
+        difficulty_level_id: Optional[int] = None,
+        limit: int = 100,
+        offset: int = 0,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user_with_refresh)
+):
+    """Get user's learning words with filters and pagination"""
+    # Handle automatic token refresh
+    TokenRefreshResponse.add_token_header(response, current_user)
+
+    # Build filter dict
+    filters = LearningListFilters(
+        status=status,
+        category_id=category_id,
+        difficulty_level_id=difficulty_level_id,
+        limit=limit,
+        offset=offset
+    )
+
+    # Get words using existing CRUD method
+    words = await UserWordProgressCRUD.get_user_words_with_filters(
+        db, current_user.id, filters
+    )
+
+    # Format response with word details
+    result = []
+    for progress in words:
+        word = progress.kazakh_word
+        word_dict = {
+            "id": word.id,
+            "kazakh_word": word.kazakh_word,
+            "kazakh_cyrillic": word.kazakh_cyrillic,
+            "category_name": word.category.category_name if word.category else "Unknown",
+            "difficulty_level": word.difficulty_level.level_number if word.difficulty_level else 1,
+            "translations": [
+                {
+                    "translation": t.translation,
+                    "language_code": t.language.language_code
+                }
+                for t in word.translations
+            ]
+        }
+
+        result.append(UserWordProgressWithWord(
+            id=progress.id,
+            user_id=progress.user_id,
+            kazakh_word_id=progress.kazakh_word_id,
+            status=LearningStatusEnum(progress.status.value),
+            times_seen=progress.times_seen,
+            times_correct=progress.times_correct,
+            times_incorrect=progress.times_incorrect,
+            difficulty_rating=DifficultyRatingEnum(progress.difficulty_rating.value) if progress.difficulty_rating else None,
+            user_notes=progress.user_notes,
+            added_at=progress.added_at,
+            first_learned_at=progress.first_learned_at,
+            last_practiced_at=progress.last_practiced_at,
+            next_review_at=progress.next_review_at,
+            repetition_interval=progress.repetition_interval,
+            ease_factor=progress.ease_factor,
+            created_at=progress.created_at,
+            updated_at=progress.updated_at,
+            kazakh_word=word_dict
+        ))
+
+    return result    

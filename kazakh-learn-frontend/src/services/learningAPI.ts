@@ -39,8 +39,9 @@ export const learningAPI = {
     if (filters.difficulty_level_id !== undefined) params.append('difficulty_level_id', filters.difficulty_level_id.toString());
     if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
     if (filters.offset !== undefined) params.append('offset', filters.offset.toString());
-
-    const response = await api.get(`/learning/words?${params.toString()}`);
+  
+    // Use the existing endpoint that works
+    const response = await api.get(`/learning/words/my-list?${params.toString()}`);
     return response.data;
   },
 

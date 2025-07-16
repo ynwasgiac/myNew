@@ -1,6 +1,7 @@
 {
     "loading": {
-      "dashboard": "Loading your learning dashboard..."
+      "dashboard": "Loading your learning dashboard...",
+      "learnedWords": "Loading your learned words..."
     },
     "header": {
       "title": "Ready to Learn, {{name}}?",
@@ -77,5 +78,17 @@
       "viewProgress": "View Progress",
       "randomPractice": "Random Practice",
       "learningSettings": "Learning Settings"
+    },
+    "learnedWords": {
+      "title": "Learned Words",
+      "description": "Review and manage words you've successfully learned and mastered"
+    },
+    "messages": {
+      "statusUpdated": "Word status updated successfully",
+      "favoriteUpdated": "Favorite status updated successfully"
+    },
+    "errors": {
+      "statusUpdateFailed": "Failed to update word status",
+      "favoriteUpdateFailed": "Failed to update favorite status"
     }
   }
