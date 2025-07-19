@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { learningAPI  } from '../../services/learningAPI';
-import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
+import { learningAPI } from '../../services/learningAPI';
+import api from '../../services/api';
+import { LEARNING_STATUSES, IN_PROGRESS_STATUSES, type LearningStatus } from '../../types/learning';
 import type { UserWordProgressWithWord } from '../../types/api';
 import { toast } from 'sonner';
 import LearningModule from '../../components/learning/LearningModule';
@@ -26,7 +27,9 @@ import {
   UserIcon,
   CalendarDaysIcon,
   AcademicCapIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  SparklesIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 
 interface DailyProgress {
@@ -63,6 +66,7 @@ const LearningModulePage: React.FC = () => {
   const [showModule, setShowModule] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [selectedDifficulty, setSelectedDifficulty] = useState<number | undefined>();
+  const [isAddingWords, setIsAddingWords] = useState(false);
 
   // Get user's daily goal - simplified to use default value
   const dailyGoal = 10; // Default daily goal, can be made configurable later
@@ -73,17 +77,14 @@ const LearningModulePage: React.FC = () => {
     queryFn: async (): Promise<DailyProgress> => {
       try {
         // This would be a real API call to get daily progress
-        // For now, we'll simulate it based on user data
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Get learning statistics (mock data for now)
+        // For now, we'll return mock data
         return {
-          words_learned_today: 3, // Mock data
-          sessions_completed_today: 1, // Mock data
+          words_learned_today: 5,
+          sessions_completed_today: 2,
           daily_goal: dailyGoal,
-          progress_percentage: (3 / dailyGoal) * 100,
-          goal_reached: 3 >= dailyGoal,
-          words_remaining: Math.max(0, dailyGoal - 3)
+          progress_percentage: (5 / dailyGoal) * 100,
+          goal_reached: false,
+          words_remaining: dailyGoal - 5
         };
       } catch (error) {
         console.error('Failed to fetch daily progress:', error);
@@ -97,8 +98,7 @@ const LearningModulePage: React.FC = () => {
         };
       }
     },
-    enabled: !!user,
-    refetchInterval: 60000, // Refresh every minute
+    enabled: !!user && !showModule,
   });
 
   // Fetch words available for learning
@@ -197,6 +197,56 @@ const LearningModulePage: React.FC = () => {
     }
   });
 
+  // Mutation to add random words
+  const addRandomWordsMutation = useMutation({
+    mutationFn: async () => {
+      setIsAddingWords(true);
+      
+      // Use the clean /words/add-random endpoint
+      const params = new URLSearchParams();
+      
+      // Don't specify count - let it use user's daily goal from settings
+      // Or you can explicitly pass dailyGoal if you want to override
+      // params.append('count', dailyGoal.toString());
+      
+      if (selectedCategory) {
+        params.append('category_id', selectedCategory.toString());
+      }
+      if (selectedDifficulty) {
+        params.append('difficulty_level_id', selectedDifficulty.toString());
+      }
+      
+      const response = await api.post(`/learning-module/words/add-random?${params}`);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      
+      // Show additional info if needed
+      if (data.words_added !== data.requested_count) {
+        toast.info(`Added ${data.words_added} out of ${data.requested_count} requested words.`);
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['words-available'] });
+      queryClient.invalidateQueries({ queryKey: ['learning-progress-all'] });
+      setIsAddingWords(false);
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to add random words';
+      toast.error(errorMessage);
+      setIsAddingWords(false);
+    },
+  });
+
+  // Handle adding random words
+  const handleAddRandomWords = () => {
+    if (!user) {
+      toast.error('Please log in to add words');
+      return;
+    }
+    addRandomWordsMutation.mutate();
+  };
+
   // Start learning session
   const startLearning = () => {
     if (!wordsAvailable || wordsAvailable.total === 0) {
@@ -278,7 +328,7 @@ const LearningModulePage: React.FC = () => {
   if (showModule) {
     return (
       <div className="min-h-screen bg-gray-50">
-      <LearningModuleMenu />
+        <LearningModuleMenu />
         <div className="container mx-auto px-4 py-6">
           <LearningModule onComplete={handleModuleComplete} />
         </div>
@@ -307,450 +357,300 @@ const LearningModulePage: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Ready to Learn Kazakh, {user?.full_name?.split(' ')[0] || 'Learner'}?
           </h1>
-          <p className="text-xl text-gray-600">
-            Master new words through our structured 3-step learning process
+          <p className="text-gray-600 text-lg">
+            Build your vocabulary through structured learning sessions
           </p>
         </div>
 
-        {/* Daily Progress Card */}
-        {dailyProgress && progressData && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900 flex items-center">
-                <TrophyIcon className="h-7 w-7 mr-3 text-yellow-500" />
-                Today's Progress
-              </h2>
-              <div className="flex items-center space-x-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {dailyProgress.words_learned_today}
-                  </div>
-                  <div className="text-sm text-gray-500 font-medium">Learned</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">
-                    {dailyProgress.sessions_completed_today}
-                  </div>
-                  <div className="text-sm text-gray-500 font-medium">Sessions</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">
-                    {learningStats?.current_streak || 0}
-                  </div>
-                  <div className="text-sm text-gray-500 font-medium">Day Streak</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span className="font-medium">Daily Goal Progress</span>
-                <span className="font-medium">{dailyProgress.words_learned_today}/{dailyProgress.daily_goal} words</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div 
-                  className={`h-4 rounded-full transition-all duration-500 ${
-                    progressData.percentage === 100 ? 'bg-green-500' : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${progressData.percentage}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            <p className={`text-center font-semibold ${progressData.color}`}>
-              {progressData.message}
-            </p>
-          </div>
-        )}
-
-        {/* Main Action Section */}
-        <div className="text-center space-y-6 mb-8">
-          {wordsAvailable && wordsAvailable.total >= 3 ? (
-            <>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
-                <p className="text-blue-100 mb-6">
-                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
-                </p>
-                <button
-                  onClick={startLearning}
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
-                >
-                  <PlayIcon className="h-6 w-6 mr-2" />
-                  Start Learning Session
-                </button>
-                <p className="text-blue-200 mt-4 text-sm">
-                  Estimated time: {estimateSessionTime()} • 3 words per batch
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {wordsAvailable?.total === 0 
-                  ? 'Add some words to your learning list to start practicing!'
-                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <button 
-                  onClick={() => navigate('/app/words')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                >
-                  Browse Words
-                </button>
-                <button 
-                  onClick={() => navigate('/app/categories')}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
-                >
-                  Browse Categories
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Learning Module Menu */}
+        <div className="mb-8">
+          <LearningModuleMenu />
         </div>
 
-        {/* Learning Process Overview */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
-            How Our Learning Module Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6 rounded-xl bg-blue-50 border border-blue-200">
-              <div className="bg-blue-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-                <BookOpenIcon className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-blue-900 mb-3">
-                1. Overview
-              </h3>
-              <p className="text-blue-800">
-                Review 3 new words with translations, pronunciation, and images to familiarize yourself
-              </p>
-            </div>
-            <div className="text-center p-6 rounded-xl bg-green-50 border border-green-200">
-              <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-                <PencilIcon className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-green-900 mb-3">
-                2. Practice
-              </h3>
-              <p className="text-green-800">
-                Write translations for each word to test your understanding and memory
-              </p>
-            </div>
-            <div className="text-center p-6 rounded-xl bg-purple-50 border border-purple-200">
-              <div className="bg-purple-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-                <QuestionMarkCircleIcon className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-purple-900 mb-3">
-                3. Quiz
-              </h3>
-              <p className="text-purple-800">
-                Multiple choice quiz to reinforce your learning and test retention
-              </p>
-            </div>
-          </div>
-          <div className="text-center mt-8 p-6 bg-yellow-50 rounded-xl border border-yellow-200">
-            <StarIcon className="h-10 w-10 text-yellow-600 mx-auto mb-3" />
-            <p className="text-yellow-800 font-semibold text-lg">
-              Words you get correct in BOTH practice and quiz are marked as learned!
-            </p>
-          </div>
-        </div>
-
-        {/* Main Action Section */}
-        <div className="text-center space-y-6 mb-8">
-          {wordsAvailable && wordsAvailable.total >= 3 ? (
-            <>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
-                <p className="text-blue-100 mb-6">
-                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
-                </p>
-                <button
-                  onClick={startLearning}
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
-                >
-                  <PlayIcon className="h-6 w-6 mr-2" />
-                  Start Learning Session
-                </button>
-                <p className="text-blue-200 mt-4 text-sm">
-                  Estimated time: {estimateSessionTime()} • 3 words per batch
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {wordsAvailable?.total === 0 
-                  ? 'Add some words to your learning list to start practicing!'
-                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <button 
-                  onClick={() => navigate('/app/words')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                >
-                  Browse Words
-                </button>
-                <button 
-                  onClick={() => navigate('/app/categories')}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
-                >
-                  Browse Categories
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Main Dashboard Grid */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Words Available */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <BookOpenIcon className="h-6 w-6 mr-2 text-blue-600" />
-              Words Available
-            </h3>
-            {wordsAvailable ? (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-blue-700 font-medium">Want to Learn</span>
-                  <span className="font-bold text-blue-900">{wordsAvailable.want_to_learn}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Progress & Stats */}
+          <div className="space-y-6">
+            {/* Daily Progress */}
+            {progressData && (
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <TrophyIcon className="h-6 w-6 mr-2 text-yellow-500" />
+                    Daily Progress
+                  </h2>
+                  <span className="text-sm text-gray-600">
+                    {dailyProgress?.words_learned_today}/{dailyProgress?.daily_goal} words
+                  </span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                  <span className="text-yellow-700 font-medium">Learning</span>
-                  <span className="font-bold text-yellow-900">{wordsAvailable.learning}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                  <span className="text-orange-700 font-medium">Review</span>
-                  <span className="font-bold text-orange-900">{wordsAvailable.review}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300">
-                  <span className="text-gray-700 font-semibold">Total Available</span>
-                  <span className="font-bold text-gray-900 text-lg">{wordsAvailable.total}</span>
-                </div>
-                {wordsAvailable.total > 0 && (
-                  <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-green-800 text-sm font-medium">
-                      Ready for {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} learning batches
-                    </p>
-                    <p className="text-green-600 text-xs mt-1">
-                      Estimated time: {estimateSessionTime()}
-                    </p>
+                
+                <div className="space-y-3">
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        progressData.percentage >= 100 ? 'bg-green-500' : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${progressData.percentage}%` }}
+                    ></div>
                   </div>
-                )}
+                </div>
+                
+                <p className={`text-center font-semibold mt-3 ${progressData.color}`}>
+                  {progressData.message}
+                </p>
               </div>
-            ) : (
-              <p className="text-gray-500">No words available for learning</p>
             )}
-          </div>
 
-        {/* Main Action Section */}
-        <div className="text-center space-y-6 mb-8">
-          {wordsAvailable && wordsAvailable.total >= 3 ? (
-            <>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
-                <p className="text-blue-100 mb-6">
-                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
-                </p>
-                <button
-                  onClick={startLearning}
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
-                >
-                  <PlayIcon className="h-6 w-6 mr-2" />
-                  Start Learning Session
-                </button>
-                <p className="text-blue-200 mt-4 text-sm">
-                  Estimated time: {estimateSessionTime()} • 3 words per batch
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {wordsAvailable?.total === 0 
-                  ? 'Add some words to your learning list to start practicing!'
-                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <button 
-                  onClick={() => navigate('/app/words')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                >
-                  Browse Words
-                </button>
-                <button 
-                  onClick={() => navigate('/app/categories')}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
-                >
-                  Browse Categories
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-          {/* Learning Statistics */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <ChartBarIcon className="h-6 w-6 mr-2 text-green-600" />
-              Learning Stats
-            </h3>
-            {learningStats ? (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Words Learning</span>
-                  <span className="font-semibold text-gray-900">{learningStats.total_words_learning}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">This Week</span>
-                  <span className="font-semibold text-gray-900">{learningStats.words_learned_this_week}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Avg. Accuracy</span>
-                  <span className="font-semibold text-gray-900">{learningStats.average_accuracy}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Sessions</span>
-                  <span className="font-semibold text-gray-900">{learningStats.total_sessions}</span>
-                </div>
-                <div className="mt-4 p-3 bg-purple-50 rounded-lg">
-                  <div className="flex items-center justify-center">
-                    <FireIcon className="h-5 w-5 text-orange-500 mr-2" />
-                    <span className="text-purple-800 font-medium">
-                      {learningStats.current_streak} day streak!
+            {/* Learning Statistics */}
+            {learningStats && (
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <ChartBarIcon className="h-5 w-5 mr-2 text-blue-500" />
+                  Learning Stats
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Words Learning:</span>
+                    <span className="font-semibold">{learningStats.total_words_learning}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">This Week:</span>
+                    <span className="font-semibold">{learningStats.words_learned_this_week}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Streak:</span>
+                    <span className="font-semibold flex items-center">
+                      <FireIcon className="h-4 w-4 mr-1 text-orange-500" />
+                      {learningStats.current_streak} days
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Accuracy:</span>
+                    <span className="font-semibold">{learningStats.average_accuracy}%</span>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <p className="text-gray-500">
-                Start learning to see your statistics!
-              </p>
             )}
+
+            {/* Words Available Breakdown */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <BookOpenIcon className="h-5 w-5 mr-2 text-green-500" />
+                Words Available
+              </h3>
+              {wordsAvailable && wordsAvailable.total > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-700 font-medium">Want to Learn</span>
+                    <span className="font-bold text-blue-900">{wordsAvailable.want_to_learn}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-yellow-700 font-medium">Learning</span>
+                    <span className="font-bold text-yellow-900">{wordsAvailable.learning}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                    <span className="text-orange-700 font-medium">Review</span>
+                    <span className="font-bold text-orange-900">{wordsAvailable.review}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300">
+                    <span className="text-gray-700 font-semibold">Total Available</span>
+                    <span className="font-bold text-gray-900 text-lg">{wordsAvailable.total}</span>
+                  </div>
+                  {wordsAvailable.total > 0 && (
+                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-green-800 text-sm font-medium">
+                        Ready for {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} learning batches
+                      </p>
+                      <p className="text-green-600 text-xs mt-1">
+                        Estimated time: {estimateSessionTime()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-500">No words available for learning</p>
+              )}
+            </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <LightBulbIcon className="h-6 w-6 mr-2 text-yellow-600" />
-              Quick Actions
-            </h3>
-            <div className="space-y-3">
+          {/* Center Column: Main Action */}
+          <div className="space-y-6">
+            {/* Main Action Section */}
+            <div className="text-center space-y-6">
+              {wordsAvailable && wordsAvailable.total >= 3 ? (
+                /* User has enough words - show start learning button */
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
+                  <PlayIcon className="h-16 w-16 mx-auto mb-4 text-white" />
+                  <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
+                  <p className="text-blue-100 mb-6">
+                    You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
+                  </p>
+                  <button
+                    onClick={startLearning}
+                    className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
+                  >
+                    <PlayIcon className="h-6 w-6 mr-2" />
+                    Start Learning Session
+                  </button>
+                  <p className="text-blue-200 mt-4 text-sm">
+                    Estimated time: {estimateSessionTime()} • 3 words per batch
+                  </p>
+                </div>
+              ) : (
+                /* User doesn't have enough words - show options */
+                <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+                  <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                    {!wordsAvailable || wordsAvailable.total === 0 ? 'No Words Available' : 'Need More Words'}
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    {!wordsAvailable || wordsAvailable.total === 0 
+                      ? 'Add some words to your learning list to start practicing!'
+                      : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
+                    }
+                  </p>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+                    {/* Browse Words button */}
+                    <button
+                      onClick={() => navigate('/app/words')}
+                      className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
+                    >
+                      <BookOpenIcon className="h-5 w-5 mr-2" />
+                      Browse Words
+                    </button>
+
+                    {/* Visit Categories button */}
+                    <button
+                      onClick={() => navigate('/app/categories')}
+                      className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md"
+                    >
+                      <PencilIcon className="h-5 w-5 mr-2" />
+                      Visit Categories
+                    </button>
+
+                    {/* NEW: Add Random Words button */}
+                    <button
+                      onClick={handleAddRandomWords}
+                      disabled={isAddingWords || addRandomWordsMutation.isPending}
+                      className="flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAddingWords ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Adding Words...
+                        </>
+                      ) : (
+                        <>
+                          <SparklesIcon className="h-5 w-5 mr-2" />
+                          Add Random Words
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Help text for random words button */}
+                  <p className="text-sm text-gray-500 mt-4 max-w-lg mx-auto">
+                    Let us pick words for you based on your daily goal and current settings. Only words with translations in your language will be added!
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Action Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
-                onClick={() => navigate('/app/words')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                onClick={() => navigate('/app/practice')}
+                className="p-6 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all text-left group"
               >
-                <div className="flex items-center">
-                  <BookOpenIcon className="h-5 w-5 text-blue-600 mr-3" />
-                  <div>
-                    <div className="font-medium text-gray-900">Browse Words</div>
-                    <div className="text-sm text-gray-500">Add new words to learn</div>
+                <div className="flex items-center mb-3">
+                  <PencilIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-600" />
+                  <h4 className="text-lg font-semibold text-gray-900 ml-3">Quick Practice</h4>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Review your words with flashcards and exercises
+                </p>
+              </button>
+
+              <button
+                onClick={() => navigate('/app/quiz')}
+                className="p-6 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-md transition-all text-left group"
+              >
+                <div className="flex items-center mb-3">
+                  <QuestionMarkCircleIcon className="h-8 w-8 text-green-500 group-hover:text-green-600" />
+                  <h4 className="text-lg font-semibold text-gray-900 ml-3">Take Quiz</h4>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Test your knowledge with interactive quizzes
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Additional Info */}
+          <div className="space-y-6">
+            {/* Learning Tips */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-500" />
+                Learning Tips
+              </h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Practice consistently for better retention</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Focus on pronunciation and meaning together</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Review previous words before learning new ones</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Use spaced repetition for long-term memory</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            {wordsAvailable && (
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center">
+                    <StarIcon className="h-8 w-8 text-yellow-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-600">Mastery Level</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {learningStats ? Math.round((learningStats.total_words_learning / 100) * 100) || 0 : 0}%
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </button>
-              <button
-                onClick={() => navigate('/app/categories')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center">
-                  <AcademicCapIcon className="h-5 w-5 text-green-600 mr-3" />
-                  <div>
-                    <div className="font-medium text-gray-900">Categories</div>
-                    <div className="text-sm text-gray-500">Explore by topic</div>
+                
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center">
+                    <ClockIcon className="h-8 w-8 text-blue-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-600">Session Time</p>
+                      <p className="text-2xl font-bold text-gray-900">{estimateSessionTime()}</p>
+                    </div>
                   </div>
                 </div>
-              </button>
-              <button
-                onClick={() => navigate('/app/progress')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center">
-                  <ChartBarIcon className="h-5 w-5 text-purple-600 mr-3" />
-                  <div>
-                    <div className="font-medium text-gray-900">View Progress</div>
-                    <div className="text-sm text-gray-500">See detailed stats</div>
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={() => navigate('/app/settings')}
-                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center">
-                  <CogIcon className="h-5 w-5 text-gray-600 mr-3" />
-                  <div>
-                    <div className="font-medium text-gray-900">Settings</div>
-                    <div className="text-sm text-gray-500">Adjust learning goals</div>
-                  </div>
-                </div>
-              </button>
+              </div>
+            )}
+
+            {/* Motivational Quote */}
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">
+              <h3 className="text-lg font-semibold mb-3">💪 Stay Motivated</h3>
+              <p className="text-purple-100 text-sm italic">
+                "Every word you learn brings you closer to fluency. Keep going!"
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Filter Options */}
-        {wordsAvailable && wordsAvailable.total > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Learning Preferences
-            </h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Focus Category (Optional)
-                </label>
-                <select 
-                  value={selectedCategory || ''}
-                  onChange={(e) => setSelectedCategory(e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Categories</option>
-                  {categories?.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Difficulty Level (Optional)
-                </label>
-                <select 
-                  value={selectedDifficulty || ''}
-                  onChange={(e) => setSelectedDifficulty(e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Levels</option>
-                  <option value="1">Beginner (Level 1)</option>
-                  <option value="2">Elementary (Level 2)</option>
-                  <option value="3">Intermediate (Level 3)</option>
-                  <option value="4">Advanced (Level 4)</option>
-                </select>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-3">
-              Filters help you focus on specific types of words during your learning session.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

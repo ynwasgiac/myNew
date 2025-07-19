@@ -43,6 +43,7 @@ from database.auth_models import User
 
 # Import learning routes
 from learning.routes import router as learning_router
+from learning.learning_module_routes import router as learning_module_router
 from admin_routes import admin_router
 
 # Create FastAPI app
@@ -76,6 +77,7 @@ app.include_router(refresh_router)
 
 # Include learning routes
 app.include_router(learning_router)
+app.include_router(learning_module_router)
 app.include_router(admin_router)
 
 
@@ -1675,6 +1677,8 @@ async def get_random_example_sentences(
         ))
     
     return response_sentences
+
+
 
 if __name__ == "__main__":
     import uvicorn

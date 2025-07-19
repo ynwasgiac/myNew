@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
 
+from sqlalchemy.orm import selectinload
+
+from database import KazakhWord, Translation, Language
 from database.connection import get_db
 from database.auth_models import User
 from auth.dependencies import get_current_user
-from database.learning_models import LearningStatus
+from database.learning_models import LearningStatus, UserWordProgress
 from database.learning_schemas import (
     PracticeSessionRequest, PracticeSessionResponse, 
     UserWordProgressUpdate, LearningStatusEnum
@@ -481,3 +485,197 @@ async def get_daily_progress(
             status_code=500,
             detail=f"Failed to get daily progress: {str(e)}"
         )
+    
+# Add this endpoint to learning/learning_module_routes.py
+
+@router.post("/words/add-random")
+async def add_random_words_to_learning(
+    count: Optional[int] = Query(None, description="Number of words to add (uses user's daily goal if not specified)"),
+    category_id: Optional[int] = Query(None, description="Filter by category"),
+    difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Add exactly the specified number of random words to user's learning list.
+    Only adds words that have translations in the user's native language.
+    Guarantees exact count or returns error if not enough words available.
+    """
+    try:
+        # Determine count from user settings if not provided
+        if count is None:
+            # Get user's daily goal from settings (default to 10)
+            count = 10  # Default daily goal
+            if current_user.main_language:
+                count = getattr(current_user.main_language, 'daily_goal', 10)
+        
+        # Validate count
+        if count <= 0 or count > 50:
+            raise HTTPException(
+                status_code=400,
+                detail="Count must be between 1 and 50"
+            )
+        
+        # Get user's language preference
+        user_lang_code = current_user.main_language.language_code if current_user.main_language else "en"
+        
+        # Get words already in user's learning list to exclude them
+        existing_progress = await UserWordProgressCRUD.get_user_learning_words(
+            db, current_user.id, limit=2000, offset=0  # Get all user's words
+        )
+        existing_word_ids = [wp.kazakh_word_id for wp in existing_progress]
+        
+        # Get random words with translations in user's language
+        # Request more than needed to account for filtering
+        search_multiplier = 3  # Start with 3x the needed count
+        max_attempts = 5
+        found_words = []
+        
+        for attempt in range(max_attempts):
+            search_count = count * search_multiplier
+            
+            # Base query for random words with proper joins
+            query = select(KazakhWord).options(
+                selectinload(KazakhWord.translations).selectinload(Translation.language),
+                selectinload(KazakhWord.category),
+                selectinload(KazakhWord.difficulty_level)
+            )
+            
+            # Apply category filter
+            if category_id:
+                query = query.where(KazakhWord.category_id == category_id)
+            
+            # Apply difficulty filter
+            if difficulty_level_id:
+                query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+            
+            # Exclude words already in user's learning list
+            if existing_word_ids:
+                query = query.where(~KazakhWord.id.in_(existing_word_ids))
+            
+            # Join with translations to ensure words have translations in user's language
+            query = query.join(Translation).join(Language).where(
+                Language.language_code == user_lang_code
+            )
+            
+            # Get random selection
+            query = query.order_by(func.random()).limit(search_count)
+            
+            result = await db.execute(query)
+            candidate_words = result.scalars().all()
+            
+            # Filter to ensure each word has a valid translation in user's language
+            for word in candidate_words:
+                if len(found_words) >= count:
+                    break
+                
+                # Verify translation exists and is not empty
+                user_translation = None
+                if hasattr(word, 'translations') and word.translations:
+                    for translation in word.translations:
+                        if (hasattr(translation, 'language') and 
+                            translation.language and 
+                            translation.language.language_code == user_lang_code and
+                            translation.translation and 
+                            translation.translation.strip()):
+                            user_translation = translation.translation
+                            break
+                
+                # Only add if we have a valid translation
+                if user_translation:
+                    found_words.append({
+                        'word': word,
+                        'translation': user_translation
+                    })
+            
+            # If we found enough words, break
+            if len(found_words) >= count:
+                break
+            
+            # Increase search multiplier for next attempt
+            search_multiplier += 2
+        
+        # Check if we found enough words
+        if len(found_words) < count:
+            available_count = len(found_words)
+            filter_info = []
+            if category_id:
+                filter_info.append(f"category_id={category_id}")
+            if difficulty_level_id:
+                filter_info.append(f"difficulty_level_id={difficulty_level_id}")
+            
+            filter_text = f" with filters ({', '.join(filter_info)})" if filter_info else ""
+            
+            raise HTTPException(
+                status_code=404,
+                detail=f"Only {available_count} words available with {user_lang_code.upper()} translations{filter_text}. "
+                       f"Requested {count} words. Try removing filters or choosing a different category/difficulty."
+            )
+        
+        # Take exactly the count we need
+        selected_words = found_words[:count]
+        
+        # Add words to user's learning list
+        added_words = []
+        failed_additions = []
+        
+        for word_data in selected_words:
+            word = word_data['word']
+            translation = word_data['translation']
+            
+            try:
+                # Add to learning list with WANT_TO_LEARN status
+                progress = await UserWordProgressCRUD.add_word_to_learning_list(
+                    db, current_user.id, word.id, LearningStatus.WANT_TO_LEARN
+                )
+                
+                added_words.append({
+                    "id": word.id,
+                    "kazakh_word": word.kazakh_word,
+                    "kazakh_cyrillic": word.kazakh_cyrillic,
+                    "translation": translation,
+                    "category_name": word.category.category_name if word.category else "Unknown",
+                    "difficulty_level": word.difficulty_level.level_number if word.difficulty_level else 1,
+                    "status": "want_to_learn"
+                })
+                
+            except Exception as e:
+                failed_additions.append({
+                    "word_id": word.id,
+                    "kazakh_word": word.kazakh_word,
+                    "error": str(e)
+                })
+                print(f"Failed to add word {word.id} ({word.kazakh_word}): {e}")
+        
+        # Verify we added the exact count requested
+        if len(added_words) != count:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Expected to add {count} words but only added {len(added_words)}. "
+                       f"Database errors occurred for {len(failed_additions)} words."
+            )
+        
+        # Success response
+        return {
+            "success": True,
+            "words_added": len(added_words),
+            "requested_count": count,
+            "user_language": user_lang_code.upper(),
+            "words": added_words,
+            "message": f"Successfully added exactly {len(added_words)} words with {user_lang_code.upper()} translations to your learning list!",
+            "filters_applied": {
+                "category_id": category_id,
+                "difficulty_level_id": difficulty_level_id,
+                "language_code": user_lang_code
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in add_random_words_to_learning: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to add random words: {str(e)}"
+        )
+    

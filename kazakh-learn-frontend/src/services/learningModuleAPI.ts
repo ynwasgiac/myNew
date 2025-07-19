@@ -103,6 +103,34 @@ export const learningModuleAPI = {
     const response = await api.get(`/learning-module/words/not-learned?${params}`);
     return response.data;
   },
+  
+  // Add random words to learning list
+  async addRandomWords(
+    count?: number,
+    categoryId?: number,
+    difficultyLevelId?: number
+  ): Promise<{
+    success: boolean;
+    words_added: number;
+    words: Array<{
+      id: number;
+      kazakh_word: string;
+      kazakh_cyrillic?: string;
+      translation: string;
+      category_name: string;
+      difficulty_level: number;
+      status: string;
+    }>;
+    message: string;
+  }> {
+    const params = new URLSearchParams();
+    if (count) params.append('count', count.toString());
+    if (categoryId) params.append('category_id', categoryId.toString());
+    if (difficultyLevelId) params.append('difficulty_level_id', difficultyLevelId.toString());
+
+    const response = await api.post(`/learning-module/words/add-random?${params}`);
+    return response.data;
+  },
 
   // Start practice session for a batch of 3 words
   async startBatchPractice(wordIds: number[]): Promise<BatchSession> {

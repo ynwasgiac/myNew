@@ -1272,3 +1272,78 @@ class KazakhWordCRUD:
         
         result = await db.execute(query)
         return result.scalar_one_or_none() is not None
+    
+@staticmethod
+async def get_random_words_with_guaranteed_translations(
+    db: AsyncSession,
+    count: int,
+    user_language_code: str,
+    exclude_word_ids: Optional[List[int]] = None,
+    category_id: Optional[int] = None,
+    difficulty_level_id: Optional[int] = None
+) -> List[KazakhWord]:
+    """
+    Get exactly 'count' random words that are guaranteed to have translations 
+    in the specified language. Returns fewer words if not enough are available.
+    """
+    # Start with a larger search to account for filtering
+    search_multiplier = 5
+    max_attempts = 3
+    found_words = []
+    
+    for attempt in range(max_attempts):
+        search_count = min(count * search_multiplier, 500)  # Cap at 500 to avoid huge queries
+        
+        # Base query
+        query = select(KazakhWord).options(
+            selectinload(KazakhWord.translations).selectinload(Translation.language),
+            selectinload(KazakhWord.category),
+            selectinload(KazakhWord.difficulty_level)
+        )
+        
+        # Apply filters
+        if exclude_word_ids:
+            query = query.where(~KazakhWord.id.in_(exclude_word_ids))
+        
+        if category_id:
+            query = query.where(KazakhWord.category_id == category_id)
+        
+        if difficulty_level_id:
+            query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+        
+        # Ensure words have translations in the target language
+        query = query.join(Translation).join(Language).where(
+            Language.language_code == user_language_code
+        )
+        
+        # Get random sample
+        query = query.order_by(func.random()).limit(search_count)
+        
+        result = await db.execute(query)
+        candidate_words = result.scalars().all()
+        
+        # Filter for valid translations
+        for word in candidate_words:
+            if len(found_words) >= count:
+                break
+                
+            # Verify valid translation exists
+            has_valid_translation = any(
+                (t.language.language_code == user_language_code and 
+                 t.translation and 
+                 t.translation.strip())
+                for t in word.translations 
+                if t.language
+            )
+            
+            if has_valid_translation:
+                found_words.append(word)
+        
+        # If we have enough, stop searching
+        if len(found_words) >= count:
+            break
+        
+        # Increase search scope for next attempt
+        search_multiplier += 3
+    
+    return found_words[:count]  # Return exactly count or fewer
