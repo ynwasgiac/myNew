@@ -240,6 +240,7 @@ class PracticeWordItem(BaseModel):
     times_seen: int = 0
     last_practiced: Optional[datetime] = None
     is_review: bool = False
+    learning_status: Optional[str] = None  # Add this field
 
 
 class PracticeSessionResponse(BaseModel):

@@ -100,13 +100,29 @@ export const learningAPI = {
     correct_answer?: string;
     response_time_ms?: number;
   }): Promise<{ message: string; was_correct: boolean }> {
-    const response = await api.post(`/learning/practice/${sessionId}/answer`, {
-      word_id: data.word_id,
-      was_correct: data.was_correct,
-      user_answer: data.user_answer,
-      correct_answer: data.correct_answer,
-      response_time_ms: data.response_time_ms
-    });
+    // Build query parameters exactly as backend expects
+    const params = new URLSearchParams();
+    params.append('word_id', data.word_id.toString());
+    params.append('was_correct', data.was_correct.toString());
+    
+    if (data.user_answer) {
+      params.append('user_answer', data.user_answer);
+    }
+    
+    if (data.correct_answer) {
+      params.append('correct_answer', data.correct_answer);
+    }
+    
+    if (data.response_time_ms !== undefined) {
+      params.append('response_time_ms', data.response_time_ms.toString());
+    }
+  
+    const url = `/learning/practice/${sessionId}/answer?${params}`;
+    
+    console.log('🚀 Submitting to URL:', url);
+    
+    // POST request with empty body since all data is in query parameters
+    const response = await api.post(url);
     return response.data;
   },
   async submitPracticeAnswer2(
