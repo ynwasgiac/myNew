@@ -231,7 +231,7 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
       console.error('Failed to start practice:', error);
       toast.error('Failed to start practice session');
     }
-  });
+  }); 
 
   // Submit Practice Answer
   const submitPracticeAnswerMutation = useMutation({
@@ -281,18 +281,7 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
       console.error('❌ Failed to submit practice answer:', error);
       toast.error('Failed to submit answer. Please try again.');
     }
-  });  
-
-  const moveToNextWord = () => {
-    if (currentWordIndex < cycle.currentWords.length - 1) {
-      console.log(`📍 Moving to next word: ${currentWordIndex + 1}`);
-      setCurrentWordIndex(prev => prev + 1);
-      setWordStartTime(Date.now());
-    } else {
-      console.log('🎯 Practice phase complete, moving to quiz');
-      finishPracticeAndStartQuiz();
-    }
-  };
+  }); 
 
   // Finish Practice and Start Quiz
   const finishPracticeAndStartQuiz = async () => {
@@ -441,6 +430,17 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
     }
   };
 
+  const moveToNextWord = () => {
+    if (currentWordIndex < cycle.currentWords.length - 1) {
+      console.log(`📍 Moving to next word: ${currentWordIndex + 1}`);
+      setCurrentWordIndex(prev => prev + 1);
+      setWordStartTime(Date.now());
+    } else {
+      console.log('🎯 Practice phase complete, moving to quiz');
+      finishPracticeAndStartQuiz();
+    }
+  };
+
   // Handle practice answer
   const handlePracticeAnswer = async (wordId: number, wasCorrect: boolean, userAnswer?: string, correctAnswer?: string) => {
     console.log('🎯 handlePracticeAnswer called:', { 
@@ -451,7 +451,6 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
       currentWord: cycle.currentWords[currentWordIndex]
     });
     
-    // Проверяем, что правильный ответ соответствует текущему слову
     const currentWord = cycle.currentWords[currentWordIndex];
     if (currentWord && currentWord.id === wordId) {
       console.log('✅ Word ID matches current word');
@@ -461,17 +460,6 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
         translation: currentWord.translation,
         correctAnswerPassed: correctAnswer
       });
-      
-      // Проверяем, совпадает ли переданный correctAnswer с переводом слова
-      if (correctAnswer !== currentWord.translation) {
-        console.error('❌ MISMATCH: correctAnswer !== currentWord.translation');
-        console.error('Expected:', currentWord.translation);
-        console.error('Received:', correctAnswer);
-      }
-    } else {
-      console.error('❌ Word ID mismatch or no current word');
-      console.error('Current word ID:', currentWord?.id);
-      console.error('Passed word ID:', wordId);
     }
     
     try {
@@ -479,8 +467,12 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
         wordId,
         wasCorrect,
         userAnswer,
-        correctAnswer: currentWord?.translation || correctAnswer // Используем перевод текущего слова
+        correctAnswer: currentWord?.translation || correctAnswer
       });
+      
+      // НЕ ВЫЗЫВАЕМ moveToNextWord() здесь!
+      // Пользователь сам нажмет кнопку Next Word
+      
     } catch (error) {
       console.error('Error in handlePracticeAnswer:', error);
     }
@@ -582,6 +574,7 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
           cycle={cycle}
           currentWordIndex={currentWordIndex}
           onAnswer={handlePracticeAnswer}
+          onNextWord={moveToNextWord} // ДОБАВИТЬ ЭТО
         />
       )}
 
@@ -695,13 +688,13 @@ const PracticePhase: React.FC<{
   cycle: LearningCycle;
   currentWordIndex: number;
   onAnswer: (wordId: number, wasCorrect: boolean, userAnswer?: string, correctAnswer?: string) => void;
-}> = ({ cycle, currentWordIndex, onAnswer }) => {
+  onNextWord: () => void; // ДОБАВИТЬ ЭТО
+}> = ({ cycle, currentWordIndex, onAnswer, onNextWord }) => { // ДОБАВИТЬ onNextWord
   const [userInput, setUserInput] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // ИСПРАВЛЕНИЕ: Сохраняем данные слова ДО отправки
   const [submittedWordData, setSubmittedWordData] = useState<{
     id: number;
     kazakh_word: string;
@@ -712,7 +705,7 @@ const PracticePhase: React.FC<{
 
   const currentWord = cycle.currentWords[currentWordIndex];
 
-  // Очищаем данные отправленного слова при смене текущего слова
+  // Очищаем данные при смене слова
   useEffect(() => {
     if (!showResult) {
       setSubmittedWordData(null);
@@ -729,7 +722,6 @@ const PracticePhase: React.FC<{
     const correctAnswerTrimmed = currentWord.translation.toLowerCase().trim();
     const correct = userAnswerTrimmed === correctAnswerTrimmed;
     
-    // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Сохраняем данные ПЕРЕД отправкой
     const wordDataToSubmit = {
       id: currentWord.id,
       kazakh_word: currentWord.kazakh_word,
@@ -752,7 +744,6 @@ const PracticePhase: React.FC<{
     console.log('==========================================');
     
     try {
-      // Используем зафиксированные данные, а не currentWord
       await onAnswer(
         wordDataToSubmit.id, 
         wordDataToSubmit.isCorrect, 
@@ -760,18 +751,26 @@ const PracticePhase: React.FC<{
         wordDataToSubmit.translation
       );
       
-      setTimeout(() => {
-        setUserInput('');
-        setShowResult(false);
-        setIsSubmitting(false);
-        setSubmittedWordData(null);
-      }, 1500);
+      // НЕ очищаем форму автоматически - ждем нажатия Next Word
+      setIsSubmitting(false);
       
     } catch (error) {
       console.error('Error submitting answer:', error);
       setIsSubmitting(false);
       toast.error('Failed to submit answer');
     }
+  };
+
+  // ДОБАВИТЬ функцию для обработки Next Word:
+  const handleNextWord = () => {
+    // Очищаем состояние
+    setUserInput('');
+    setShowResult(false);
+    setIsSubmitting(false);
+    setSubmittedWordData(null);
+    
+    // Переходим к следующему слову
+    onNextWord();
   };
 
   if (!currentWord) {
@@ -796,10 +795,8 @@ const PracticePhase: React.FC<{
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-lg">
-        {/* ИСПРАВЛЕНИЕ: Показываем либо текущее слово, либо результат для отправленного */}
         {!showResult ? (
           <>
-            {/* Debug info */}
             <div className="text-xs text-gray-400 mb-2">
               Debug: ID={currentWord.id}, Translation="{currentWord.translation}"
             </div>
@@ -814,7 +811,7 @@ const PracticePhase: React.FC<{
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-3">
-                  What does this word mean in English?
+                  What does this word mean in Russian?
                 </label>
                 <input
                   type="text"
@@ -837,7 +834,6 @@ const PracticePhase: React.FC<{
           </>
         ) : (
           <div className="space-y-6">
-            {/* ИСПРАВЛЕНИЕ: Показываем результат для ОТПРАВЛЕННОГО слова */}
             {submittedWordData && (
               <>
                 <div className={`text-2xl font-bold ${submittedWordData.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
@@ -854,25 +850,17 @@ const PracticePhase: React.FC<{
                       Your answer: <span className="font-medium">"{submittedWordData.userAnswer}"</span>
                     </p>
                   )}
-                  {/* Debug info для результата */}
                   <p className="text-xs text-gray-400 mt-2">
                     Result for Word ID: {submittedWordData.id} | Expected: "{submittedWordData.translation}"
                   </p>
                 </div>
 
-                {!isSubmitting && (
-                  <button
-                    onClick={() => {
-                      setUserInput('');
-                      setShowResult(false);
-                      setIsSubmitting(false);
-                      setSubmittedWordData(null);
-                    }}
-                    className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-                  >
-                    {currentWordIndex < cycle.currentWords.length - 1 ? 'Next Word' : 'Continue to Quiz'}
-                  </button>
-                )}
+                <button
+                  onClick={handleNextWord} // ИЗМЕНИТЬ НА handleNextWord
+                  className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  {currentWordIndex < cycle.currentWords.length - 1 ? 'Next Word' : 'Continue to Quiz'}
+                </button>
               </>
             )}
           </div>
