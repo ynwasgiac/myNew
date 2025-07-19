@@ -79,21 +79,32 @@ class UserLearningSessionResponse(BaseModel):
     id: int
     user_id: int
     session_type: str
-    words_studied: int
-    correct_answers: int
-    incorrect_answers: int
+    
+    # UPDATED: Both fields available
+    total_questions: int = 0        # Total questions asked in session
+    words_studied: int = 0          # Words actually studied/practiced
+    
+    correct_answers: int = 0
+    incorrect_answers: int = 0
     duration_seconds: Optional[int] = None
     category_id: Optional[int] = None
     difficulty_level_id: Optional[int] = None
     started_at: datetime
     finished_at: Optional[datetime] = None
     created_at: datetime
-    accuracy_rate: Optional[float] = None
 
     @property
     def accuracy_rate(self) -> Optional[float]:
+        """Calculate accuracy based on words_studied"""
         if self.words_studied > 0:
             return round((self.correct_answers / self.words_studied) * 100, 1)
+        return None
+
+    @property  
+    def completion_rate(self) -> Optional[float]:
+        """Calculate completion rate (words_studied vs total_questions)"""
+        if self.total_questions > 0:
+            return round((self.words_studied / self.total_questions) * 100, 1)
         return None
 
     class Config:

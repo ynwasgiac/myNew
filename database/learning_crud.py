@@ -274,12 +274,18 @@ class UserLearningSessionCRUD:
             .where(UserSessionDetail.session_id == session_id)
         )
         stats = details_result.first()
+        
+        total_words = stats.total_words or 0
+        correct_count = stats.correct_count or 0
+        incorrect_count = total_words - correct_count
 
+        # Update data with BOTH fields
         update_data = {
             "finished_at": datetime.utcnow(),
-            "words_studied": stats.total_words or 0,
-            "correct_answers": stats.correct_count or 0,
-            "incorrect_answers": (stats.total_words or 0) - (stats.correct_count or 0)
+            "total_questions": total_words,           # Total questions in session
+            "words_studied": total_words,             # Words actually studied (same value for now)
+            "correct_answers": correct_count,
+            "incorrect_answers": incorrect_count
         }
 
         if duration_seconds:

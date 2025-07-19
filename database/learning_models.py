@@ -96,20 +96,26 @@ class UserLearningSession(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     # Session metadata
-    session_type = Column(String(50), nullable=False)  # practice, review, quiz, guide
-    word_source = Column(String(20), default="learning_list")  # learning_list, random, guide
-    guide_id = Column(Integer, nullable=True)  # Reference to guide if applicable
+    session_type = Column(String(50), nullable=False)
+    word_source = Column(String(20), default="learning_list")
+    guide_id = Column(Integer, nullable=True)
 
     # Session stats
     total_questions = Column(Integer, default=0)
+    words_studied = Column(Integer, default=0)  # Add via migration
     correct_answers = Column(Integer, default=0)
-    learning_words_count = Column(Integer, default=0)  # Words from learning list
-    random_words_count = Column(Integer, default=0)  # Random words
+    incorrect_answers = Column(Integer, default=0)
+    learning_words_count = Column(Integer, default=0)
+    random_words_count = Column(Integer, default=0)
 
     # Session timing
     started_at = Column(DateTime, default=datetime.utcnow)
     finished_at = Column(DateTime, nullable=True)
     duration_seconds = Column(Integer, nullable=True)
+    
+    # ADD THESE TIMESTAMP FIELDS:
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Optional filters used
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
