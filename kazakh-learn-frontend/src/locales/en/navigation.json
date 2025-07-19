@@ -20,11 +20,26 @@
     "words": "Words", 
     "categories": "Categories",
     "learn": "Learn",
+    "learning": "Learning",
+    "learningModule": "Learning Modules",
     "practice": "Practice",
     "quiz": "Quiz",
     "progress": "Progress",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "guides": "Guides",
+    "learned": "Learned"
+  },
+  "descriptions": {
+    "dashboard": "Overview of progress and quick actions",
+    "learning": "Your word list for studying",
+    "learningModule": "Intensive module-based learning sessions",
+    "practice": "Word training and testing",
+    "quiz": "Test your knowledge",
+    "progress": "Statistics and achievements",
+    "guides": "Themed word collections",
+    "learned": "Your learned and favorite words",
+    "settings": "Personalization and preferences"
   },
   "userMenu": {
     "yourProfile": "Your Profile",

@@ -1,4 +1,4 @@
-// src/components/layout/Navigation.tsx - Обновленная навигация
+// src/components/layout/Navigation.tsx - Обновленная навигация с Learning Module
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -12,7 +12,9 @@ import {
   BarChart3, 
   Settings,
   Trophy,
-  Heart
+  Heart,
+  Zap,         // Для Learning Module - иконка молнии (интенсивное обучение)
+  GraduationCap // Альтернативная иконка для Learning Module
 } from 'lucide-react';
 
 const Navigation: React.FC = () => {
@@ -23,46 +25,54 @@ const Navigation: React.FC = () => {
     {
       path: '/app/dashboard',
       icon: Home,
-      label: t('dashboard', 'Главная'),
-      description: t('dashboard.description', 'Обзор прогресса и быстрые действия')
+      label: t('menu.dashboard', 'Dashboard'),
+      description: t('descriptions.dashboard', 'Overview of progress and quick actions')
     },
     {
       path: '/app/learning',
       icon: BookOpen,
-      label: t('learning', 'Изучение'),
-      description: t('learning.description', 'Ваш список слов для изучения')
+      label: t('menu.learning', 'Learning'),
+      description: t('descriptions.learning', 'Your word list for studying')
+    },
+    {
+      path: '/app/learning-module',
+      icon: Zap, // Или GraduationCap
+      label: t('menu.learningModule', 'Learning Modules'),
+      description: t('descriptions.learningModule', 'Intensive module-based learning sessions'),
+      isNew: true, // Помечаем как новую функцию
+      badge: 'New' // Добавляем бэдж
     },
     {
       path: '/app/guides',
       icon: Map,
-      label: t('guides', 'Путеводители'),
-      description: t('guides.description', 'Тематические коллекции слов'),
-      isNew: true // Новая страница!
+      label: t('menu.guides', 'Guides'),
+      description: t('descriptions.guides', 'Themed word collections'),
+      isNew: true
     },
     {
       path: '/app/practice',
       icon: Target,
-      label: t('practice', 'Практика'),
-      description: t('practice.description', 'Тренировка слов и тестирование')
+      label: t('menu.practice', 'Practice'),
+      description: t('descriptions.practice', 'Word training and testing')
     },
     {
       path: '/app/learned',
       icon: Trophy,
-      label: t('learned', 'Изученные'),
-      description: t('learned.description', 'Ваши изученные и любимые слова'),
-      isNew: true // Новая страница!
+      label: t('menu.learned', 'Learned'),
+      description: t('descriptions.learned', 'Your learned and favorite words'),
+      isNew: true
     },
     {
       path: '/app/progress',
       icon: BarChart3,
-      label: t('progress', 'Прогресс'),
-      description: t('progress.description', 'Статистика и достижения')
+      label: t('menu.progress', 'Progress'),
+      description: t('descriptions.progress', 'Statistics and achievements')
     },
     {
       path: '/app/settings',
       icon: Settings,
-      label: t('settings', 'Настройки'),
-      description: t('settings.description', 'Персонализация и предпочтения')
+      label: t('menu.settings', 'Settings'),
+      description: t('descriptions.settings', 'Personalization and preferences')
     }
   ];
 
@@ -86,22 +96,31 @@ const Navigation: React.FC = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`relative inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
+                  className={`relative inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors group ${
                     isActive
-                      ? 'border-blue-500 text-gray-900'
+                      ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
-                  title={item.description}
                 >
-                  <IconComponent className="w-4 h-4 mr-2" />
-                  {item.label}
+                  <IconComponent 
+                    className={`w-4 h-4 mr-2 ${
+                      isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                    }`} 
+                  />
+                  <span>{item.label}</span>
                   
-                  {/* Новый бейдж */}
-                  {item.isNew && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                      {t('new', 'NEW')}
+                  {/* Бэдж для новых функций */}
+                  {(item.isNew || item.badge) && (
+                    <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      {item.badge || 'New'}
                     </span>
                   )}
+                  
+                  {/* Tooltip с описанием */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                    {item.description}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
+                  </div>
                 </Link>
               );
             })}

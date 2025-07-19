@@ -1,4 +1,4 @@
-// src/components/routing/AppRoutes.tsx - Updated to work properly with React Router nested routes
+// src/components/routing/AppRoutes.tsx - Updated with Learning Module route
 
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 // Your existing pages - using exact imports from your project
 const DashboardPage = React.lazy(() => import('../../pages/DashboardPage'));
 const LearningPage = React.lazy(() => import('../../pages/learning/LearningPage'));
+const LearningModulePage = React.lazy(() => import('../../pages/learning/LearningModulePage')); // Новый импорт
 const GuidedLearningPage = React.lazy(() => import('../../pages/learning/GuidedLearningPage'));
 const LearnedWordsPage = React.lazy(() => import('../../pages/learning/LearnedWordsPage'));
 const PracticePage = React.lazy(() => import('../../pages/learning/PracticePage'));
@@ -35,6 +36,7 @@ const AppRoutes: React.FC = () => {
         
         {/* Learning Routes - now properly integrated! */}
         <Route path="learning" element={<LearningPage />} />
+        <Route path="learning-module" element={<LearningModulePage />} /> {/* Новый роут */}
         <Route path="learn" element={<Navigate to="../learning" replace />} /> {/* Redirect old route */}
         <Route path="guides" element={<GuidedLearningPage />} />
         <Route path="learned" element={<LearnedWordsPage />} />

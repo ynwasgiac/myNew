@@ -9,6 +9,7 @@ import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
 import type { UserWordProgressWithWord } from '../../types/api';
 import { toast } from 'sonner';
 import LearningModule from '../../components/learning/LearningModule';
+import LearningModuleMenu from './LearningModuleMenu';
 import { 
   BookOpenIcon, 
   PencilIcon, 
@@ -277,6 +278,7 @@ const LearningModulePage: React.FC = () => {
   if (showModule) {
     return (
       <div className="min-h-screen bg-gray-50">
+      <LearningModuleMenu />
         <div className="container mx-auto px-4 py-6">
           <LearningModule onComplete={handleModuleComplete} />
         </div>
@@ -361,6 +363,57 @@ const LearningModulePage: React.FC = () => {
           </div>
         )}
 
+        {/* Main Action Section */}
+        <div className="text-center space-y-6 mb-8">
+          {wordsAvailable && wordsAvailable.total >= 3 ? (
+            <>
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
+                <p className="text-blue-100 mb-6">
+                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
+                </p>
+                <button
+                  onClick={startLearning}
+                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
+                >
+                  <PlayIcon className="h-6 w-6 mr-2" />
+                  Start Learning Session
+                </button>
+                <p className="text-blue-200 mt-4 text-sm">
+                  Estimated time: {estimateSessionTime()} • 3 words per batch
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {wordsAvailable?.total === 0 
+                  ? 'Add some words to your learning list to start practicing!'
+                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <button 
+                  onClick={() => navigate('/app/words')}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Browse Words
+                </button>
+                <button 
+                  onClick={() => navigate('/app/categories')}
+                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                >
+                  Browse Categories
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Learning Process Overview */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
@@ -409,6 +462,57 @@ const LearningModulePage: React.FC = () => {
           </div>
         </div>
 
+        {/* Main Action Section */}
+        <div className="text-center space-y-6 mb-8">
+          {wordsAvailable && wordsAvailable.total >= 3 ? (
+            <>
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
+                <p className="text-blue-100 mb-6">
+                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
+                </p>
+                <button
+                  onClick={startLearning}
+                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
+                >
+                  <PlayIcon className="h-6 w-6 mr-2" />
+                  Start Learning Session
+                </button>
+                <p className="text-blue-200 mt-4 text-sm">
+                  Estimated time: {estimateSessionTime()} • 3 words per batch
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {wordsAvailable?.total === 0 
+                  ? 'Add some words to your learning list to start practicing!'
+                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <button 
+                  onClick={() => navigate('/app/words')}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Browse Words
+                </button>
+                <button 
+                  onClick={() => navigate('/app/categories')}
+                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                >
+                  Browse Categories
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Main Dashboard Grid */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Words Available */}
@@ -450,6 +554,57 @@ const LearningModulePage: React.FC = () => {
               <p className="text-gray-500">No words available for learning</p>
             )}
           </div>
+
+        {/* Main Action Section */}
+        <div className="text-center space-y-6 mb-8">
+          {wordsAvailable && wordsAvailable.total >= 3 ? (
+            <>
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
+                <p className="text-blue-100 mb-6">
+                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
+                </p>
+                <button
+                  onClick={startLearning}
+                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
+                >
+                  <PlayIcon className="h-6 w-6 mr-2" />
+                  Start Learning Session
+                </button>
+                <p className="text-blue-200 mt-4 text-sm">
+                  Estimated time: {estimateSessionTime()} • 3 words per batch
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {wordsAvailable?.total === 0 
+                  ? 'Add some words to your learning list to start practicing!'
+                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <button 
+                  onClick={() => navigate('/app/words')}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Browse Words
+                </button>
+                <button 
+                  onClick={() => navigate('/app/categories')}
+                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                >
+                  Browse Categories
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
           {/* Learning Statistics */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -548,57 +703,6 @@ const LearningModulePage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Main Action Section */}
-        <div className="text-center space-y-6 mb-8">
-          {wordsAvailable && wordsAvailable.total >= 3 ? (
-            <>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
-                <p className="text-blue-100 mb-6">
-                  You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
-                </p>
-                <button
-                  onClick={startLearning}
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
-                >
-                  <PlayIcon className="h-6 w-6 mr-2" />
-                  Start Learning Session
-                </button>
-                <p className="text-blue-200 mt-4 text-sm">
-                  Estimated time: {estimateSessionTime()} • 3 words per batch
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-              <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                {wordsAvailable?.total === 0 ? 'No Words Available' : 'Need More Words'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {wordsAvailable?.total === 0 
-                  ? 'Add some words to your learning list to start practicing!'
-                  : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <button 
-                  onClick={() => navigate('/app/words')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                >
-                  Browse Words
-                </button>
-                <button 
-                  onClick={() => navigate('/app/categories')}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
-                >
-                  Browse Categories
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Filter Options */}
