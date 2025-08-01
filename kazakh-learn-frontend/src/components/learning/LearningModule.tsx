@@ -21,6 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+import { KazakhWordSummary } from '../../types/api';
 
 
 // Types for the learning module
@@ -36,6 +37,7 @@ interface LearningWord {
   last_practiced?: string;
   status?: string;
   category_name?: string; // Add this field
+  word_type_name?: string; // Add this line
 }
 
 interface QuizQuestion {
@@ -539,8 +541,8 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
       {/* Phase indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Learning Batch {cycle.currentBatch} of {cycle.totalBatches}
+          <h1 className="text-2xl font-bold text-gray-900"> 
+            Learning Batch {cycle.currentBatch} of {cycle.totalBatches} 
           </h1>
           <div className="text-sm text-gray-500">
             {cycle.phase === 'overview' && 'Ready to learn 3 new words? Let\'s start with an overview!'}
@@ -610,6 +612,7 @@ const OverviewPhase: React.FC<{
 }> = ({ words, onStart }) => {
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   const [fallbackLevels, setFallbackLevels] = useState<Record<number, number>>({});
+  const { t } = useTranslation(['learning']);
 
   // Image fallback system (same as your existing WordCard)
   const getImageSources = (word: LearningWord): string[] => {
@@ -674,8 +677,11 @@ const OverviewPhase: React.FC<{
   // Audio player component for each word
   const WordAudioPlayer: React.FC<{ word: LearningWord }> = ({ word }) => {
     const { playAudio } = useAudioPlayer({ 
-      wordId: word.id, 
-      word: word 
+      wordId: word.id,
+      word: {
+        ...word,
+        word_type_name: word.word_type_name || 'default'
+      } as KazakhWordSummary
     });
 
     const handlePlayAudio = () => {
@@ -709,10 +715,10 @@ const OverviewPhase: React.FC<{
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            📚 Today's Words to Learn
+            {t('overview.title')}
           </h2>
           <p className="text-gray-600">
-            Study these words carefully before we start practicing
+            {t('overview.subtitle')}
           </p>
         </div>
 
@@ -798,7 +804,7 @@ const OverviewPhase: React.FC<{
                     {word.times_seen > 0 && (
                       <div className="text-center">
                         <span className="bg-blue-100 px-2 py-1 rounded-full text-xs text-blue-800">
-                          Seen {word.times_seen} times
+                          {t('overview.seenTimes', { count: word.times_seen })}
                         </span>
                       </div>
                     )}
@@ -813,7 +819,7 @@ const OverviewPhase: React.FC<{
       {/* Learning Process Overview */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
         <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">
-          🎯 Learning Process:
+          {t('overview.process.title')}
         </h3>
         
         <div className="grid md:grid-cols-3 gap-6">
@@ -821,24 +827,24 @@ const OverviewPhase: React.FC<{
             <div className="bg-blue-100 rounded-full p-3 w-12 h-12 mx-auto mb-3">
               <BookOpenIcon className="h-6 w-6 text-blue-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">1. Study</h4>
-            <p className="text-sm text-gray-600">Study the words and images</p>
+            <h4 className="font-semibold text-gray-900 mb-2">{t('overview.process.study.title')}</h4>
+            <p className="text-sm text-gray-600">{t('overview.process.study.description')}</p>
           </div>
           
           <div className="text-center">
             <div className="bg-green-100 rounded-full p-3 w-12 h-12 mx-auto mb-3">
               <PencilIcon className="h-6 w-6 text-green-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">2. Practice</h4>
-            <p className="text-sm text-gray-600">Write translations from memory</p>
+            <h4 className="font-semibold text-gray-900 mb-2">{t('overview.process.practice.title')}</h4>
+            <p className="text-sm text-gray-600">{t('overview.process.practice.description')}</p>
           </div>
           
           <div className="text-center">
             <div className="bg-purple-100 rounded-full p-3 w-12 h-12 mx-auto mb-3">
               <QuestionMarkCircleIcon className="h-6 w-6 text-purple-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">3. Quiz</h4>
-            <p className="text-sm text-gray-600">Multiple choice questions</p>
+            <h4 className="font-semibold text-gray-900 mb-2">{t('overview.process.quiz.title')}</h4>
+            <p className="text-sm text-gray-600">{t('overview.process.quiz.description')}</p>
           </div>
         </div>
 
@@ -846,40 +852,40 @@ const OverviewPhase: React.FC<{
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
           <StarIcon className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
           <p className="text-sm text-yellow-800 font-medium">
-            💡 Get words correct in BOTH practice and quiz to mark them as learned!
+            {t('overview.successCriteria')}
           </p>
         </div>
 
         {/* Study Tips */}
         <div className="mt-4 bg-white rounded-lg p-4">
-          <h4 className="font-semibold text-gray-900 mb-3 text-center">📝 Study Tips:</h4>
+          <h4 className="font-semibold text-gray-900 mb-3 text-center">{t('overview.studyTips.title')}</h4>
           <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
             <div className="flex items-center">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-              <span>Look at the image and say the word aloud</span>
+              <span>{t('overview.studyTips.tip1')}</span>
             </div>
             <div className="flex items-center">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-              <span>Connect the visual with the meaning</span>
+              <span>{t('overview.studyTips.tip2')}</span>
             </div>
             <div className="flex items-center">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-              <span>Practice the pronunciation</span>
+              <span>{t('overview.studyTips.tip3')}</span>
             </div>
             <div className="flex items-center">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-              <span>Remember: image + word + meaning</span>
+              <span>{t('overview.studyTips.tip4')}</span>
             </div>
           </div>
         </div>
 
         {/* Start Button */}
         <button
-          onClick={onStart}
+          onClick={onStart} 
           className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors flex items-center mx-auto mt-6 shadow-lg"
         >
           <PlayIcon className="h-6 w-6 mr-2" />
-          Start Practice Session
+          {t('overview.startButton')} 
         </button>
       </div>
     </div>
@@ -903,6 +909,7 @@ const PracticePhase: React.FC<{
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation(['learning']);
   
   const [submittedWordData, setSubmittedWordData] = useState<{
     id: number;
@@ -990,7 +997,7 @@ const PracticePhase: React.FC<{
     <div className="max-w-3xl mx-auto p-6">
       <div className="text-center mb-8">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-sm text-gray-500 font-medium">Practice Session</span>
+          <span className="text-sm text-gray-500 font-medium">{t('practice.title')}</span>
           <span className="text-sm text-gray-500 font-medium">
             {currentWordIndex + 1} of {cycle.currentWords.length}
           </span>
@@ -1006,9 +1013,9 @@ const PracticePhase: React.FC<{
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-lg">
         {!showResult ? (
           <>
-            <div className="text-xs text-gray-400 mb-2">
+            {/* <div className="text-xs text-gray-400 mb-2">
               Debug: ID={currentWord.id}, Translation="{currentWord.translation}"
-            </div>
+            </div> */}
             
             <h2 className="text-4xl font-bold text-gray-900 mb-3">
               {currentWord.kazakh_word}
@@ -1020,13 +1027,13 @@ const PracticePhase: React.FC<{
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-3">
-                  What does this word mean in Russian?
+                  {t('practice.question', { word: currentWord.kazakh_word })}
                 </label>
                 <input
                   type="text"
                   value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="Type your answer..."
+                  onChange={(e) => setUserInput(e.target.value)}  
+                  placeholder={t('practice.placeholder')}
                   className="w-full max-w-md mx-auto px-4 py-3 border border-gray-300 rounded-lg text-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isSubmitting}
                   autoFocus

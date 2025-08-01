@@ -70,26 +70,392 @@
       "learning": "Үйренуде",
       "learned": "Үйренген",
       "mastered": "Меңгерген",
-      "review": "Қайталау"
-    },
-    "quickActions": {
-      "title": "Жылдам әрекеттер",
-      "browseCategories": "Санаттарды шолу",
-      "viewProgress": "Прогрессті көру",
-      "randomPractice": "Кездейсоқ жаттығу",
-      "learningSettings": "Үйрену параметрлері"
+      "review": "Қайталау",
+      "ready": "Үйренуге дайын!",
+      "inProgress": "Сессия жүруде",
+      "completed": "Бүгін керемет жұмыс!",
+      "goalReached": "Күнделікті мақсат орындалды! 🎉"
     },
     "learnedWords": {
       "title": "Изученные слова", 
       "description": "Просматривайте и управляйте словами, которые вы успешно изучили и освоили"
     },
-    "messages": {
-      "statusUpdated": "Статус слова успешно обновлен",
-      "favoriteUpdated": "Статус избранного успешно обновлен"
-    },
     "errors": {
       "statusUpdateFailed": "Не удалось обновить статус слова",
       "favoriteUpdateFailed": "Не удалось обновить статус избранного"
+    },
+    "page": {
+      "title": "Қазақ тілін үйренуге дайынсыз ба, {{name}}?",
+      "subtitle": "Құрылымдалған үйрenu сессиялары арқылы сөздік қорыңызды дамытыңыз",
+      "loading": "Үйрену бақылау тақтаңыз жүктелуде...",
+      "error": "Үйрену деректерін жүктеу сәтсіз аяқталды. Қайта көріңіз."
+    },
+    "dailyProgress": {
+      "title": "Күнделікті прогресс",
+      "wordsCount": "{{learned}}/{{goal}} сөз",
+      "goalComplete": "🎉 Күнделікті мақсат орындалды! Керемет жұмыс!",
+      "almostThere": "Аз қалды! Тағы {{remaining}} сөз қана!",
+      "greatProgress": "Керемет прогресс! {{remaining}} сөз қалды.",
+      "goodStart": "Жақсы бастама! Мақсатыңызға жету үшін {{remaining}} сөз қалды.",
+      "readyToLearn": "Үйренуге дайынсыз ба? Күнделікті мақсатыңызға жету үшін {{remaining}} сөз!"
+    },
+    "learningStats": {
+      "title": "Үйрену статистикасы",
+      "wordsLearning": "Үйренілетін сөздер:",
+      "thisWeek": "Осы аптада:",
+      "streak": "Серия:",
+      "accuracy": "Дәлдік:",
+      "days": "күн"
+    },
+    "wordsAvailable": {
+      "title": "Қолжетімді сөздер",
+      "wantToLearn": "Үйренгісі келеді",
+      "learning": "Үйренуде",
+      "review": "Қайталау",
+      "total": "Барлығы",
+      "readyForBatches": "{{batches}} үйрену тобына дайын",
+      "estimatedTime": "Болжалды уақыт: {{time}}",
+      "noWordsAvailable": "Үйренуге қолжетімді сөздер жоқ"
+    },
+    "mainAction": {
+      "readyToStart": "Үйренуді бастауға дайынсыз ба?",
+      "wordsReady": "Сізде {{batches}} топта үйренуге дайын {{total}} сөз бар",
+      "startLearning": "Үйрену сессиясын бастау",
+      "estimatedInfo": "Болжалды уақыт: {{time}} • топта 3 сөз",
+      "noWords": "Сөздер жоқ",
+      "needMoreWords": "Көбірек сөздер қажет",
+      "noWordsMessage": "Жаттықтыруды бастау үшін үйрену тізіміңізге сөздер қосыңыз!",
+      "needMoreMessage": "Үйрену сессиясын бастау үшін кемінде 3 сөз қажет. Қазір сізде {{count}} сөз бар.",
+      "addingWords": "Сөздер қосылуда...",
+      "addRandomWords": "Кездейсоқ сөздер қосу",
+      "randomWordsHelp": "Күнделікті мақсатыңыз бен ағымдағы параметрлер негізінде біз сіз үшін сөздер таңдаймыз. Тек сіздің тіліңізде аудармасы бар сөздер қосылады!"
+    },
+    "quickActions": {
+      "quickPractice": "Жылдам жаттығу",
+      "quickPracticeDesc": "Карточкалар мен жаттығулар арқылы сөздерді қайталаңыз",
+      "takeQuiz": "Сынақ тапсыру",
+      "takeQuizDesc": "Интерактивті сынақтар арқылы білімін тексеріңіз",
+      "visitCategories": "Санаттарға өту"
+    },
+    "learningTips": {
+      "title": "Үйрену кеңестері",
+      "tip1": "Жақсы есте сақтау үшін тұрақты жаттықтырыңыз",
+      "tip2": "Айтылу мен мағынаға бірге назар аударыңыз",
+      "tip3": "Жаңа сөздерді үйренбес бұрын бұрынғыларды қайталаңыз",
+      "tip4": "Ұзақ мерзімді жад үшін аралықтық қайталауды қолданыңыз"
+    },
+    "quickStats": {
+      "masteryLevel": "Меңгеру деңгейі",
+      "sessionTime": "Сессия уақыты"
+    },
+    "motivation": {
+      "title": "💪 Мотивацияңызды сақтаңыз",
+      "quote": "Үйренген әр сөзіңіз сізді еркін сөйлеуге жақындатады. Жалғастырыңыз!"
+    },
+    "messages": {
+      "noWordsError": "Үйренуге қолжетімді сөздер жоқ. Үйрену тізіміңізге сөздер қосыңыз.",
+      "needMoreWordsError": "Үйрену сессиясын бастау үшін кемінде 3 сөз қажет. Үйрену тізіміңізге көбірек сөздер қосыңыз.",
+      "sessionComplete": "🎉 Керемет жұмыс! Үйрену сессияңыз аяқталды.",
+      "loginRequired": "Сөздер қосу үшін жүйеге кіріңіз",
+      "wordsAdded": "{{count}} сөз сәтті қосылды!",
+      "partialWordsAdded": "Сұралған {{requested}} сөздің {{added}} қосылды.",
+      "addWordsError": "Кездейсоқ сөздерді қосу сәтсіз аяқталды"
+    },
+    "buttons": {
+      "learnAction": "Сөздерді қарау",
+      "startSession": "Үйрену сессиясын бастау"
+    },
+    "loading": {
+      "dashboard": "Loading your learning dashboard...",
+      "learnedWords": "Loading your learned words..."
+    },
+    "header": {
+      "title": "Ready to Learn, {{name}}?",
+      "subtitle": "Choose how you'd like to improve your Kazakh today"
+    },
+    "stats": {
+      "currentStreak": "Current Streak",
+      "wordsLearning": "Words Learning",
+      "accuracyRate": "Accuracy Rate",
+      "thisWeek": "This Week",
+      "day": "day",
+      "days": "days",
+      "sessions": "sessions"
+    },
+    "options": {
+      "newWords": {
+        "title": "Learn New Words",
+        "description": "Discover and add new Kazakh words to your vocabulary",
+        "action": "Browse Words",
+        "info": "Expand your vocabulary"
+      },
+      "practice": {
+        "title": "Practice Session",
+        "description": "Review words you're currently learning",
+        "action": "Start Practice",
+        "info": "Continue your learning progress"
+      },
+      "review": {
+        "title": "Review Due Words",
+        "description": "Practice words that need review based on spaced repetition",
+        "action": "Review Now",
+        "wordsNeedReview": "{{count}} words need review"
+      },
+      "quiz": {
+        "title": "Take a Quiz",
+        "description": "Test your knowledge with interactive quizzes",
+        "action": "Start Quiz",
+        "info": "Test your knowledge"
+      }
+    },
+    "recommendations": {
+      "title": "Today's Learning Plan",
+      "learn": {
+        "title": "Learn",
+        "description": "Add 5-10 new words to your learning list",
+        "action": "Browse words"
+      },
+      "practice": {
+        "title": "Practice",
+        "description": "Review words you're currently learning",
+        "action": "Start practice"
+      },
+      "test": {
+        "title": "Test",
+        "description": "Take a quiz to reinforce your knowledge",
+        "action": "Take quiz"
+      }
+    },
+    "statusBreakdown": {
+      "title": "Learning Status",
+      "noData": "No learning data yet",
+      "startLearning": "Start learning your first words"
+    },
+    "status": {
+      "wantToLearn": "Want to Learn",
+      "learning": "Learning",
+      "learned": "Learned",
+      "mastered": "Mastered",
+      "review": "Review",
+      "ready": "Ready to learn!",
+      "inProgress": "Session in progress",
+      "completed": "Great work today!",
+      "goalReached": "Daily goal achieved! 🎉"
+    },
+    "learnedWords": {
+      "title": "Learned Words",
+      "description": "Review and manage words you've successfully learned and mastered"
+    },
+    "errors": {
+      "statusUpdateFailed": "Failed to update word status",
+      "favoriteUpdateFailed": "Failed to update favorite status"
+    },
+    "page": {
+      "title": "Ready to Learn Kazakh, {{name}}?",
+      "subtitle": "Build your vocabulary through structured learning sessions",
+      "loading": "Loading your learning dashboard...",
+      "error": "Failed to load learning data. Please try again."
+    },
+    "dailyProgress": {
+      "title": "Daily Progress",
+      "wordsCount": "{{learned}}/{{goal}} words",
+      "goalComplete": "🎉 Daily goal completed! Fantastic work!",
+      "almostThere": "Almost there! Just {{remaining}} more words to go!",
+      "greatProgress": "Great progress! {{remaining}} words remaining.",
+      "goodStart": "Good start! {{remaining}} words left to reach your goal.",
+      "readyToLearn": "Ready to learn? {{remaining}} words to reach your daily goal!"
+    },
+    "learningStats": {
+      "title": "Learning Stats",
+      "wordsLearning": "Words Learning:",
+      "thisWeek": "This Week:",
+      "streak": "Streak:",
+      "accuracy": "Accuracy:",
+      "days": "days"
+    },
+    "wordsAvailable": {
+      "title": "Words Available",
+      "wantToLearn": "Want to Learn",
+      "learning": "Learning",
+      "review": "Review",
+      "total": "Total",
+      "readyForBatches": "Ready for {{batches}} learning batches",
+      "estimatedTime": "Estimated time: {{time}}",
+      "noWordsAvailable": "No words available for learning"
+    },
+    "mainAction": {
+      "readyToStart": "Ready to Start Learning?",
+      "wordsReady": "You have {{total}} words ready for learning in {{batches}} batches",
+      "startLearning": "Start Learning Session",
+      "estimatedInfo": "Estimated time: {{time}} • 3 words per batch",
+      "noWords": "No Words Available",
+      "needMoreWords": "Need More Words",
+      "noWordsMessage": "Add some words to your learning list to start practicing!",
+      "needMoreMessage": "You need at least 3 words to start a learning session. You currently have {{count}} words.",
+      "addingWords": "Adding Words...",
+      "addRandomWords": "Add Random Words",
+      "randomWordsHelp": "Let us pick words for you based on your daily goal and current settings. Only words with translations in your language will be added!"
+    },
+    "quickActions": {
+      "quickPractice": "Quick Practice",
+      "quickPracticeDesc": "Review your words with flashcards and exercises",
+      "takeQuiz": "Take Quiz",
+      "takeQuizDesc": "Test your knowledge with interactive quizzes",
+      "visitCategories": "Visit Categories",
+      "title": "Quick Actions",
+      "browseCategories": "Browse Categories",
+      "viewProgress": "View Progress",
+      "randomPractice": "Random Practice",
+      "learningSettings": "Learning Settings",
+      "startLearning": "Start Learning Session",
+      "continueLearning": "Continue Learning",
+      "practiceWords": "Practice Words",
+      "reviewWords": "Review Words",
+      "addNewWords": "Add New Words",
+      "estimatedTime": "{{minutes}} min session"
+    },
+    "learningTips": {
+      "title": "Learning Tips",
+      "tip1": "Practice consistently for better retention",
+      "tip2": "Focus on pronunciation and meaning together",
+      "tip3": "Review previous words before learning new ones",
+      "tip4": "Use spaced repetition for long-term memory"
+    },
+    "quickStats": {
+      "masteryLevel": "Mastery Level",
+      "sessionTime": "Session Time"
+    },
+    "motivation": {
+      "title": "💪 Stay Motivated",
+      "quote": "Every word you learn brings you closer to fluency. Keep going!"
+    },
+    "messages": {
+      "noWordsError": "No words available for learning. Please add some words to your learning list.",
+      "needMoreWordsError": "You need at least 3 words to start a learning session. Add more words to your learning list.",
+      "sessionComplete": "🎉 Great job! Your learning session is complete.",
+      "loginRequired": "Please log in to add words",
+      "wordsAdded": "{{count}} words added successfully!",
+      "partialWordsAdded": "Added {{added}} out of {{requested}} requested words.",
+      "addWordsError": "Failed to add random words",
+      "statusUpdated": "Word status updated successfully",
+      "favoriteUpdated": "Favorite status updated successfully"
+    },
+    "buttons": {
+      "learnAction": "Browse Words",
+      "startSession": "Start Learning Session"
+    },
+    "module": {
+      "title": "Learning Module",
+      "subtitle": "Intensive module-based learning sessions",
+      "noWords": {
+        "title": "No words to learn today! 🎉",
+        "message": "You've mastered all available words. Add more words to your learning list to continue.",
+        "browseWords": "Browse Words"
+      }
+    },
+    "phases": {
+      "overview": "Ready to learn {{count}} new words? Let's start with an overview!",
+      "practice": "Practice Session",
+      "quiz": "Quiz Time",
+      "complete": "Batch Complete!"
+    },
+    "progress": {
+      "batchOf": "Learning Batch {{current}} of {{total}}",
+      "questionOf": "Question {{current}} of {{total}}"
+    },
+    "overview": {
+      "title": "📚 Today's Words to Learn",
+      "subtitle": "Study these words carefully before we start practicing",
+      "difficultyLevel": "Level {{level}}",
+      "seenTimes": "Seen {{count}} times",
+      "process": {
+        "title": "🎯 Learning Process:",
+        "study": {
+          "title": "1. Study",
+          "description": "Study the words and images"
+        },
+        "practice": {
+          "title": "2. Practice",
+          "description": "Write translations from memory"
+        },
+        "quiz": {
+          "title": "3. Quiz",
+          "description": "Multiple choice questions"
+        }
+      },
+      "successCriteria": "💡 Get words correct in BOTH practice and quiz to mark them as learned!",
+      "studyTips": {
+        "title": "📝 Study Tips:",
+        "tip1": "Look at the image and say the word aloud",
+        "tip2": "Connect the visual with the meaning",
+        "tip3": "Practice the pronunciation",
+        "tip4": "Remember: image + word + meaning"
+      },
+      "startButton": "Start Practice Session"
+    },
+    "practice": {
+      "title": "Practice Session",
+      "subtitle": "Practice Session",
+      "question": "What does \"{{word}}\" mean in English?",
+      "placeholder": "Type your answer...",
+      "checkAnswer": "Check Answer",
+      "nextWord": "Next Word",
+      "continueToQuiz": "Continue to Quiz",
+      "feedback": {
+        "correct": "✅ Correct!",
+        "incorrect": "❌ Try again!",
+        "hint": "Hint: Think about the image and category"
+      },
+      "imageAlt": "Image for {{word}}",
+      "noImage": "No image available"
+    },
+    "quiz": {
+      "title": "Quiz Session",
+      "question": "What does \"{{word}}\" mean?",
+      "feedback": {
+        "correct": "✅ Correct!",
+        "incorrect": "❌ Incorrect",
+        "correctAnswer": "The correct answer is: {{answer}}"
+      }
+    },
+    "complete": {
+      "title": {
+        "batch": "🎉 Batch Complete!",
+        "session": "🎉 Learning Session Complete!"
+      },
+      "subtitle": {
+        "batch": "Great job! Ready for the next batch?",
+        "session": "Excellent work! You've completed all batches."
+      },
+      "stats": {
+        "wordsLearned": "Words Learned: {{count}}",
+        "practiceScore": "Practice Score: {{correct}}/{{total}}",
+        "quizScore": "Quiz Score: {{correct}}/{{total}}",
+        "accuracy": "Overall Accuracy: {{percentage}}%"
+      },
+      "actions": {
+        "nextBatch": "Continue to Next Batch",
+        "backToDashboard": "Back to Dashboard",
+        "reviewWords": "Review Learned Words"
+      },
+      "batchResults": {
+        "title": "Batch Results:",
+        "batchNumber": "Batch {{number}}",
+        "learned": "{{count}} learned"
+      }
+    },
+    "errors": {
+      "loadingWords": "Failed to load words for learning",
+      "startingPractice": "Failed to start practice session",
+      "submittingAnswer": "Failed to submit answer",
+      "startingQuiz": "Failed to start quiz session",
+      "savingProgress": "Failed to save progress"
+    },
+    "loading": {
+      "words": "Loading words for learning...",
+      "startingPractice": "Starting practice session...",
+      "submittingAnswer": "Submitting answer...",
+      "loadingQuiz": "Loading quiz..."
     }
   }
   

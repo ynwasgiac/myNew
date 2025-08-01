@@ -1,4 +1,4 @@
-// src/i18n/resources.ts - Updated to include guides translations
+// src/i18n/resources.ts - Updated to include learningModule translations
 
 // Import all existing translations
 import categoriesEn from '../locales/en/categories.json';
@@ -18,7 +18,7 @@ import learningGoalsEn from '../locales/en/learningGoals.json';
 import recentActivityEn from '../locales/en/recentActivity.json';
 import wordsToReviewEn from '../locales/en/wordsToReview.json';
 import navigationEn from '../locales/en/navigation.json';
-import guidesEn from '../locales/en/guides.json'; // ← New import
+import guidesEn from '../locales/en/guides.json';
 
 import categoriesKk from '../locales/kk/categories.json';
 import wordsKk from '../locales/kk/words.json';
@@ -37,7 +37,7 @@ import learningGoalsKk from '../locales/kk/learningGoals.json';
 import recentActivityKk from '../locales/kk/recentActivity.json';
 import wordsToReviewKk from '../locales/kk/wordsToReview.json';
 import navigationKk from '../locales/kk/navigation.json';
-import guidesKk from '../locales/kk/guides.json'; // ← New import
+import guidesKk from '../locales/kk/guides.json';
 
 import categoriesRu from '../locales/ru/categories.json';
 import wordsRu from '../locales/ru/words.json';
@@ -56,7 +56,7 @@ import learningGoalsRu from '../locales/ru/learningGoals.json';
 import recentActivityRu from '../locales/ru/recentActivity.json';
 import wordsToReviewRu from '../locales/ru/wordsToReview.json';
 import navigationRu from '../locales/ru/navigation.json';
-import guidesRu from '../locales/ru/guides.json'; // ← New import
+import guidesRu from '../locales/ru/guides.json';
 
 // Create the base resources
 const baseResources = {
@@ -78,7 +78,7 @@ const baseResources = {
     recentActivity: recentActivityEn,
     wordsToReview: wordsToReviewEn,
     navigation: navigationEn,
-    guides: guidesEn, // ← New addition
+    guides: guidesEn,
   },
   kk: {
     categories: categoriesKk,
@@ -98,7 +98,7 @@ const baseResources = {
     recentActivity: recentActivityKk,
     wordsToReview: wordsToReviewKk,
     navigation: navigationKk,
-    guides: guidesKk, // ← New addition
+    guides: guidesKk,
   },
   ru: {
     categories: categoriesRu,
@@ -118,7 +118,7 @@ const baseResources = {
     recentActivity: recentActivityRu,
     wordsToReview: wordsToReviewRu,
     navigation: navigationRu,
-    guides: guidesRu, // ← New addition
+    guides: guidesRu,
   },
 };
 

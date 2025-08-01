@@ -232,7 +232,7 @@ const LearningModulePage: React.FC = () => {
       setIsAddingWords(false);
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || error.message || 'Failed to add random words';
+      const errorMessage = error.response?.data?.detail || error.message || t('messages.addWordsError');
       toast.error(errorMessage);
       setIsAddingWords(false);
     },
@@ -241,7 +241,7 @@ const LearningModulePage: React.FC = () => {
   // Handle adding random words
   const handleAddRandomWords = () => {
     if (!user) {
-      toast.error('Please log in to add words');
+      toast.error(t('messages.loginRequired'));
       return;
     }
     addRandomWordsMutation.mutate();
@@ -250,12 +250,12 @@ const LearningModulePage: React.FC = () => {
   // Start learning session
   const startLearning = () => {
     if (!wordsAvailable || wordsAvailable.total === 0) {
-      toast.error('No words available for learning. Please add some words to your learning list.');
+      toast.error(t('messages.noWordsError'));
       return;
     }
 
     if (wordsAvailable.total < 3) {
-      toast.warning('You need at least 3 words to start a learning session. Add more words to your learning list.');
+      toast.warning(t('messages.needMoreWordsError'));
       return;
     }
 
@@ -274,7 +274,7 @@ const LearningModulePage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['words-available'] });
     queryClient.invalidateQueries({ queryKey: ['learning-stats'] });
     
-    toast.success('🎉 Great job! Your learning session is complete.');
+    toast.success(t('dailyProgress.sessionComplete'));
     
     // Track completion
     trackEvent('learning_session_completed', {
@@ -297,19 +297,27 @@ const LearningModulePage: React.FC = () => {
     let color = '';
 
     if (dailyProgress.goal_reached) {
-      message = "🎉 Daily goal completed! Fantastic work!";
+      message = t('dailyProgress.goalComplete');
       color = 'text-green-600';
     } else if (percentage >= 75) {
-      message = `Almost there! Just ${dailyProgress.words_remaining} more words to go!`;
+      message = t('dailyProgress.almostThere', {
+        remaining: dailyProgress.words_remaining
+      });
       color = 'text-blue-600';
     } else if (percentage >= 50) {
-      message = `Great progress! ${dailyProgress.words_remaining} words remaining.`;
+      message = t('dailyProgress.greatProgress', {
+        remaining: dailyProgress.words_remaining
+      });
       color = 'text-yellow-600';
     } else if (percentage >= 25) {
-      message = `Good start! ${dailyProgress.words_remaining} words left to reach your goal.`;
+      message = t('dailyProgress.goodStart', {
+        remaining: dailyProgress.words_remaining
+      });
       color = 'text-orange-600';
     } else {
-      message = `Ready to learn? ${dailyProgress.words_remaining} words to reach your daily goal!`;
+      message = t('dailyProgress.readyToLearn', {
+        remaining: dailyProgress.words_remaining
+      });
       color = 'text-gray-600';
     }
 
@@ -341,7 +349,7 @@ const LearningModulePage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your learning dashboard...</p>
+          <p className="text-gray-600">{t('page.loading')}</p>
         </div>
       </div>
     );
@@ -355,10 +363,12 @@ const LearningModulePage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Ready to Learn Kazakh, {user?.full_name?.split(' ')[0] || 'Learner'}?
+            {t('page.title', {
+              name: user?.full_name?.split(' ')[0] || 'Learner'
+            })}
           </h1>
           <p className="text-gray-600 text-lg">
-            Build your vocabulary through structured learning sessions
+            {t('page.subtitle')}
           </p>
         </div>
 
@@ -376,10 +386,10 @@ const LearningModulePage: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900 flex items-center">
                     <TrophyIcon className="h-6 w-6 mr-2 text-yellow-500" />
-                    Daily Progress
+                    {t('dailyProgress.title')}
                   </h2>
                   <span className="text-sm text-gray-600">
-                    {dailyProgress?.words_learned_today}/{dailyProgress?.daily_goal} words
+                    {dailyProgress?.words_learned_today}/{dailyProgress?.daily_goal} 
                   </span>
                 </div>
                 
@@ -405,26 +415,26 @@ const LearningModulePage: React.FC = () => {
               <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <ChartBarIcon className="h-5 w-5 mr-2 text-blue-500" />
-                  Learning Stats
+                  {t('learningStats.title')}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Words Learning:</span>
+                    <span className="text-gray-600">{t('learningStats.wordsLearning')}</span>
                     <span className="font-semibold">{learningStats.total_words_learning}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">This Week:</span>
+                    <span className="text-gray-600">{t('learningStats.thisWeek')}</span>
                     <span className="font-semibold">{learningStats.words_learned_this_week}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Streak:</span>
+                    <span className="text-gray-600">{t('learningStats.streak')}</span>
                     <span className="font-semibold flex items-center">
                       <FireIcon className="h-4 w-4 mr-1 text-orange-500" />
-                      {learningStats.current_streak} days
+                      {learningStats.current_streak} {t('learningStats.days')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Accuracy:</span>
+                    <span className="text-gray-600">{t('learningStats.accuracy')}</span>
                     <span className="font-semibold">{learningStats.average_accuracy}%</span>
                   </div>
                 </div>
@@ -435,39 +445,43 @@ const LearningModulePage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <BookOpenIcon className="h-5 w-5 mr-2 text-green-500" />
-                Words Available
+                {t('wordsAvailable.title')}
               </h3>
               {wordsAvailable && wordsAvailable.total > 0 ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="text-blue-700 font-medium">Want to Learn</span>
+                    <span className="text-blue-700 font-medium">{t('wordsAvailable.wantToLearn')}</span>
                     <span className="font-bold text-blue-900">{wordsAvailable.want_to_learn}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                    <span className="text-yellow-700 font-medium">Learning</span>
+                    <span className="text-yellow-700 font-medium">{t('wordsAvailable.learning')}</span>
                     <span className="font-bold text-yellow-900">{wordsAvailable.learning}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                    <span className="text-orange-700 font-medium">Review</span>
+                    <span className="text-orange-700 font-medium">{t('wordsAvailable.review')}</span>
                     <span className="font-bold text-orange-900">{wordsAvailable.review}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300">
-                    <span className="text-gray-700 font-semibold">Total Available</span>
+                    <span className="text-gray-700 font-semibold">{t('wordsAvailable.total')}</span>
                     <span className="font-bold text-gray-900 text-lg">{wordsAvailable.total}</span>
                   </div>
                   {wordsAvailable.total > 0 && (
                     <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-green-800 text-sm font-medium">
-                        Ready for {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} learning batches
+                        {t('mainAction.readyForBatches', {
+                          batches: Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)
+                        })}
                       </p>
                       <p className="text-green-600 text-xs mt-1">
-                        Estimated time: {estimateSessionTime()}
+                        {t('mainAction.estimatedInfo', {
+                          time: estimateSessionTime()
+                        })}
                       </p>
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-gray-500">No words available for learning</p>
+                <p className="text-gray-500">{t('wordsAvailable.noWordsAvailable')}</p>
               )}
             </div>
           </div>
@@ -480,19 +494,24 @@ const LearningModulePage: React.FC = () => {
                 /* User has enough words - show start learning button */
                 <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
                   <PlayIcon className="h-16 w-16 mx-auto mb-4 text-white" />
-                  <h3 className="text-2xl font-bold mb-2">Ready to Start Learning?</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t('mainAction.readyToStart')}</h3>
                   <p className="text-blue-100 mb-6">
-                    You have {wordsAvailable.total} words ready for learning in {Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)} batches
+                    {t('mainAction.wordsReady', {
+                      total: wordsAvailable.total,
+                      batches: Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)
+                    })}
                   </p>
                   <button
                     onClick={startLearning}
                     className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center mx-auto shadow-lg"
                   >
                     <PlayIcon className="h-6 w-6 mr-2" />
-                    Start Learning Session
+                    {t('mainAction.startLearning')}
                   </button>
                   <p className="text-blue-200 mt-4 text-sm">
-                    Estimated time: {estimateSessionTime()} • 3 words per batch
+                    {t('mainAction.estimatedInfo', {
+                      time: estimateSessionTime()
+                    })}
                   </p>
                 </div>
               ) : (
@@ -500,12 +519,14 @@ const LearningModulePage: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
                   <BookOpenIcon className="h-20 w-20 text-gray-400 mx-auto mb-6" />
                   <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                    {!wordsAvailable || wordsAvailable.total === 0 ? 'No Words Available' : 'Need More Words'}
+                    {!wordsAvailable || wordsAvailable.total === 0 ? t('mainAction.noWords') : t('mainAction.needMoreWords')}
                   </h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
                     {!wordsAvailable || wordsAvailable.total === 0 
-                      ? 'Add some words to your learning list to start practicing!'
-                      : `You need at least 3 words to start a learning session. You currently have ${wordsAvailable?.total || 0} words.`
+                      ? t('mainAction.noWordsMessage')
+                      : t('mainAction.needMoreMessage', {
+                          count: wordsAvailable?.total || 0
+                        })
                     }
                   </p>
 
@@ -517,7 +538,7 @@ const LearningModulePage: React.FC = () => {
                       className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
                     >
                       <BookOpenIcon className="h-5 w-5 mr-2" />
-                      Browse Words
+                      {t('recommendations.learn.action')}
                     </button>
 
                     {/* Visit Categories button */}
@@ -526,7 +547,7 @@ const LearningModulePage: React.FC = () => {
                       className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md"
                     >
                       <PencilIcon className="h-5 w-5 mr-2" />
-                      Visit Categories
+                      {t('quickActions.visitCategories')}
                     </button>
 
                     {/* NEW: Add Random Words button */}
@@ -538,12 +559,12 @@ const LearningModulePage: React.FC = () => {
                       {isAddingWords ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Adding Words...
+                          {t('mainAction.addingWords')}
                         </>
                       ) : (
                         <>
                           <SparklesIcon className="h-5 w-5 mr-2" />
-                          Add Random Words
+                          {t('mainAction.addRandomWords')}
                         </>
                       )}
                     </button>
@@ -551,7 +572,7 @@ const LearningModulePage: React.FC = () => {
 
                   {/* Help text for random words button */}
                   <p className="text-sm text-gray-500 mt-4 max-w-lg mx-auto">
-                    Let us pick words for you based on your daily goal and current settings. Only words with translations in your language will be added!
+                    {t('mainAction.randomWordsHelp')}
                   </p>
                 </div>
               )}
@@ -565,10 +586,10 @@ const LearningModulePage: React.FC = () => {
               >
                 <div className="flex items-center mb-3">
                   <PencilIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-600" />
-                  <h4 className="text-lg font-semibold text-gray-900 ml-3">Quick Practice</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 ml-3">{t('quickActions.quickPractice')}</h4>
                 </div>
                 <p className="text-gray-600 text-sm">
-                  Review your words with flashcards and exercises
+                  {t('quickActions.quickPracticeDesc')}
                 </p>
               </button>
 
@@ -578,10 +599,10 @@ const LearningModulePage: React.FC = () => {
               >
                 <div className="flex items-center mb-3">
                   <QuestionMarkCircleIcon className="h-8 w-8 text-green-500 group-hover:text-green-600" />
-                  <h4 className="text-lg font-semibold text-gray-900 ml-3">Take Quiz</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 ml-3">{t('quickActions.takeQuiz')}</h4>
                 </div>
                 <p className="text-gray-600 text-sm">
-                  Test your knowledge with interactive quizzes
+                  {t('quickActions.takeQuizDesc')}
                 </p>
               </button>
             </div>
@@ -593,24 +614,24 @@ const LearningModulePage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-500" />
-                Learning Tips
+                {t('learningTips.title')}
               </h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Practice consistently for better retention</span>
+                  <span>{t('learningTips.tip1')}</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Focus on pronunciation and meaning together</span>
+                  <span>{t('learningTips.tip2')}</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Review previous words before learning new ones</span>
+                  <span>{t('learningTips.tip3')}</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Use spaced repetition for long-term memory</span>
+                  <span>{t('learningTips.tip4')}</span>
                 </div>
               </div>
             </div>
@@ -622,7 +643,7 @@ const LearningModulePage: React.FC = () => {
                   <div className="flex items-center">
                     <StarIcon className="h-8 w-8 text-yellow-500 mr-3" />
                     <div>
-                      <p className="text-sm text-gray-600">Mastery Level</p>
+                      <p className="text-sm text-gray-600">{t('quickStats.masteryLevel')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {learningStats ? Math.round((learningStats.total_words_learning / 100) * 100) || 0 : 0}%
                       </p>
@@ -634,7 +655,7 @@ const LearningModulePage: React.FC = () => {
                   <div className="flex items-center">
                     <ClockIcon className="h-8 w-8 text-blue-500 mr-3" />
                     <div>
-                      <p className="text-sm text-gray-600">Session Time</p>
+                      <p className="text-sm text-gray-600">{t('quickStats.sessionTime')}</p>
                       <p className="text-2xl font-bold text-gray-900">{estimateSessionTime()}</p>
                     </div>
                   </div>
@@ -644,9 +665,9 @@ const LearningModulePage: React.FC = () => {
 
             {/* Motivational Quote */}
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">
-              <h3 className="text-lg font-semibold mb-3">💪 Stay Motivated</h3>
+              <h3 className="text-lg font-semibold mb-3">{t('motivation.title')}</h3>
               <p className="text-purple-100 text-sm italic">
-                "Every word you learn brings you closer to fluency. Keep going!"
+                {t('motivation.quote')}
               </p>
             </div>
           </div>
