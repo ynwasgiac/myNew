@@ -679,3 +679,76 @@ async def add_random_words_to_learning(
             detail=f"Failed to add random words: {str(e)}"
         )
     
+@router.post("/batch/words/set-learning-status")
+async def set_words_to_learning_status(
+    word_ids: List[int],
+    batch_number: Optional[int] = Query(1, description="Current batch number"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Immediately set words to LEARNING status when they are shown to user.
+    This happens when user sees the 3 words in Batch 1, not when finishing.
+    """
+    try:
+        if len(word_ids) != 3:
+            raise HTTPException(
+                status_code=400,
+                detail="Batch must contain exactly 3 words"
+            )
+        
+        # Only update status for Batch 1
+        if batch_number != 1:
+            return {
+                "success": True,
+                "batch_number": batch_number,
+                "message": f"No status update needed for Batch {batch_number}",
+                "words_updated": []
+            }
+        
+        words_updated = []
+        
+        # Process each word
+        for word_id in word_ids:
+            try:
+                # Get current progress
+                current_progress = await UserWordProgressCRUD.get_user_word_progress(
+                    db, current_user.id, word_id
+                )
+                
+                # Only update if word exists and is currently WANT_TO_LEARN
+                if current_progress and current_progress.status == LearningStatus.WANT_TO_LEARN:
+                    await UserWordProgressCRUD.update_word_progress(
+                        db,
+                        current_user.id,
+                        word_id,
+                        status=LearningStatus.LEARNING
+                    )
+                    
+                    # Get word details for response
+                    word = await KazakhWordCRUD.get_by_id(db, word_id)
+                    words_updated.append({
+                        "word_id": word_id,
+                        "kazakh_word": word.kazakh_word if word else f"Word {word_id}",
+                        "previous_status": "want_to_learn",
+                        "new_status": "learning"
+                    })
+                    
+            except Exception as e:
+                print(f"Failed to update word {word_id} status: {e}")
+        
+        return {
+            "success": True,
+            "batch_number": batch_number,
+            "words_updated": words_updated,
+            "message": f"Batch 1: {len(words_updated)} words automatically moved to learning status!"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in set_words_to_learning_status: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update word statuses: {str(e)}"
+        )

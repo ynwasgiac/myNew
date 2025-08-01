@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { learningAPI } from '../../services/learningAPI';
 import { learningModuleAPI } from '../../services/learningModuleAPI';
-import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
+import { LEARNING_STATUSES, IN_PROGRESS_STATUSES, type LearningStatus } from '../../types/learning';
 import { toast } from 'sonner';
 import { 
   BookOpenIcon, 
@@ -87,37 +87,104 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
   });
 
   useEffect(() => {
+    console.log('🔍 useEffect triggered:', {
+      phase: cycle.phase,
+      currentBatch: cycle.currentBatch,
+      wordsLength: cycle.currentWords.length,
+      words: cycle.currentWords.map(w => ({ id: w.id, kazakh_word: w.kazakh_word }))
+    });
+  
     // Auto-update word status for Batch 1 when words are first shown
     if (cycle.phase === 'overview' && 
         cycle.currentBatch === 1 && 
         cycle.currentWords.length === 3) {
       
       console.log('🎯 Batch 1 words displayed - automatically setting to learning status');
+      console.log('📋 Word IDs to update:', cycle.currentWords.map(w => w.id));
       
       const updateWordStatus = async () => {
         try {
-          const result = await learningModuleAPI.setWordsToLearningStatus(
-            cycle.currentWords.map(w => w.id),
-            cycle.currentBatch
-          );
+          let updatedCount = 0;
+          const updateResults = [];
+  
+          // Update each word individually using existing API
+          for (const word of cycle.currentWords) {
+            try {
+              console.log(`🔄 Updating word ${word.id} (${word.kazakh_word}) to LEARNING status`);
+              
+              // Используем правильный тип - приводим к LearningStatus
+              const requestData: { status: LearningStatus } = {
+                status: LEARNING_STATUSES.LEARNING // Этот тип правильный: 'learning'
+              };
+              
+              console.log('📦 Sending request data:', requestData);
+              
+              const result = await learningAPI.updateWordProgress(word.id, requestData);
+              
+              console.log(`✅ Successfully updated word ${word.id}:`, result);
+              updatedCount++;
+              updateResults.push({
+                word_id: word.id,
+                kazakh_word: word.kazakh_word,
+                status: 'updated',
+                new_status: 'learning'
+              });
+              
+            } catch (error: any) {
+              console.error(`❌ Failed to update word ${word.id}:`, error);
+              console.error('Error details:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                message: error.message
+              });
+              
+              updateResults.push({
+                word_id: word.id,
+                kazakh_word: word.kazakh_word,
+                status: 'failed',
+                error: error.response?.data?.detail || error.message || 'Unknown error'
+              });
+            }
+          }
           
-          console.log('📈 Auto status update result:', result);
+          console.log('📈 Batch update completed:', {
+            totalWords: cycle.currentWords.length,
+            successfulUpdates: updatedCount,
+            results: updateResults
+          });
           
-          if (result.words_updated.length > 0) {
-            console.log('📊 Status changes:', 
-              result.words_updated.map((w: any) => `${w.kazakh_word}: ${w.previous_status} → ${w.new_status}`)
-            );
+          if (updatedCount > 0) {
+            console.log(`✅ SUCCESS: ${updatedCount}/${cycle.currentWords.length} words automatically moved to LEARNING status!`);
+            
+            // Optional: Show a subtle success message
+            // toast.success(`🚀 ${updatedCount} words added to your learning list!`, { duration: 3000 });
+          } else {
+            console.log('⚠️ No words were updated. Check errors above for details.');
           }
           
         } catch (error) {
-          console.error('❌ Failed to auto-update word status:', error);
-          // Silent failure - don't interrupt user experience
+          console.error('❌ Failed to auto-update word statuses:', error);
         }
       };
       
-      // Small delay to ensure UI is rendered
-      const timer = setTimeout(updateWordStatus, 500);
-      return () => clearTimeout(timer);
+      // Small delay to ensure UI is rendered and data is loaded
+      console.log('⏰ Setting 1000ms timeout for API calls...');
+      const timer = setTimeout(() => {
+        console.log('⏰ Timeout triggered, calling updateWordStatus()');
+        updateWordStatus();
+      }, 1000);
+      
+      return () => {
+        console.log('🧹 Cleaning up timeout');
+        clearTimeout(timer);
+      };
+    } else {
+      console.log('❌ Conditions not met for status update:', {
+        isOverview: cycle.phase === 'overview',
+        isBatch1: cycle.currentBatch === 1,  
+        hasThreeWords: cycle.currentWords.length === 3
+      });
     }
   }, [cycle.phase, cycle.currentBatch, cycle.currentWords]);
 
