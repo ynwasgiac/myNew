@@ -19,6 +19,9 @@ import {
   XMarkIcon,
   SpeakerWaveIcon
 } from '@heroicons/react/24/outline';
+import { PhotoIcon } from '@heroicons/react/24/outline';
+import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+
 
 // Types for the learning module
 interface LearningWord {
@@ -32,6 +35,7 @@ interface LearningWord {
   times_seen: number;
   last_practiced?: string;
   status?: string;
+  category_name?: string; // Add this field
 }
 
 interface QuizQuestion {
@@ -604,32 +608,212 @@ const OverviewPhase: React.FC<{
   words: LearningWord[];
   onStart: () => void;
 }> = ({ words, onStart }) => {
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+  const [fallbackLevels, setFallbackLevels] = useState<Record<number, number>>({});
+
+  // Image fallback system (same as your existing WordCard)
+  const getImageSources = (word: LearningWord): string[] => {
+    const sources: string[] = [];
+    
+    // 1. Primary image from database
+    if (word.image_url) {
+      sources.push(word.image_url);
+    }
+    
+    // 2. Expected category path based on your file structure
+    const safeWordName = word.kazakh_word.replace(/\s+/g, '_').toLowerCase();
+    const categoryName = word.category_name?.toLowerCase() || 'general';
+    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.jpg`);
+    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.png`);
+    
+    // 3. Category-specific placeholder
+    const categoryPlaceholders: Record<string, string> = {
+      'animals': '/images/words/placeholders/animals.png',
+      'food': '/images/words/placeholders/food.png',
+      'colors': '/images/words/placeholders/colors.png',
+      'family': '/images/words/placeholders/family.png',
+      'body': '/images/words/placeholders/body.png',
+      'nature': '/images/words/placeholders/nature.png',
+      'objects': '/images/words/placeholders/objects.png',
+      'actions': '/images/words/placeholders/actions.png'
+    };
+    
+    if (categoryPlaceholders[categoryName]) {
+      sources.push(categoryPlaceholders[categoryName]);
+    }
+    
+    // 4. Default placeholder
+    sources.push('/images/words/placeholders/default.png');
+    
+    return sources;
+  };
+
+  const getCurrentImageSource = (word: LearningWord): string | null => {
+    if (imageErrors[word.id]) return null;
+    
+    const sources = getImageSources(word);
+    const currentLevel = fallbackLevels[word.id] || 0;
+    
+    return currentLevel < sources.length ? sources[currentLevel] : null;
+  };
+
+  const handleImageError = (wordId: number) => {
+    const word = words.find(w => w.id === wordId);
+    if (!word) return;
+    
+    const sources = getImageSources(word);
+    const currentLevel = fallbackLevels[wordId] || 0;
+    
+    if (currentLevel < sources.length - 1) {
+      setFallbackLevels(prev => ({ ...prev, [wordId]: currentLevel + 1 }));
+    } else {
+      setImageErrors(prev => ({ ...prev, [wordId]: true }));
+    }
+  };
+
+  // Audio player component for each word
+  const WordAudioPlayer: React.FC<{ word: LearningWord }> = ({ word }) => {
+    const { playAudio } = useAudioPlayer({ 
+      wordId: word.id, 
+      word: word 
+    });
+
+    const handlePlayAudio = () => {
+      playAudio();
+    };
+
+    return (
+      <button
+        onClick={handlePlayAudio}
+        className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110"
+      >
+        <SpeakerWaveIcon className="h-6 w-6 text-blue-600" />
+      </button>
+    );
+  };
+
+  const getDifficultyColor = (level: number): string => {
+    const colors = {
+      1: 'bg-green-100 text-green-800 border-green-200',
+      2: 'bg-blue-100 text-blue-800 border-blue-200',
+      3: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      4: 'bg-orange-100 text-orange-800 border-orange-200',
+      5: 'bg-red-100 text-red-800 border-red-200'
+    };
+    return colors[level as keyof typeof colors] || colors[1];
+  };
+
   return (
     <div className="space-y-8">
-      {/* Words preview */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {words.map((word, index) => (
-          <div key={word.id} className="bg-white rounded-xl border border-gray-200 p-6 text-center shadow-sm">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              {word.kazakh_word}
-            </h3>
-            {word.kazakh_cyrillic && (
-              <p className="text-lg text-gray-600 mb-2">{word.kazakh_cyrillic}</p>
-            )}
-            <p className="text-lg text-blue-600 font-semibold mb-3">
-              {word.translation}
-            </p>
-            <div className="text-sm text-gray-500">
-              Level {word.difficulty_level}
-            </div>
-          </div>
-        ))}
+      {/* Enhanced Visual Words Preview with Images */}
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            📚 Today's Words to Learn
+          </h2>
+          <p className="text-gray-600">
+            Study these words carefully before we start practicing
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {words.map((word, index) => {
+            const imageSrc = getCurrentImageSource(word);
+            
+            return (
+              <div 
+                key={word.id} 
+                className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+              >
+                {/* Image Section */}
+                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      alt={word.kazakh_word}
+                      className="w-full h-full object-cover"
+                      onError={() => handleImageError(word.id)}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <PhotoIcon className="h-16 w-16 text-gray-400" />
+                    </div>
+                  )}
+                  
+                  {/* Audio Button Overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
+                    <WordAudioPlayer word={word} />
+                  </div>
+
+                  {/* Word Number Badge */}
+                  <div className="absolute top-3 left-3">
+                    <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                  </div>
+
+                  {/* Difficulty Badge */}
+                  <div className="absolute top-3 right-3">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getDifficultyColor(word.difficulty_level)}`}>
+                      L{word.difficulty_level}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-6">
+                  {/* Main Word */}
+                  <div className="text-center mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-1 kazakh-text">
+                      {word.kazakh_word}
+                    </h3>
+                    {word.kazakh_cyrillic && (
+                      <p className="text-lg text-gray-600 cyrillic-text mb-2">
+                        {word.kazakh_cyrillic}
+                      </p>
+                    )}
+                    <p className="text-xl text-blue-600 font-semibold">
+                      {word.translation}
+                    </p>
+                  </div>
+
+                  {/* Word Details */}
+                  <div className="space-y-2 text-sm text-gray-600">
+                    {word.pronunciation && (
+                      <div className="text-center italic">
+                        {word.pronunciation}
+                      </div>
+                    )}
+                    
+                    {/* Category Display */}
+                    {word.category_name && (
+                      <div className="text-center">
+                        <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
+                          {word.category_name}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Practice History */}
+                    {word.times_seen > 0 && (
+                      <div className="text-center">
+                        <span className="bg-blue-100 px-2 py-1 rounded-full text-xs text-blue-800">
+                          Seen {word.times_seen} times
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Learning process overview */}
+      {/* Learning Process Overview */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
         <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">
-          Learning Process:
+          🎯 Learning Process:
         </h3>
         
         <div className="grid md:grid-cols-3 gap-6">
@@ -637,8 +821,8 @@ const OverviewPhase: React.FC<{
             <div className="bg-blue-100 rounded-full p-3 w-12 h-12 mx-auto mb-3">
               <BookOpenIcon className="h-6 w-6 text-blue-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">1. Overview</h4>
-            <p className="text-sm text-gray-600">Study the words</p>
+            <h4 className="font-semibold text-gray-900 mb-2">1. Study</h4>
+            <p className="text-sm text-gray-600">Study the words and images</p>
           </div>
           
           <div className="text-center">
@@ -646,7 +830,7 @@ const OverviewPhase: React.FC<{
               <PencilIcon className="h-6 w-6 text-green-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">2. Practice</h4>
-            <p className="text-sm text-gray-600">Write translations</p>
+            <p className="text-sm text-gray-600">Write translations from memory</p>
           </div>
           
           <div className="text-center">
@@ -654,17 +838,42 @@ const OverviewPhase: React.FC<{
               <QuestionMarkCircleIcon className="h-6 w-6 text-purple-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">3. Quiz</h4>
-            <p className="text-sm text-gray-600">Multiple choice</p>
+            <p className="text-sm text-gray-600">Multiple choice questions</p>
           </div>
         </div>
 
+        {/* Success Criteria */}
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
           <StarIcon className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
           <p className="text-sm text-yellow-800 font-medium">
-            Words you get correct in BOTH practice and quiz will be marked as learned!
+            💡 Get words correct in BOTH practice and quiz to mark them as learned!
           </p>
         </div>
 
+        {/* Study Tips */}
+        <div className="mt-4 bg-white rounded-lg p-4">
+          <h4 className="font-semibold text-gray-900 mb-3 text-center">📝 Study Tips:</h4>
+          <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+              <span>Look at the image and say the word aloud</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+              <span>Connect the visual with the meaning</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+              <span>Practice the pronunciation</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+              <span>Remember: image + word + meaning</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Start Button */}
         <button
           onClick={onStart}
           className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors flex items-center mx-auto mt-6 shadow-lg"
