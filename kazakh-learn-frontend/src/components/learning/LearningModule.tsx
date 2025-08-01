@@ -453,12 +453,22 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
   };
 
   // Submit Quiz Answer
-  const submitQuizAnswer = (questionId: number, selectedIndex: number) => {
+  const submitQuizAnswer = async (questionId: number, selectedIndex: number) => {
     const question = cycle.quizQuestions?.find(q => q.id === questionId);
     if (!question) return;
 
     const isCorrect = selectedIndex === question.correct_answer_index;
     setUserAnswers(prev => ({ ...prev, [`quiz_${questionId}`]: isCorrect }));
+    
+    try {
+      await learningModuleAPI.updateWordProgress(questionId, {
+        was_correct: isCorrect
+      });
+      console.log(`✅ Quiz result saved: Word ${questionId} - ${isCorrect ? 'Correct' : 'Incorrect'}`);
+    } catch (error) {
+      console.error('❌ Failed to save quiz result:', error);
+      // Не показываем ошибку пользователю, продолжаем работу
+    }
 
     // Move to next question or finish quiz
     setTimeout(() => {
