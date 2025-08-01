@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { learningAPI } from '../../services/learningAPI';
+import { learningModuleAPI } from '../../services/learningModuleAPI';
 import { LEARNING_STATUSES, IN_PROGRESS_STATUSES } from '../../types/learning';
 import { toast } from 'sonner';
 import { 
@@ -84,6 +85,41 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
     currentWords: [],
     batchResults: []
   });
+
+  useEffect(() => {
+    // Auto-update word status for Batch 1 when words are first shown
+    if (cycle.phase === 'overview' && 
+        cycle.currentBatch === 1 && 
+        cycle.currentWords.length === 3) {
+      
+      console.log('🎯 Batch 1 words displayed - automatically setting to learning status');
+      
+      const updateWordStatus = async () => {
+        try {
+          const result = await learningModuleAPI.setWordsToLearningStatus(
+            cycle.currentWords.map(w => w.id),
+            cycle.currentBatch
+          );
+          
+          console.log('📈 Auto status update result:', result);
+          
+          if (result.words_updated.length > 0) {
+            console.log('📊 Status changes:', 
+              result.words_updated.map((w: any) => `${w.kazakh_word}: ${w.previous_status} → ${w.new_status}`)
+            );
+          }
+          
+        } catch (error) {
+          console.error('❌ Failed to auto-update word status:', error);
+          // Silent failure - don't interrupt user experience
+        }
+      };
+      
+      // Small delay to ensure UI is rendered
+      const timer = setTimeout(updateWordStatus, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [cycle.phase, cycle.currentBatch, cycle.currentWords]);
 
   // State for current session
   const [currentWordIndex, setCurrentWordIndex] = useState(0);

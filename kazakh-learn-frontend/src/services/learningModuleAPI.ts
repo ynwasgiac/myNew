@@ -104,6 +104,27 @@ export const learningModuleAPI = {
     return response.data;
   },
   
+  async setWordsToLearningStatus(
+    wordIds: number[],
+    batchNumber: number = 1
+  ): Promise<{
+    success: boolean;
+    batch_number: number;
+    words_updated: Array<{
+      word_id: number;
+      kazakh_word: string;
+      previous_status: string;
+      new_status: string;
+    }>;
+    message: string;
+  }> {
+    const response = await api.post('/learning-module/batch/words/set-learning-status', {
+      word_ids: wordIds,
+      batch_number: batchNumber
+    });
+    return response.data;
+  },
+  
   // Add random words to learning list
   async addRandomWords(
     count?: number,
