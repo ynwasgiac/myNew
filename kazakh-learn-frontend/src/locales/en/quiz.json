@@ -1,23 +1,66 @@
 {
-    "progress": {
-      "question": "Question {{current}} of {{total}}"
-    },
-    "question": {
-      "prompt": "What does this word mean?"
-    },
-    "actions": {
+  "loading": {
+      "generating": "Generating quiz from your learned words...",
+      "starting": "Starting quiz session..."
+  },
+  "errors": {
+      "noLearnedWords": "No learned words available for quiz",
+      "noLearnedWordsDescription": "Quiz mode is only available for words you have already learned. Complete some learning modules first to unlock quiz sessions!",
+      "needMoreWords": "Need at least 2 learned words to create a quiz. Please learn more words first.",
+      "generationFailed": "Failed to generate quiz",
+      "submissionFailed": "Failed to submit quiz results"
+  },
+  "progress": {
+      "question": "Question {{current}} of {{total}}",
+      "score": "Score: {{correct}} / {{total}}"
+  },
+  "question": {
+      "prompt": "What does this word mean?",
+      "selectAnswer": "Select an answer"
+  },
+  "actions": {
       "nextQuestion": "Next Question",
       "finishQuiz": "Finish Quiz",
       "retakeQuiz": "Retake Quiz",
-      "continueLearning": "Continue Learning"
-    },
-    "results": {
+      "continueLearning": "Continue Learning",
+      "startLearningModule": "Start Learning Module",
+      "backToLearning": "Back to Learning",
+      "viewProgress": "View Progress"
+  },
+  "results": {
       "title": "Quiz Complete!",
       "yourScore": "Your Score: {{score}}%",
+      "description": "Here are your results:",
       "correct": "Correct",
       "incorrect": "Incorrect",
-      "reviewTitle": "Review Your Answers",
+      "total": "Total",
+      "reviewTitle": "Question Review",
       "yourAnswer": "Your answer",
-      "correctAnswer": "Correct"
-    }
+      "correctAnswer": "Correct answer",
+      "timeSpent": "{{seconds}}s"
+  },
+  "stats": {
+      "title": "Quiz Progress",
+      "current": "Current",
+      "questionsAnswered": "Questions Answered"
+  },
+  "messages": {
+      "quizStarted": "Quiz started with {{count}} learned words!",
+      "quizCompleted": "Quiz completed successfully!",
+      "quizSubmitted": "Quiz results submitted"
+  },
+  "debug": {
+      "title": "Quiz Debug Info",
+      "url": "URL",
+      "questionCount": "Question Count",
+      "categoryId": "Category ID",
+      "quizQuestions": "Quiz Questions",
+      "totalWords": "Stats Total Words",
+      "learnedWords": "Learned Words",
+      "allCategories": "all categories"
+  },
+  "headers": {
+      "learnedWordsQuiz": "Learned Words Quiz",
+      "testingVocabulary": "Testing your mastered vocabulary"
   }
+}

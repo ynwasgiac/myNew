@@ -1,23 +1,66 @@
 {
-    "progress": {
-      "question": "{{current}} сұрақ {{total}} ішінен"
-    },
-    "question": {
-      "prompt": "Бұл сөз не дегенді білдіреді?"
-    },
-    "actions": {
+  "loading": {
+      "generating": "Үйренген сөздерден тест жасау...",
+      "starting": "Тест сессиясын бастау..."
+  },
+  "errors": {
+      "noLearnedWords": "Тест үшін үйренген сөздер жоқ",
+      "noLearnedWordsDescription": "Тест режимі тек үйренген сөздер үшін ғана қолжетімді. Тестті ашу үшін алдымен оқу модульдерін аяқтаңыз!",
+      "needMoreWords": "Тест жасау үшін кемінде 2 үйренген сөз керек. Көбірек сөз үйреніңіз.",
+      "generationFailed": "Тест жасау сәтсіз аяқталды",
+      "submissionFailed": "Тест нәтижелерін жіберу сәтсіз аяқталды"
+  },
+  "progress": {
+      "question": "{{current}} сұрақ {{total}} ішінен",
+      "score": "Нәтиже: {{correct}} / {{total}}"
+  },
+  "question": {
+      "prompt": "Бұл сөз не дегенді білдіреді?",
+      "selectAnswer": "Жауапты таңдаңыз"
+  },
+  "actions": {
       "nextQuestion": "Келесі сұрақ",
       "finishQuiz": "Тестті аяқтау",
       "retakeQuiz": "Тестті қайта тапсыру",
-      "continueLearning": "Үйренуді жалғастыру"
-    },
-    "results": {
+      "continueLearning": "Үйренуді жалғастыру",
+      "startLearningModule": "Оқу модулін бастау",
+      "backToLearning": "Оқуға қайту",
+      "viewProgress": "Прогресті көру"
+  },
+  "results": {
       "title": "Тест аяқталды!",
       "yourScore": "Сіздің нәтижеңіз: {{score}}%",
+      "description": "Міне сіздің нәтижелеріңіз:",
       "correct": "Дұрыс",
       "incorrect": "Дұрыс емес",
-      "reviewTitle": "Жауаптарыңызды қарау",
+      "total": "Барлығы",
+      "reviewTitle": "Сұрақтарды қарау",
       "yourAnswer": "Сіздің жауабыңыз",
-      "correctAnswer": "Дұрыс жауап"
-    }
+      "correctAnswer": "Дұрыс жауап",
+      "timeSpent": "{{seconds}}с"
+  },
+  "stats": {
+      "title": "Тест прогресі",
+      "current": "Ағымдағы",
+      "questionsAnswered": "Жауап берілген сұрақтар"
+  },
+  "messages": {
+      "quizStarted": "Тест {{count}} үйренген сөзбен басталды!",
+      "quizCompleted": "Тест сәтті аяқталды!",
+      "quizSubmitted": "Тест нәтижелері жіберілді"
+  },
+  "debug": {
+      "title": "Тест отладка ақпараты",
+      "url": "URL",
+      "questionCount": "Сұрақ саны",
+      "categoryId": "Санат ID",
+      "quizQuestions": "Тест сұрақтары",
+      "totalWords": "Статистикадағы барлық сөздер",
+      "learnedWords": "Үйренген сөздер",
+      "allCategories": "барлық санаттар"
+  },
+  "headers": {
+      "learnedWordsQuiz": "Үйренген сөздер тесті",
+      "testingVocabulary": "Меңгерген лексиканы тексеру"
   }
+}

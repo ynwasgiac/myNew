@@ -1,23 +1,66 @@
 {
-    "progress": {
-      "question": "Вопрос {{current}} из {{total}}"
-    },
-    "question": {
-      "prompt": "Что означает это слово?"
-    },
-    "actions": {
+  "loading": {
+      "generating": "Создание теста из изученных слов...",
+      "starting": "Запуск сессии теста..."
+  },
+  "errors": {
+      "noLearnedWords": "Нет изученных слов для теста",
+      "noLearnedWordsDescription": "Режим тестирования доступен только для уже изученных слов. Сначала пройдите модули обучения, чтобы разблокировать тестирование!",
+      "needMoreWords": "Для создания теста нужно минимум 2 изученных слова. Пожалуйста, изучите больше слов.",
+      "generationFailed": "Не удалось создать тест",
+      "submissionFailed": "Не удалось отправить результаты теста"
+  },
+  "progress": {
+      "question": "Вопрос {{current}} из {{total}}",
+      "score": "Результат: {{correct}} / {{total}}"
+  },
+  "question": {
+      "prompt": "Что означает это слово?",
+      "selectAnswer": "Выберите ответ"
+  },
+  "actions": {
       "nextQuestion": "Следующий вопрос",
       "finishQuiz": "Завершить тест",
       "retakeQuiz": "Пройти тест заново",
-      "continueLearning": "Продолжить обучение"
-    },
-    "results": {
+      "continueLearning": "Продолжить обучение",
+      "startLearningModule": "Начать модуль обучения",
+      "backToLearning": "Вернуться к обучению",
+      "viewProgress": "Посмотреть прогресс"
+  },
+  "results": {
       "title": "Тест завершен!",
       "yourScore": "Ваш результат: {{score}}%",
+      "description": "Вот ваши результаты:",
       "correct": "Правильно",
       "incorrect": "Неправильно",
-      "reviewTitle": "Просмотр ваших ответов",
+      "total": "Всего",
+      "reviewTitle": "Обзор вопросов",
       "yourAnswer": "Ваш ответ",
-      "correctAnswer": "Правильный ответ"
-    }
+      "correctAnswer": "Правильный ответ",
+      "timeSpent": "{{seconds}}с"
+  },
+  "stats": {
+      "title": "Прогресс теста",
+      "current": "Текущий",
+      "questionsAnswered": "Отвеченные вопросы"
+  },
+  "messages": {
+      "quizStarted": "Тест начат с {{count}} изученными словами!",
+      "quizCompleted": "Тест успешно завершен!",
+      "quizSubmitted": "Результаты теста отправлены"
+  },
+  "debug": {
+      "title": "Отладочная информация теста",
+      "url": "URL",
+      "questionCount": "Количество вопросов",
+      "categoryId": "ID категории",
+      "quizQuestions": "Вопросы теста",
+      "totalWords": "Всего слов в статистике",
+      "learnedWords": "Изученные слова",
+      "allCategories": "все категории"
+  },
+  "headers": {
+      "learnedWordsQuiz": "Тест изученных слов",
+      "testingVocabulary": "Тестирование освоенной лексики"
   }
+}
