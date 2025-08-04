@@ -465,20 +465,6 @@ const LearningModulePage: React.FC = () => {
                     <span className="text-gray-700 font-semibold">{t('wordsAvailable.total')}</span>
                     <span className="font-bold text-gray-900 text-lg">{wordsAvailable.total}</span>
                   </div>
-                  {wordsAvailable.total > 0 && (
-                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-green-800 text-sm font-medium">
-                        {t('mainAction.readyForBatches', {
-                          batches: Math.ceil(Math.min(wordsAvailable.total, dailyGoal) / 3)
-                        })}
-                      </p>
-                      <p className="text-green-600 text-xs mt-1">
-                        {t('mainAction.estimatedInfo', {
-                          time: estimateSessionTime()
-                        })}
-                      </p>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <p className="text-gray-500">{t('wordsAvailable.noWordsAvailable')}</p>
@@ -636,32 +622,7 @@ const LearningModulePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            {wordsAvailable && (
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center">
-                    <StarIcon className="h-8 w-8 text-yellow-500 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">{t('quickStats.masteryLevel')}</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {learningStats ? Math.round((learningStats.total_words_learning / 100) * 100) || 0 : 0}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center">
-                    <ClockIcon className="h-8 w-8 text-blue-500 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">{t('quickStats.sessionTime')}</p>
-                      <p className="text-2xl font-bold text-gray-900">{estimateSessionTime()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            
 
             {/* Motivational Quote */}
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">

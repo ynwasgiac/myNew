@@ -647,3 +647,125 @@ class UserLearningStatsCRUD:
             }
             for row in result
         ]
+    
+@staticmethod
+async def get_not_learned_words(
+    db: AsyncSession,
+    user_id: int,
+    category_id: Optional[int] = None,
+    difficulty_level_id: Optional[int] = None,
+    limit: int = 50,
+    offset: int = 0
+) -> List[UserWordProgress]:
+    """
+    Get user's words that are NOT learned (excludes LEARNED and MASTERED statuses)
+    Specifically for learning module to ensure no learned words appear
+    """
+    # ✅ ЯВНО ИСКЛЮЧАЕМ ИЗУЧЕННЫЕ СТАТУСЫ
+    excluded_statuses = [LearningStatus.LEARNED, LearningStatus.MASTERED]
+    allowed_statuses = [
+        LearningStatus.WANT_TO_LEARN,
+        LearningStatus.LEARNING,
+        LearningStatus.REVIEW
+    ]
+    
+    query = (
+        select(UserWordProgress)
+        .options(
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.translations)
+            .selectinload(Translation.language),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.category),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.difficulty_level)
+        )
+        .where(
+            and_(
+                UserWordProgress.user_id == user_id,
+                # ✅ ДВОЙНАЯ ПРОВЕРКА: включаем только разрешенные статусы
+                UserWordProgress.status.in_(allowed_statuses),
+                # ✅ И ИСКЛЮЧАЕМ ИЗУЧЕННЫЕ СТАТУСЫ
+                ~UserWordProgress.status.in_(excluded_statuses)
+            )
+        )
+    )
+
+    if category_id:
+        query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
+
+    if difficulty_level_id:
+        query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == difficulty_level_id)
+
+    # Приоритет: want_to_learn -> learning -> review
+    status_priority = {
+        LearningStatus.WANT_TO_LEARN: 1,
+        LearningStatus.LEARNING: 2, 
+        LearningStatus.REVIEW: 3
+    }
+    
+    query = query.order_by(
+        func.case(
+            *[(UserWordProgress.status == status, priority) 
+              for status, priority in status_priority.items()],
+            else_=4
+        ),
+        UserWordProgress.updated_at.desc()
+    ).offset(offset).limit(limit)
+
+    result = await db.execute(query)
+    words = result.scalars().all()
+    
+    # ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА В КОДЕ
+    filtered_words = []
+    for word in words:
+        if word.status not in excluded_statuses:
+            filtered_words.append(word)
+        else:
+            print(f"⚠️ WARNING: Filtered out learned word {word.kazakh_word.kazakh_word} with status {word.status}")
+    
+    return filtered_words
+
+@staticmethod 
+async def count_words_by_status_excluding_learned(
+    db: AsyncSession,
+    user_id: int,
+    category_id: Optional[int] = None,
+    difficulty_level_id: Optional[int] = None
+) -> Dict[str, int]:
+    """
+    Count words by status, excluding LEARNED and MASTERED
+    Useful for learning module statistics
+    """
+    # Base query
+    query = select(
+        UserWordProgress.status,
+        func.count(UserWordProgress.id).label('count')
+    ).where(
+        and_(
+            UserWordProgress.user_id == user_id,
+            # ✅ ИСКЛЮЧАЕМ ИЗУЧЕННЫЕ СЛОВА ИЗ ПОДСЧЕТА
+            ~UserWordProgress.status.in_([LearningStatus.LEARNED, LearningStatus.MASTERED])
+        )
+    )
+    
+    if category_id:
+        query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
+
+    if difficulty_level_id:
+        query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == difficulty_level_id)
+    
+    query = query.group_by(UserWordProgress.status)
+    
+    result = await db.execute(query)
+    status_counts = {row.status.value: row.count for row in result}
+    
+    # Ensure all statuses are present with 0 if not found
+    all_statuses = ['want_to_learn', 'learning', 'review']
+    for status in all_statuses:
+        if status not in status_counts:
+            status_counts[status] = 0
+    
+    status_counts['total'] = sum(status_counts.values())
+    
+    return status_counts
