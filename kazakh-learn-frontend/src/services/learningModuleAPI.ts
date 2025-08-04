@@ -7,12 +7,20 @@ export interface LearningWord {
   kazakh_cyrillic?: string;
   translation: string;
   pronunciation?: string;
-  image_url?: string;
+  // ✅ ИСПРАВЛЕНО: Добавлены все поля для изображений
+  image_url?: string;        // Основное поле от API
+  primary_image?: string;    // Дополнительное поле для совместимости
   status: LearningStatus;
   times_seen: number;
   times_correct: number;
+  times_incorrect?: number;
   difficulty_level: number;
   category_name: string;
+  word_type_name?: string;
+  user_notes?: string;
+  added_at?: string;
+  last_practiced_at?: string;
+  next_review_at?: string;
 }
 
 export interface WordBatch {

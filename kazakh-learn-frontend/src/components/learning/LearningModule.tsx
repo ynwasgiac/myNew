@@ -32,13 +32,15 @@ interface LearningWord {
   kazakh_cyrillic?: string;
   translation: string;
   pronunciation?: string;
-  primary_image?: string;
+  // ✅ ИСПРАВЛЕНО: Добавлены поля для изображений
+  image_url?: string;        // Основное поле от API  
+  primary_image?: string;    // Дополнительное поле для совместимости
   difficulty_level: number;
   times_seen: number;
   last_practiced?: string;
   status?: string;
-  category_name?: string; // Add this field
-  word_type_name?: string; // Add this line
+  category_name?: string;
+  word_type_name?: string;
 }
 
 interface QuizQuestion {
@@ -810,22 +812,32 @@ const OverviewPhase: React.FC<{
   const [fallbackLevels, setFallbackLevels] = useState<Record<number, number>>({});
   const { t } = useTranslation(['learning']);
 
-  // Image fallback system (same as your existing WordCard)
+  // ✅ ИСПРАВЛЕННАЯ система fallback для изображений
   const getImageSources = (word: LearningWord): string[] => {
     const sources: string[] = [];
     
-    // 1. Primary image from database
+    // 1. Primary image from database (если есть image_url из API)
+    if (word.image_url) {
+      sources.push(word.image_url);
+    }
+    
+    // 2. Primary image field (если есть primary_image)
     if (word.primary_image) {
       sources.push(word.primary_image);
     }
     
-    // 2. Expected category path based on your file structure
+    // 3. Expected category path based on file structure
     const safeWordName = word.kazakh_word.replace(/\s+/g, '_').toLowerCase();
     const categoryName = word.category_name?.toLowerCase() || 'general';
     sources.push(`/images/words/categories/${categoryName}/${safeWordName}.jpg`);
     sources.push(`/images/words/categories/${categoryName}/${safeWordName}.png`);
+    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.webp`);
     
-    // 3. Category-specific placeholder
+    // 4. Alternative naming with word ID
+    sources.push(`/images/words/categories/${categoryName}/${word.id}.jpg`);
+    sources.push(`/images/words/categories/${categoryName}/${word.id}.png`);
+    
+    // 5. Category-specific placeholder
     const categoryPlaceholders: Record<string, string> = {
       'animals': '/images/words/placeholders/animals.png',
       'food': '/images/words/placeholders/food.png',
@@ -834,15 +846,20 @@ const OverviewPhase: React.FC<{
       'body': '/images/words/placeholders/body.png',
       'nature': '/images/words/placeholders/nature.png',
       'objects': '/images/words/placeholders/objects.png',
-      'actions': '/images/words/placeholders/actions.png'
+      'actions': '/images/words/placeholders/actions.png',
+      'home': '/images/words/placeholders/home.png',
+      'clothes': '/images/words/placeholders/clothes.png',
+      'transport': '/images/words/placeholders/transport.png',
+      'general': '/images/words/placeholders/general.png'
     };
     
     if (categoryPlaceholders[categoryName]) {
       sources.push(categoryPlaceholders[categoryName]);
     }
     
-    // 4. Default placeholder
+    // 6. Default placeholder
     sources.push('/images/words/placeholders/default.png');
+    sources.push('/images/placeholder.png'); // Fallback если нет default.png
   
     return sources.filter(Boolean); // Remove null/undefined values
   };
@@ -863,10 +880,15 @@ const OverviewPhase: React.FC<{
     const sources = getImageSources(word);
     const currentLevel = fallbackLevels[wordId] || 0;
     
+    console.log(`❌ Image error for word ${wordId} "${word.kazakh_word}", level ${currentLevel}/${sources.length - 1}`);
+    console.log(`   Failed source: ${sources[currentLevel]}`);
+    
     if (currentLevel < sources.length - 1) {
       setFallbackLevels(prev => ({ ...prev, [wordId]: currentLevel + 1 }));
+      console.log(`   Trying next source: ${sources[currentLevel + 1]}`);
     } else {
       setImageErrors(prev => ({ ...prev, [wordId]: true }));
+      console.log(`   All sources exhausted, showing placeholder icon`);
     }
   };
 
@@ -888,6 +910,7 @@ const OverviewPhase: React.FC<{
       <button
         onClick={handlePlayAudio}
         className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110"
+        title={`Прослушать произношение: ${word.kazakh_word}`}
       >
         <SpeakerWaveIcon className="h-6 w-6 text-blue-600" />
       </button>
@@ -904,6 +927,15 @@ const OverviewPhase: React.FC<{
     };
     return colors[level as keyof typeof colors] || colors[1];
   };
+
+  // ✅ ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
+  console.log('🔍 OverviewPhase words:', words.map(w => ({
+    id: w.id,
+    kazakh_word: w.kazakh_word,
+    image_url: w.image_url,
+    primary_image: w.primary_image,
+    category_name: w.category_name
+  })));
 
   return (
     <div className="space-y-8">
@@ -922,6 +954,13 @@ const OverviewPhase: React.FC<{
           {words.map((word, index) => {
             const imageSrc = getCurrentImageSource(word);
             
+            console.log(`🖼️ Word ${word.id} "${word.kazakh_word}":`, {
+              imageSrc,
+              fallbackLevel: fallbackLevels[word.id] || 0,
+              hasError: imageErrors[word.id] || false,
+              sources: getImageSources(word)
+            });
+            
             return (
               <div 
                 key={word.id} 
@@ -932,13 +971,17 @@ const OverviewPhase: React.FC<{
                   {imageSrc ? (
                     <img
                       src={imageSrc}
-                      alt={word.kazakh_word}
+                      alt={`Изображение для слова: ${word.kazakh_word}`}
                       className="w-full h-full object-cover"
                       onError={() => handleImageError(word.id)}
+                      onLoad={() => console.log(`✅ Image loaded successfully for word ${word.id}: ${imageSrc}`)}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <PhotoIcon className="h-16 w-16 text-gray-400" />
+                      <div className="absolute bottom-2 left-2 text-xs text-gray-500 bg-white bg-opacity-75 px-2 py-1 rounded">
+                        No image
+                      </div>
                     </div>
                   )}
                   
@@ -970,40 +1013,23 @@ const OverviewPhase: React.FC<{
                       {word.kazakh_word}
                     </h3>
                     {word.kazakh_cyrillic && (
-                      <p className="text-lg text-gray-600 cyrillic-text mb-2">
+                      <p className="text-lg text-gray-600 mb-2 cyrillic-text">
                         {word.kazakh_cyrillic}
                       </p>
                     )}
-                    <p className="text-xl text-blue-600 font-semibold">
+                    <p className="text-lg text-blue-600 font-medium">
                       {word.translation}
                     </p>
                   </div>
 
                   {/* Word Details */}
-                  <div className="space-y-2 text-sm text-gray-600">
-                    {word.pronunciation && (
-                      <div className="text-center italic">
-                        {word.pronunciation}
-                      </div>
-                    )}
-                    
-                    {/* Category Display */}
-                    {word.category_name && (
-                      <div className="text-center">
-                        <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
-                          {word.category_name}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Practice History */}
-                    {word.times_seen > 0 && (
-                      <div className="text-center">
-                        <span className="bg-blue-100 px-2 py-1 rounded-full text-xs text-blue-800">
-                          {t('overview.seenTimes', { count: word.times_seen })}
-                        </span>
-                      </div>
-                    )}
+                  <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                    <span className="bg-gray-100 px-2 py-1 rounded-full">
+                      {word.category_name}
+                    </span>
+                    <span className="bg-gray-100 px-2 py-1 rounded-full">
+                      {word.word_type_name}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1013,7 +1039,7 @@ const OverviewPhase: React.FC<{
       </div>
 
       {/* Learning Process Overview */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+      <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
         <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">
           {t('overview.process.title')}
         </h3>
