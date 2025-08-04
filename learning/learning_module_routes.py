@@ -59,64 +59,137 @@ async def get_words_not_learned(
     EXCLUDES words with status 'LEARNED' and 'MASTERED'
     """
     try:
-        # ✅ ИСКЛЮЧАЕМ СЛОВА СО СТАТУСОМ LEARNED И MASTERED
-        not_learned_statuses = [
+        # ✅ EXPLICITLY DEFINE ALLOWED STATUSES (NOT LEARNED)
+        allowed_statuses = [
             LearningStatus.WANT_TO_LEARN,
             LearningStatus.LEARNING, 
             LearningStatus.REVIEW
         ]
         
-        # ✅ ИСПОЛЬЗУЕМ СПЕЦИАЛЬНУЮ ФУНКЦИЮ ДЛЯ ИСКЛЮЧЕНИЯ ИЗУЧЕННЫХ СЛОВ
-        words = await UserWordProgressCRUD.get_not_learned_words(
-            db, 
-            current_user.id, 
-            category_id=category_id,
-            difficulty_level_id=difficulty_level_id,
-            limit=daily_goal,
-            offset=0
+        # ✅ EXPLICITLY DEFINE EXCLUDED STATUSES (LEARNED)
+        excluded_statuses = [
+            LearningStatus.LEARNED, 
+            LearningStatus.MASTERED
+        ]
+        
+        print(f"🔍 Learning Module Debug - Getting not-learned words:")
+        print(f"   - Daily goal: {daily_goal}")
+        print(f"   - Category filter: {category_id}")
+        print(f"   - Difficulty filter: {difficulty_level_id}")
+        print(f"   - Allowed statuses: {[s.value for s in allowed_statuses]}")
+        print(f"   - Excluded statuses: {[s.value for s in excluded_statuses]}")
+        
+        # ✅ BUILD QUERY DIRECTLY HERE TO ENSURE PROPER FILTERING
+        query = (
+            select(UserWordProgress)
+            .options(
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.translations)
+                .selectinload(Translation.language),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.category),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.difficulty_level),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.images)
+            )
+            .where(
+                and_(
+                    UserWordProgress.user_id == current_user.id,
+                    # ✅ CRITICAL: Only include allowed statuses
+                    UserWordProgress.status.in_(allowed_statuses),
+                    # ✅ CRITICAL: Explicitly exclude learned statuses
+                    ~UserWordProgress.status.in_(excluded_statuses)
+                )
+            )
         )
         
-        all_words = []
+        # Add category filter if provided
+        if category_id:
+            query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
+            print(f"   - Added category filter: {category_id}")
         
-        # Convert to dict format for frontend
+        # Add difficulty filter if provided
+        if difficulty_level_id:
+            if not category_id:  # Join KazakhWord if not already joined
+                query = query.join(KazakhWord)
+            query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+            print(f"   - Added difficulty filter: {difficulty_level_id}")
+        
+        # Order by priority: want_to_learn -> learning -> review
+        status_priority = {
+            LearningStatus.WANT_TO_LEARN: 1,
+            LearningStatus.LEARNING: 2, 
+            LearningStatus.REVIEW: 3
+        }
+        
+        query = query.order_by(
+            func.case(
+                *[(UserWordProgress.status == status, priority) 
+                  for status, priority in status_priority.items()],
+                else_=4
+            ),
+            UserWordProgress.updated_at.desc()
+        ).limit(daily_goal)
+        
+        # Execute the query
+        result = await db.execute(query)
+        words = result.scalars().all()
+        
+        print(f"📊 Query executed - found {len(words)} words")
+        
+        # ✅ ADDITIONAL SAFETY CHECK: Filter out any learned words that somehow got through
+        filtered_words = []
+        learned_words_found = 0
+        
         for word_progress in words:
-            word = word_progress.kazakh_word
-            
-            # Skip if word status is LEARNED or MASTERED (double check)
-            if word_progress.status in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
-                print(f"⚠️ WARNING: Found learned word {word.kazakh_word} with status {word_progress.status}, skipping")
+            if word_progress.status in excluded_statuses:
+                learned_words_found += 1
+                print(f"⚠️ WARNING: Found learned word {word_progress.kazakh_word.kazakh_word} with status {word_progress.status}, excluding")
                 continue
             
-            # Get primary translation for user's language
-            primary_translation = "No translation"
-            if word.translations:
-                for translation in word.translations:
-                    if (hasattr(translation, 'language') and 
-                        translation.language and 
-                        translation.language.language_code == current_user.main_language.language_code):
-                        primary_translation = translation.translation
-                        break
+            filtered_words.append(word_progress)
+        
+        if learned_words_found > 0:
+            print(f"❌ ERROR: Found {learned_words_found} learned words in query results, filtered them out")
+        
+        print(f"✅ Final filtered words: {len(filtered_words)}")
+        
+        # Convert to frontend format
+        all_words = []
+        for word_progress in filtered_words:
+            word = word_progress.kazakh_word
             
-            # ✅ ИЗВЛЕКАЕМ PRIMARY IMAGE ИЗ БАЗЫ ДАННЫХ
+            # Get user's native language translation
+            user_translation = "No translation"
+            user_lang_code = current_user.main_language.language_code if current_user.main_language else "en"
+            
+            for translation in word.translations:
+                if (translation.language and 
+                    translation.language.language_code == user_lang_code and 
+                    translation.translation and 
+                    translation.translation.strip()):
+                    user_translation = translation.translation
+                    break
+            
+            # Get primary image
             primary_image = None
             if word.images:
-                # Ищем primary image
                 for image in word.images:
                     if image.is_primary:
                         primary_image = image.image_url
                         break
-                # Если primary не найден, берем первое доступное
                 if not primary_image and word.images:
                     primary_image = word.images[0].image_url
             
-            # ✅ ДОБАВЛЯЕМ ТОЛЬКО НЕИЗУЧЕННЫЕ СЛОВА С IMAGE_URL
             all_words.append({
                 "id": word.id,
                 "kazakh_word": word.kazakh_word,
                 "kazakh_cyrillic": word.kazakh_cyrillic,
-                "translation": primary_translation,
+                "translation": user_translation,
                 "category_name": word.category.category_name if word.category else "Unknown",
                 "difficulty_level": word.difficulty_level.level_number if word.difficulty_level else 1,
+                "word_type_name": getattr(word, 'word_type_name', None),
                 "status": word_progress.status.value,
                 "times_seen": word_progress.times_seen,
                 "times_correct": word_progress.times_correct,
@@ -125,13 +198,8 @@ async def get_words_not_learned(
                 "added_at": word_progress.added_at.isoformat() if word_progress.added_at else None,
                 "last_practiced_at": word_progress.last_practiced_at.isoformat() if word_progress.last_practiced_at else None,
                 "next_review_at": word_progress.next_review_at.isoformat() if word_progress.next_review_at else None,
-                # ✅ ДОБАВЛЯЕМ IMAGE_URL
                 "image_url": primary_image
             })
-            
-            # Stop when we have enough words
-            if len(all_words) >= daily_goal:
-                break
         
         # Group into batches of 3
         batches = []
@@ -143,19 +211,29 @@ async def get_words_not_learned(
                 "words_count": len(batch)
             })
         
-        # ✅ ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
-        print(f"📊 Learning Module Query Result:")
-        print(f"   - Requested: {daily_goal} words")
-        print(f"   - Found: {len(all_words)} words")
-        print(f"   - Batches: {len(batches)}")
-        print(f"   - Statuses included: {[s.value for s in not_learned_statuses]}")
-        
-        # ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА НА ПРИСУТСТВИЕ ИЗУЧЕННЫХ СЛОВ
-        learned_words = [w for w in all_words if w['status'] in ['learned', 'mastered']]
-        if learned_words:
-            print(f"❌ ERROR: Found {len(learned_words)} learned words in results!")
-            for learned_word in learned_words:
+        # ✅ FINAL VALIDATION: Check if any learned words slipped through
+        learned_in_results = [w for w in all_words if w['status'] in ['learned', 'mastered']]
+        if learned_in_results:
+            print(f"❌ CRITICAL ERROR: {len(learned_in_results)} learned words in final results!")
+            for learned_word in learned_in_results:
                 print(f"   - {learned_word['kazakh_word']} (status: {learned_word['status']})")
+            # Remove them from results
+            all_words = [w for w in all_words if w['status'] not in ['learned', 'mastered']]
+            # Recalculate batches
+            batches = []
+            for i in range(0, len(all_words), 3):
+                batch = all_words[i:i+3]
+                batches.append({
+                    "batch_number": (i // 3) + 1,
+                    "words": batch,
+                    "words_count": len(batch)
+                })
+        
+        print(f"📊 Learning Module Final Result:")
+        print(f"   - Words returned: {len(all_words)}")
+        print(f"   - Batches created: {len(batches)}")
+        print(f"   - Status breakdown: {dict((status, len([w for w in all_words if w['status'] == status])) for status in ['want_to_learn', 'learning', 'review', 'learned', 'mastered'])}")
+        print(f"   - Learned words in result (should be 0): {len([w for w in all_words if w['status'] in ['learned', 'mastered']])}")
         
         return {
             "words": all_words,
@@ -168,13 +246,13 @@ async def get_words_not_learned(
                 "want_to_learn": len([w for w in all_words if w['status'] == 'want_to_learn']),
                 "learning": len([w for w in all_words if w['status'] == 'learning']),
                 "review": len([w for w in all_words if w['status'] == 'review']),
-                "learned": len([w for w in all_words if w['status'] == 'learned']),  # должно быть 0
-                "mastered": len([w for w in all_words if w['status'] == 'mastered'])  # должно быть 0
+                "learned": len([w for w in all_words if w['status'] == 'learned']),      # Should be 0
+                "mastered": len([w for w in all_words if w['status'] == 'mastered'])    # Should be 0
             }
         }
         
     except Exception as e:
-        print(f"Error in get_words_not_learned: {e}")
+        print(f"❌ Error in get_words_not_learned: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(
