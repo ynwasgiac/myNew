@@ -454,76 +454,151 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
 
   // Submit Quiz Answer
   const submitQuizAnswer = async (questionId: number, selectedIndex: number) => {
-    const question = cycle.quizQuestions?.find(q => q.id === questionId);
-    if (!question) return;
-
-    const isCorrect = selectedIndex === question.correct_answer_index;
-    setUserAnswers(prev => ({ ...prev, [`quiz_${questionId}`]: isCorrect }));
+    console.log('\n🧠 === QUIZ ANSWER SUBMISSION DEBUG ===');
+    console.log(`Question ID: ${questionId}`);
+    console.log(`Selected index: ${selectedIndex}`);
     
-    try {
-      await learningModuleAPI.updateWordProgress(questionId, {
-        was_correct: isCorrect
-      });
-      console.log(`✅ Quiz result saved: Word ${questionId} - ${isCorrect ? 'Correct' : 'Incorrect'}`);
-    } catch (error) {
-      console.error('❌ Failed to save quiz result:', error);
-      // Не показываем ошибку пользователю, продолжаем работу
+    const question = cycle.quizQuestions?.find(q => q.id === questionId);
+    if (!question) {
+      console.error('❌ Question not found for ID:', questionId);
+      return;
     }
-
+  
+    console.log('📝 Question details:');
+    console.log('  Question:', question.question);
+    console.log('  Options:', question.options);
+    console.log('  Correct index:', question.correct_answer_index);
+    console.log('  Selected option:', question.options[selectedIndex]);
+    console.log('  Correct option:', question.options[question.correct_answer_index]);
+  
+    const isCorrect = selectedIndex === question.correct_answer_index;
+    console.log(`✅ Answer is correct: ${isCorrect}`);
+    
+    // Обновляем состояние ответов
+    const answerKey = `quiz_${questionId}`;
+    console.log(`💾 Saving answer with key: ${answerKey} = ${isCorrect}`);
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сохраняем результат и сразу используем его
+    const newUserAnswers = { ...userAnswers, [answerKey]: isCorrect };
+    
+    setUserAnswers(newUserAnswers);
+    console.log('📊 Updated userAnswers:', newUserAnswers);
+    
+    console.log(`✅ Quiz answer recorded locally: Word ${questionId} - ${isCorrect ? 'Correct' : 'Incorrect'}`);
+  
     // Move to next question or finish quiz
     setTimeout(() => {
+      console.log('⏭️ Moving to next question or finishing quiz...');
+      console.log(`Current index: ${currentWordIndex}, Total questions: ${cycle.quizQuestions?.length}`);
+      
       if (cycle.quizQuestions && currentWordIndex < cycle.quizQuestions.length - 1) {
+        console.log('➡️ Moving to next question');
         setCurrentWordIndex(prev => prev + 1);
       } else {
-        completeBatch();
+        console.log('🏁 Finishing quiz, calling completeBatch with updated answers');
+        // ✅ ПЕРЕДАЕМ ОБНОВЛЕННЫЕ ОТВЕТЫ НАПРЯМУЮ
+        completeBatchWithAnswers(newUserAnswers);
       }
     }, 1000);
   };
-
-  // Complete current batch
-  const completeBatch = async () => {
+  
+  // ✅ НОВАЯ ФУНКЦИЯ: completeBatch с переданными ответами
+  const completeBatchWithAnswers = async (finalUserAnswers: Record<string, boolean>) => {
+    console.log('\n🎯 === FRONTEND BATCH COMPLETION DEBUG START ===');
+    console.log('📊 Final userAnswers passed:', finalUserAnswers);
+    console.log('📝 Current words:', cycle.currentWords.map(w => ({ id: w.id, kazakh_word: w.kazakh_word })));
+  
     const practiceCorrect = cycle.currentWords.filter(word => 
-      userAnswers[`practice_${word.id}`] === true
+      finalUserAnswers[`practice_${word.id}`] === true
     ).length;
     
     const quizCorrect = cycle.currentWords.filter(word => 
-      userAnswers[`quiz_${word.id}`] === true
+      finalUserAnswers[`quiz_${word.id}`] === true
     ).length;
-
-    // Words that were correct in both practice and quiz are marked as learned
-    const wordsLearned = cycle.currentWords
-      .filter(word => 
-        userAnswers[`practice_${word.id}`] === true && 
-        userAnswers[`quiz_${word.id}`] === true
-      )
-      .map(word => word.kazakh_word);
-
-    // Update word statuses to "learned" for perfect performance
-    for (const word of cycle.currentWords) {
-      if (userAnswers[`practice_${word.id}`] === true && userAnswers[`quiz_${word.id}`] === true) {
-        try {
-          await learningAPI.updateWordProgress(word.id, {
-            status: LEARNING_STATUSES.LEARNED,
-            was_correct: true
-          });
-        } catch (error) {
-          console.error('Failed to update word status:', error);
-        }
-      }
-    }
-
-    const batchResult = {
-      batchNumber: cycle.currentBatch,
-      practiceCorrect,
-      quizCorrect,
-      wordsLearned
-    };
-
-    setCycle(prev => ({
-      ...prev,
-      batchResults: [...prev.batchResults, batchResult]
+  
+    console.log(`📈 Practice correct: ${practiceCorrect}/3`);
+    console.log(`🧠 Quiz correct: ${quizCorrect}/3`);
+  
+    // Подготавливаем данные для пакетного API
+    const wordIds = cycle.currentWords.map(word => word.id);
+    const practiceResults = cycle.currentWords.map(word => ({
+      word_id: word.id,
+      was_correct: finalUserAnswers[`practice_${word.id}`] === true
     }));
-
+    const quizResults = cycle.currentWords.map(word => ({
+      word_id: word.id,
+      was_correct: finalUserAnswers[`quiz_${word.id}`] === true
+    }));
+  
+    console.log('\n📝 === DETAILED WORD ANALYSIS ===');
+    cycle.currentWords.forEach((word, index) => {
+      const practiceKey = `practice_${word.id}`;
+      const quizKey = `quiz_${word.id}`;
+      const practiceAnswer = finalUserAnswers[practiceKey];
+      const quizAnswer = finalUserAnswers[quizKey];
+      
+      console.log(`Word ${index + 1}: ${word.kazakh_word} (ID: ${word.id})`);
+      console.log(`  Practice key: ${practiceKey} = ${practiceAnswer}`);
+      console.log(`  Quiz key: ${quizKey} = ${quizAnswer}`);
+      console.log(`  Practice correct: ${practiceAnswer === true}`);
+      console.log(`  Quiz correct: ${quizAnswer === true}`);
+      console.log(`  Both correct: ${practiceAnswer === true && quizAnswer === true}`);
+    });
+  
+    console.log('\n📦 === SENDING TO API ===');
+    console.log('Word IDs:', wordIds);
+    console.log('Practice results:', practiceResults);
+    console.log('Quiz results:', quizResults);
+  
+    // Проверим, что все результаты присутствуют
+    const missingPractice = wordIds.filter(id => finalUserAnswers[`practice_${id}`] === undefined);
+    const missingQuiz = wordIds.filter(id => finalUserAnswers[`quiz_${id}`] === undefined);
+    
+    if (missingPractice.length > 0) {
+      console.warn('⚠️ Missing practice results for words:', missingPractice);
+    }
+    if (missingQuiz.length > 0) {
+      console.warn('⚠️ Missing quiz results for words:', missingQuiz);
+    }
+  
+    try {
+      console.log('🚀 Calling completeLearningBatch API...');
+      const batchResult = await learningModuleAPI.completeLearningBatch(
+        wordIds,
+        practiceResults,
+        quizResults
+      );
+  
+      console.log('✅ API Response:', batchResult);
+  
+      // Words that were learned according to the API response
+      const wordsLearned = batchResult.summary.words_learned.map(w => w.kazakh_word);
+      console.log('🎉 Words learned by API:', wordsLearned);
+  
+      const localBatchResult = {
+        batchNumber: cycle.currentBatch,
+        practiceCorrect,
+        quizCorrect,
+        wordsLearned
+      };
+  
+      setCycle(prev => ({
+        ...prev,
+        batchResults: [...prev.batchResults, localBatchResult]
+      }));
+  
+      // Show success message
+      toast.success(`Batch ${cycle.currentBatch} complete! ${wordsLearned.length} words learned.`);
+  
+    } catch (error) {
+      console.error('❌ Failed to complete batch:', error);
+      console.error('Error details:', error);
+      toast.error('Failed to save batch results. Please try again.');
+      return;
+    }
+  
+    console.log('🎯 === FRONTEND BATCH COMPLETION DEBUG END ===\n');
+  
     // Check if there are more batches
     if (cycle.currentBatch < cycle.totalBatches && wordsToLearn) {
       const nextBatchStart = cycle.currentBatch * 3;
@@ -540,13 +615,21 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
         }));
         setCurrentWordIndex(0);
         setUserAnswers({});
-        toast.success(`Batch ${cycle.currentBatch} complete! Moving to next batch.`);
+        console.log(`🎯 Starting Batch ${cycle.currentBatch + 1}`);
       } else {
+        // Complete all learning
         setCycle(prev => ({ ...prev, phase: 'complete' }));
       }
     } else {
+      // Complete all learning
       setCycle(prev => ({ ...prev, phase: 'complete' }));
     }
+  };
+
+  // Complete current batch
+  const completeBatch = async () => {
+    console.log('⚠️ completeBatch called - using current userAnswers state');
+    return completeBatchWithAnswers(userAnswers);
   };
 
   const moveToNextWord = () => {
