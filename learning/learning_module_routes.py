@@ -209,13 +209,26 @@ async def start_batch_practice(
         for word_id in word_ids:
             word = await KazakhWordCRUD.get_by_id_full(db, word_id, current_user.main_language.language_code)
             if word:
-                primary_translation = word.translations[0].translation if word.translations else "No translation"
+                primary_translation = word.translations[0].translation if word.translations else "No translation"  
+                # ✅ ИЗВЛЕКАЕМ PRIMARY IMAGE
+                primary_image = None
+                if word.images:
+                    # Ищем primary image
+                    for image in word.images:
+                        if image.is_primary:
+                            primary_image = image.image_url
+                            break
+                    # Если primary не найден, берем первое доступное
+                    if not primary_image and word.images:
+                        primary_image = word.images[0].image_url
                 words.append({
                     "id": word.id,
                     "kazakh_word": word.kazakh_word,
                     "kazakh_cyrillic": word.kazakh_cyrillic,
                     "translation": primary_translation,
                     "image_url": getattr(word, 'image_url', None),
+                    # ✅ ДОБАВЛЯЕМ IMAGE_URL В ОТВЕТ
+                    "image_url": primary_image,
                     "category_name": word.category.category_name if word.category else "Unknown"
                 })
         

@@ -283,6 +283,29 @@ async def get_my_learning_words(
     # Convert to response format with word details
     results = []
     for progress in progress_list:
+        # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ ИЗОБРАЖЕНИЙ
+        images = []
+        if hasattr(progress.kazakh_word, 'images') and progress.kazakh_word.images:
+            images = [
+                {
+                    "id": img.id,
+                    "image_url": img.image_url,
+                    "is_primary": img.is_primary,
+                    "image_type": img.image_type,
+                    "alt_text": img.alt_text
+                }
+                for img in progress.kazakh_word.images
+            ]
+        
+        # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ PRIMARY IMAGE
+        primary_image = None
+        if progress.kazakh_word.images:
+            # Ищем primary image
+            for image in progress.kazakh_word.images:
+                if image.is_primary:
+                    primary_image = image.image_url
+                    break
+            # Если primary не найден, берем первое доступное
         # Get word details
         word_dict = {
             "id": progress.kazakh_word.id,
@@ -296,7 +319,10 @@ async def get_my_learning_words(
                     "language_code": t.language.language_code
                 }
                 for t in progress.kazakh_word.translations
-            ]
+            ],
+            # ✅ ДОБАВЬТЕ ЭТИ ПОЛЯ:
+            "images": images,
+            "primary_image": primary_image
         }
 
         # Create response with word details
@@ -1133,6 +1159,31 @@ async def get_learned_words(
     # Формируем ответ
     results = []
     for progress in progress_list:
+        # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ ИЗОБРАЖЕНИЙ
+        images = []
+        if hasattr(progress.kazakh_word, 'images') and progress.kazakh_word.images:
+            images = [
+                {
+                    "id": img.id,
+                    "image_url": img.image_url,
+                    "is_primary": img.is_primary,
+                    "image_type": img.image_type,
+                    "alt_text": img.alt_text
+                }
+                for img in progress.kazakh_word.images
+            ]
+        
+        # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ PRIMARY IMAGE
+        primary_image = None
+        if progress.kazakh_word.images:
+            # Ищем primary image
+            for image in progress.kazakh_word.images:
+                if image.is_primary:
+                    primary_image = image.image_url
+                    break
+            # Если primary не найден, берем первое доступное
+            if not primary_image and progress.kazakh_word.images:
+                primary_image = progress.kazakh_word.images[0].image_url
         word_dict = {
             "id": progress.kazakh_word.id,
             "kazakh_word": progress.kazakh_word.kazakh_word,
@@ -1145,7 +1196,10 @@ async def get_learned_words(
                     "language_code": t.language.language_code
                 }
                 for t in progress.kazakh_word.translations
-            ]
+            ],
+            # ✅ ДОБАВЬТЕ ЭТИ ПОЛЯ:
+            "images": images,
+            "primary_image": primary_image
         }
 
         result = UserWordProgressWithWord(

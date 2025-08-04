@@ -55,7 +55,10 @@ class UserWordProgressCRUD:
                 selectinload(UserWordProgress.kazakh_word)
                 .selectinload(KazakhWord.category),
                 selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.difficulty_level)
+                .selectinload(KazakhWord.difficulty_level),
+                # ✅ ДОБАВЛЯЕМ ЗАГРУЗКУ ИЗОБРАЖЕНИЙ
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.images)
             )
             .where(
                 and_(
@@ -86,7 +89,10 @@ class UserWordProgressCRUD:
                 selectinload(UserWordProgress.kazakh_word)
                 .selectinload(KazakhWord.category),
                 selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.difficulty_level)
+                .selectinload(KazakhWord.difficulty_level),
+                # ✅ ДОБАВЛЯЕМ ЗАГРУЗКУ ИЗОБРАЖЕНИЙ - ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ!
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.images)
             )
             .where(UserWordProgress.user_id == user_id)
         )

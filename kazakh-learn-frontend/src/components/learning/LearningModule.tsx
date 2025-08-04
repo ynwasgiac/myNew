@@ -32,7 +32,7 @@ interface LearningWord {
   kazakh_cyrillic?: string;
   translation: string;
   pronunciation?: string;
-  image_url?: string;
+  primary_image?: string;
   difficulty_level: number;
   times_seen: number;
   last_practiced?: string;
@@ -815,8 +815,8 @@ const OverviewPhase: React.FC<{
     const sources: string[] = [];
     
     // 1. Primary image from database
-    if (word.image_url) {
-      sources.push(word.image_url);
+    if (word.primary_image) {
+      sources.push(word.primary_image);
     }
     
     // 2. Expected category path based on your file structure
@@ -843,8 +843,8 @@ const OverviewPhase: React.FC<{
     
     // 4. Default placeholder
     sources.push('/images/words/placeholders/default.png');
-    
-    return sources;
+  
+    return sources.filter(Boolean); // Remove null/undefined values
   };
 
   const getCurrentImageSource = (word: LearningWord): string | null => {
