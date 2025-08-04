@@ -1,4 +1,4 @@
-// src/pages/learning/PracticePage.tsx - Fixed version with URL type parameter respect
+// src/pages/learning/PracticePage.tsx - Modified for learned words only
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -10,7 +10,8 @@ import {
   XCircleIcon,
   SpeakerWaveIcon,
   ClockIcon,
-  TrophyIcon
+  TrophyIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
@@ -51,9 +52,8 @@ const PracticePage: React.FC = () => {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [isPaused, setIsPaused] = useState(false);
-  const [wordSource, setWordSource] = useState<'review' | 'learning' | 'mixed' | 'random'>('review');
 
-  // URL parameters - FIXED: Properly handle the type parameter
+  // URL parameters
   const practiceType = searchParams.get('type') || 'practice';
   const categoryId = searchParams.get('category') ? parseInt(searchParams.get('category')!) : undefined;
   const wordCount = parseInt(searchParams.get('count') || '10');
@@ -64,268 +64,105 @@ const PracticePage: React.FC = () => {
     queryFn: learningAPI.getStats,
   });
 
-  // FIXED: Smart word selection with URL parameter respect
+  // 🎯 MODIFIED: Only get learned words for practice
   const startSessionMutation = useMutation({
     mutationFn: async () => {
-      console.log('🔍 Starting smart practice session...');
+      console.log('🔍 Starting practice session with LEARNED words only...');
       console.log('Practice type from URL:', practiceType);
-      console.log('Stats:', stats);
+      console.log('Category filter:', categoryId);
+      console.log('Word count from URL:', wordCount);
       
-      const wordsNeedReview = stats?.words_due_review || 0;
-      const userWordLimit = Math.max(wordsNeedReview, 10);
-      
-      // Helper function to safely convert word data
-      const convertToValidPracticeWord = (item: any): PracticeWord | null => {
-        try {
-          // Handle review/learning word format (UserWordProgressWithWord)
-          if (item.kazakh_word && typeof item.kazakh_word === 'object') {
-            const word = item.kazakh_word;
-            // Find translation in user's language, fallback to first available
-            let translation = 'No translation';
-            if (word.translations && word.translations.length > 0) {
-              const userLangTranslation = word.translations.find((t: any) => 
-                t.language_code === (user?.main_language?.language_code || 'en')
-              );
-              translation = userLangTranslation?.translation || word.translations[0].translation;
-            }
-            
-            return {
-              id: word.id,
-              kazakh_word: word.kazakh_word,
-              kazakh_cyrillic: word.kazakh_cyrillic,
-              translation: translation,
-              pronunciation: undefined,
-              image_url: undefined,
-              difficulty_level: word.difficulty_level || 1,
-            };
-          }
-          // Handle random word format
-          else if (item.kazakh_word || item.id) {
-            return {
-              id: item.id,
-              kazakh_word: item.kazakh_word,
-              kazakh_cyrillic: item.kazakh_cyrillic,
-              translation: item.translation,
-              pronunciation: item.pronunciation,
-              image_url: item.image_url,
-              difficulty_level: item.difficulty_level || 1,
-            };
-          }
-          return null;
-        } catch (error) {
-          console.error('Error converting word:', error, item);
-          return null;
-        }
-      };
-
-      let practiceWords: PracticeWord[] = [];
-
-      // FIXED: Respect URL parameter for practice type
-      if (practiceType === 'review') {
-        // FORCED REVIEW MODE: Only try review words, no fallback
-        console.log('🎯 FORCED REVIEW MODE: Only using review words');
-        setWordSource('review');
-        
-        if (wordsNeedReview > 0) {
-          try {
-            const reviewWords = await learningAPI.getWordsForReview(Math.min(userWordLimit, wordsNeedReview));
-            console.log('Review words response:', reviewWords);
-            
-            if (reviewWords && reviewWords.length > 0) {
-              practiceWords = reviewWords
-                .map(convertToValidPracticeWord)
-                .filter((word): word is PracticeWord => word !== null);
-              
-              if (practiceWords.length > 0) {
-                console.log('✅ Using review words:', practiceWords.length);
-                return {
-                  session_id: Math.floor(Math.random() * 10000),
-                  words: practiceWords,
-                  session_type: 'review',
-                  total_words: practiceWords.length
-                };
-              }
-            }
-          } catch (error) {
-            console.log('⚠️ Review words failed:', error);
-          }
-        }
-        
-        // If no review words available, show error instead of fallback
-        throw new Error(t('errors.noReviewWords') || 'No words available for review');
-      }
-
-      // ORIGINAL 3-LEVEL LOGIC for non-review types
-      // Level 1: Try review words first (only if not forced to review)
-      if (wordsNeedReview > 0) {
-        console.log('✅ Level 1: Trying review words');
-        setWordSource('review');
-        try {
-          const reviewWords = await learningAPI.getWordsForReview(Math.min(userWordLimit, wordsNeedReview));
-          console.log('Review words response:', reviewWords);
-          
-          if (reviewWords && reviewWords.length > 0) {
-            practiceWords = reviewWords
-              .map(convertToValidPracticeWord)
-              .filter((word): word is PracticeWord => word !== null);
-            
-            if (practiceWords.length > 0) {
-              console.log('✅ Using review words:', practiceWords.length);
-              return {
-                session_id: Math.floor(Math.random() * 10000),
-                words: practiceWords,
-                session_type: 'review',
-                total_words: practiceWords.length
-              };
-            }
-          }
-        } catch (error) {
-          console.log('⚠️ Review words failed:', error);
-        }
-      }
-
-      // Level 2: Try learning status words
-      console.log('📚 Level 2: Trying learning status words');
-      setWordSource('learning');
       try {
-        const learningWords = await learningAPI.getProgress({
-          status: 'learning',
-          limit: 50,
+        // Get learned words directly using the learning API
+        console.log('📚 Fetching learned words directly...');
+        
+        const learnedWordsResponse = await learningAPI.getProgress({
+          status: 'learned', // Just use string, no type assertion needed
+          category_id: categoryId,
+          limit: 100, // Get all learned words, ignore the URL count parameter
           offset: 0
         });
-        console.log('Learning words response:', learningWords);
         
-        if (learningWords && learningWords.length >= 10) {
-          practiceWords = learningWords
-            .slice(0, userWordLimit)
-            .map(convertToValidPracticeWord)
-            .filter((word): word is PracticeWord => word !== null);
-          
-          if (practiceWords.length > 0) {
-            console.log('✅ Using learning words:', practiceWords.length);
-            return {
-              session_id: Math.floor(Math.random() * 10000),
-              words: practiceWords,
-              session_type: 'learning',
-              total_words: practiceWords.length
-            };
-          }
+        console.log('📊 Learned words response:', learnedWordsResponse);
+        console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
+        
+        if (learnedWordsResponse.length === 0) {
+          throw new Error('No learned words available for practice. Please complete some learning modules first to unlock practice mode.');
         }
-
-        // Level 3: Try mixed learning words
-        console.log('🔄 Level 3: Trying mixed learning words');
-        setWordSource('mixed');
-        const allLearningWords = await learningAPI.getProgress({
-          limit: 50,
-          offset: 0
-        });
-        console.log('All learning words response:', allLearningWords);
         
-        if (allLearningWords && allLearningWords.length > 0) {
-          // Combine and deduplicate
-          const combinedWords = [...(learningWords || []), ...allLearningWords];
-          const seenIds = new Set<number>();
-          const uniqueWords = combinedWords.filter(word => {
-            const converted = convertToValidPracticeWord(word);
-            if (converted && !seenIds.has(converted.id)) {
-              seenIds.add(converted.id);
-              return true;
-            }
-            return false;
-          });
+        // Convert to practice word format
+        const practiceWords: PracticeWord[] = learnedWordsResponse.map(progress => {
+          const word = progress.kazakh_word;
           
-          practiceWords = uniqueWords
-            .slice(0, userWordLimit)
-            .map(convertToValidPracticeWord)
-            .filter((word): word is PracticeWord => word !== null);
+          // Get translation in user's preferred language
+          const userLanguageCode = user?.main_language?.language_code || 'en';
+          let translation = 'No translation';
           
-          if (practiceWords.length > 0) {
-            console.log('✅ Using mixed learning words:', practiceWords.length);
-            return {
-              session_id: Math.floor(Math.random() * 10000),
-              words: practiceWords,
-              session_type: 'mixed',
-              total_words: practiceWords.length
-            };
+          if (word.translations && word.translations.length > 0) {
+            const userLangTranslation = word.translations.find((t: any) => 
+              t.language_code === userLanguageCode
+            );
+            translation = userLangTranslation?.translation || word.translations[0].translation;
           }
-        }
-      } catch (error) {
-        console.log('⚠️ Learning words failed:', error);
-      }
-
-      // Fallback: Use random words
-      console.log('🎲 Fallback: Using random words');
-      setWordSource('random');
-      try {
-        // Use user's language code from their settings
-        const userLanguageCode = user?.main_language?.language_code || 'en';
-        console.log('Using user language code:', userLanguageCode);
-        
-        const randomWords = await wordsAPI.getRandomWords(
-          userWordLimit,
-          undefined, // difficulty
-          categoryId,
-          userLanguageCode
-        );
-        console.log('Random words response:', randomWords);
-        
-        practiceWords = randomWords.map(word => ({
-          id: word.id,
-          kazakh_word: word.kazakh_word,
-          kazakh_cyrillic: word.kazakh_cyrillic,
-          translation: word.translation,
-          pronunciation: word.pronunciation,
-          image_url: word.image_url,
-          difficulty_level: word.difficulty_level,
-        }));
-        
-        if (practiceWords.length > 0) {
-          console.log('✅ Using random words:', practiceWords.length);
+          
           return {
-            session_id: Math.floor(Math.random() * 10000),
-            words: practiceWords,
-            session_type: 'random',
-            total_words: practiceWords.length
+            id: word.id,
+            kazakh_word: word.kazakh_word,
+            kazakh_cyrillic: word.kazakh_cyrillic,
+            translation: translation,
+            pronunciation: undefined,
+            image_url: undefined,
+            difficulty_level: word.difficulty_level || 1,
           };
+        });
+        
+        console.log(`✅ Successfully converted ${practiceWords.length} learned words for practice`);
+        
+        // Shuffle for variety but keep all words
+        const shuffledWords = [...practiceWords];
+        for (let i = shuffledWords.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
         }
+        
+        // If user specified a count in URL, limit to that number, otherwise use all
+        const finalWords = wordCount && wordCount < shuffledWords.length 
+          ? shuffledWords.slice(0, wordCount)
+          : shuffledWords;
+        
+        console.log(`🎯 Final practice session: ${finalWords.length} words (requested: ${wordCount || 'all'})`);
+        
+        return {
+          session_id: Math.floor(Math.random() * 10000), // Generate local session ID
+          words: finalWords,
+          session_type: 'learned_practice',
+          total_words: finalWords.length
+        };
+  
       } catch (error) {
-        console.log('⚠️ Random words failed:', error);
+        console.error('❌ Failed to get learned words:', error);
+        throw error;
       }
-
-      throw new Error('No words available for practice');
     },
     onSuccess: (data) => {
-      console.log('🎯 Session started successfully:', data);
+      console.log('🎯 Practice session started successfully:', data);
       setSessionId(data.session_id);
       setSessionWords(data.words);
       setStartTime(Date.now());
       setQuestionStartTime(Date.now());
       
-      const messages = {
-        review: t('messages.reviewSessionStarted'),
-        learning: t('messages.learningSessionStarted'),
-        mixed: t('messages.mixedSessionStarted'),
-        random: t('messages.randomSessionStarted')
-      };
-      toast.success(messages[wordSource] || t('messages.sessionStarted'));
+      toast.success(`Practice session started with ${data.words.length} learned words!`);
     },
     onError: (error) => {
       console.error('❌ Session start error:', error);
-      // FIXED: Show appropriate error message for review mode
-      if (practiceType === 'review') {
-        toast.error(t('errors.noReviewWords') || 'No words available for review. Try learning some words first!');
-      } else {
-        toast.error(t('messages.sessionStartError'));
-      }
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start practice session';
+      toast.error(errorMessage);
     },
   });
 
-  // Rest of the component remains the same...
-  // (All other functions: submitAnswerMutation, finishSessionMutation, handlers, etc.)
-  
-  // Submit answer (simplified to avoid backend issues)
+  // Submit answer
   const submitAnswerMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       sessionId: number;
       wordId: number;
       wasCorrect: boolean;
@@ -333,100 +170,82 @@ const PracticePage: React.FC = () => {
       correctAnswer: string;
       responseTime: number;
     }) => {
-      // Only try backend submission for review words
-      if (wordSource === 'review') {
-        try {
-          return learningAPI.submitPracticeAnswer2(
-            data.sessionId,
-            data.wordId,
-            data.wasCorrect,
-            data.userAnswer,
-            data.correctAnswer,
-            data.responseTime
-          );
-        } catch (error) {
-          console.log('Backend submission failed, logging locally');
-          return Promise.resolve();
-        }
-      } else {
-        // For other types, just log locally
-        console.log('📝 Local answer logged:', data);
-        return Promise.resolve();
+      console.log('📝 Submitting answer:', data);
+      
+      try {
+        return await learningAPI.submitPracticeAnswer2(
+          data.sessionId,
+          data.wordId,
+          data.wasCorrect,
+          data.userAnswer,
+          data.correctAnswer,
+          data.responseTime
+        );
+      } catch (error) {
+        console.log('⚠️ Backend submission failed, logging locally:', error);
+        // Don't throw error, just log locally
+        return { success: true, message: 'Logged locally' };
       }
     },
     onSuccess: () => {
       console.log('✅ Answer submitted successfully');
     },
     onError: (error) => {
-      console.error('❌ Submit answer error:', error);
-      // Don't show error toast for non-review sessions
+      console.log('⚠️ Submit answer error (non-critical):', error);
+      // Don't show error toast for practice sessions
     },
   });
 
-  // Finish session (simplified)
+  // Finish session
   const finishSessionMutation = useMutation({
-    mutationFn: (data: { sessionId: number; duration: number }) => {
-      if (wordSource === 'review') {
-        try {
-          return learningAPI.finishPracticeSession(data.sessionId, data.duration);
-        } catch (error) {
-          return Promise.resolve({ success: true, message: 'Local completion' });
-        }
-      } else {
-        return Promise.resolve({ success: true, message: 'Local completion' });
+    mutationFn: async (data: { sessionId: number; duration: number }) => {
+      console.log('🏁 Finishing practice session:', data);
+      
+      try {
+        return await learningAPI.finishPracticeSession(data.sessionId, data.duration);
+      } catch (error) {
+        console.log('⚠️ Backend session finish failed, continuing locally:', error);
+        return { success: true, message: 'Session completed locally' };
       }
     },
     onSuccess: () => {
-      console.log('🏁 Session finished');
+      console.log('🎉 Practice session finished successfully');
     },
   });
 
-  // Initialize session when stats are loaded
+  // Initialize session when component mounts
   useEffect(() => {
     if (!sessionId && stats !== undefined) {
+      console.log('🚀 Auto-starting practice session...');
       startSessionMutation.mutate();
     }
   }, [stats, sessionId]);
 
-  const currentWord = sessionWords[currentWordIndex];
-  const isLastWord = currentWordIndex === sessionWords.length - 1;
-  const progress = sessionWords.length > 0 ? ((currentWordIndex + 1) / sessionWords.length) * 100 : 0;
-
+  // Event handlers
   const handleSubmitAnswer = () => {
-    if (!currentWord || !sessionId) {
-      console.error('❌ Missing currentWord or sessionId');
-      return;
-    }
-  
+    if (!currentWord || !sessionId) return;
+
+    const isCorrect = userAnswer.toLowerCase().trim() === currentWord.translation.toLowerCase().trim();
     const responseTime = Date.now() - questionStartTime;
-    const correctAnswer = currentWord.translation.toLowerCase().trim();
-    const userAnswerLower = userAnswer.toLowerCase().trim();
-    const isCorrect = userAnswerLower === correctAnswer;
-  
-    console.log('📝 Answer Comparison:');
-    console.log('User Answer:', `"${userAnswerLower}"`);
-    console.log('Correct Answer:', `"${correctAnswer}"`);
-    console.log('Is Correct:', isCorrect);
-    console.log('Word Source:', wordSource);
-  
-    // Submit answer
+
+    // Submit to backend
     submitAnswerMutation.mutate({
       sessionId,
       wordId: currentWord.id,
       wasCorrect: isCorrect,
-      userAnswer,
+      userAnswer: userAnswer.trim(),
       correctAnswer: currentWord.translation,
       responseTime,
     });
-  
+
     // Store result locally
     setSessionResults(prev => [...prev, {
       word_id: currentWord.id,
       correct: isCorrect,
-      user_answer: userAnswer,
+      user_answer: userAnswer.trim(),
       response_time: responseTime,
     }]);
-  
+
     setShowAnswer(true);
   };
 
@@ -442,12 +261,16 @@ const PracticePage: React.FC = () => {
   };
 
   const handleFinishSession = () => {
-    if (sessionId) {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-      finishSessionMutation.mutate({ sessionId, duration });
-    }
+    if (!sessionId) return;
 
-    // Navigate to results
+    const duration = Math.floor((Date.now() - startTime) / 1000);
+    
+    finishSessionMutation.mutate({
+      sessionId,
+      duration,
+    });
+
+    // Navigate to progress page with results
     const correct = sessionResults.filter(r => r.correct).length;
     const total = sessionResults.length;
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
@@ -455,12 +278,12 @@ const PracticePage: React.FC = () => {
     navigate('/app/progress', {
       state: {
         sessionCompleted: true,
-        wordSource: wordSource,
+        wordSource: 'learned',
         results: {
           correct,
           total,
           accuracy,
-          duration: Math.floor((Date.now() - startTime) / 1000),
+          duration,
         }
       }
     });
@@ -494,58 +317,47 @@ const PracticePage: React.FC = () => {
     handleNextWord();
   };
 
-  const getPracticeTypeLabel = () => {
-    // FIXED: Use actual wordSource, not practiceType for display
-    const labels = {
-      review: '📝 ' + t('session.types.review'),
-      learning: '📚 ' + t('session.types.learning'),
-      mixed: '🔄 ' + t('session.types.mixed'),
-      random: '🎲 ' + t('session.types.random')
-    };
-    return labels[wordSource] || t('session.types.practice');
-  };
+  // Get current word and progress
+  const currentWord = sessionWords[currentWordIndex];
+  const isLastWord = currentWordIndex === sessionWords.length - 1;
+  const progress = sessionWords.length > 0 ? ((currentWordIndex + 1) / sessionWords.length) * 100 : 0;
 
-  const getProgressBarColor = () => {
-    const colors = {
-      review: 'bg-orange-600',
-      learning: 'bg-blue-600', 
-      mixed: 'bg-purple-600',
-      random: 'bg-green-600'
-    };
-    return colors[wordSource] || 'bg-blue-600';
-  };
-
+  // Loading state
   if (startSessionMutation.isPending || stats === undefined) {
     return <LoadingSpinner fullScreen text={t('loading.startingSession')} />;
   }
 
+  // Error state - specifically for no learned words
   if (startSessionMutation.error || !currentWord) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">😕</div>
+        <div className="text-6xl mb-4">📚</div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {practiceType === 'review' 
-            ? (t('errors.noReviewWords') || 'No words available for review')
-            : t('errors.unableToStart')
-          }
+          No Learned Words Available
         </h2>
         <p className="text-gray-600 mb-6">
-          {practiceType === 'review'
-            ? (t('errors.tryLearningFirst') || 'Try learning some words first, then come back to practice!')
-            : t('errors.tryAgain')
-          }
+          Practice mode is only available for words you have already learned. 
+          Complete some learning modules first to unlock practice sessions!
         </p>
-        <button
-          onClick={() => navigate('/app/learn')}
-          className="btn-primary"
-        >
-          {t('actions.backToLearning')}
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate('/app/learning-module')}
+            className="btn-primary flex items-center justify-center space-x-2 mx-auto"
+          >
+            <BookOpenIcon className="h-5 w-5" />
+            <span>Start Learning Module</span>
+          </button>
+          <button
+            onClick={() => navigate('/app/learning')}
+            className="btn-secondary mx-auto block"
+          >
+            Back to Learning
+          </button>
+        </div>
       </div>
     );
   }
 
-  // Rest of the JSX remains exactly the same as in your original file...
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Session Header */}
@@ -553,34 +365,24 @@ const PracticePage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {getPracticeTypeLabel()} {t('session.title')}
+              🏆 Learned Words Practice
             </h1>
             <p className="text-gray-600">
-              {t('session.questionProgress', { 
-                current: currentWordIndex + 1, 
-                total: sessionWords.length 
-              })}
+              Question {currentWordIndex + 1} of {sessionWords.length}
             </p>
-            {/* Show word source indicator */}
             <p className="text-sm text-blue-600 mt-1">
-              {wordSource === 'review' && '📝 ' + t('session.modes.review')}
-              {wordSource === 'learning' && '📚 ' + t('session.modes.learning')}
-              {wordSource === 'mixed' && '🔄 ' + t('session.modes.mixed')}
-              {wordSource === 'random' && '🎲 ' + t('session.modes.random')}
+              📚 Practicing your learned vocabulary
             </p>
           </div>
           
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              {t('session.correct', { 
-                correct: sessionResults.filter(r => r.correct).length, 
-                total: sessionResults.length 
-              })}
+              Correct: {sessionResults.filter(r => r.correct).length} / {sessionResults.length}
             </div>
             <button
               onClick={() => setIsPaused(!isPaused)}
               className="p-2 text-gray-400 hover:text-gray-600"
-              title={isPaused ? t('session.resume') : t('session.pause')}
+              title={isPaused ? 'Resume session' : 'Pause session'}
             >
               {isPaused ? <PlayIcon className="h-5 w-5" /> : <PauseIcon className="h-5 w-5" />}
             </button>
@@ -590,124 +392,103 @@ const PracticePage: React.FC = () => {
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor()}`}
+            className="bg-green-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      {/* Practice Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        {/* Word Display */}
-        <div className="text-center mb-8">
-          {/* Word Image */}
-          {currentWord.image_url && (
-            <div className="w-48 h-32 mx-auto mb-6 rounded-lg overflow-hidden bg-gray-100">
-              <img
-                src={currentWord.image_url}
-                alt={currentWord.kazakh_word}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
+      {/* Main Practice Area */}
+      <div className="bg-white rounded-lg border border-gray-200 p-8">
+        {!showAnswer ? (
+          /* Question Mode */
+          <div className="text-center space-y-6">
+            {/* Word Display */}
+            <div className="space-y-4">
+              <div className="text-4xl font-bold text-gray-900">
+                {currentWord.kazakh_word}
+              </div>
+              {currentWord.kazakh_cyrillic && (
+                <div className="text-2xl text-gray-600">
+                  {currentWord.kazakh_cyrillic}
+                </div>
+              )}
+              <div className="text-sm text-gray-500">
+                Level {currentWord.difficulty_level}
+              </div>
             </div>
-          )}
 
-          {/* Kazakh Word */}
-          <h2 className="kazakh-text text-4xl font-bold text-gray-900 mb-2">
-            {currentWord.kazakh_word}
-          </h2>
-          
-          {/* Cyrillic */}
-          {currentWord.kazakh_cyrillic && (
-            <p className="cyrillic-text text-xl text-gray-600 mb-4">
-              {currentWord.kazakh_cyrillic}
-            </p>
-          )}
-
-          {/* Pronunciation */}
-          {currentWord.pronunciation && (
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <span className="text-gray-600">/{currentWord.pronunciation}/</span>
+            {/* Audio Button */}
+            {currentWord.pronunciation && (
               <button
                 onClick={handlePlayAudio}
-                className="p-1 text-blue-600 hover:text-blue-700"
-                title={t('actions.playAudio')}
+                className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700"
               >
                 <SpeakerWaveIcon className="h-5 w-5" />
+                <span>Play Audio</span>
               </button>
-            </div>
-          )}
+            )}
 
-          {/* Difficulty Badge */}
-          <span className={`badge difficulty-${currentWord.difficulty_level} inline-block mb-6`}>
-            {t('word.level', { level: currentWord.difficulty_level })}
-          </span>
-        </div>
-
-        {/* Answer Section */}
-        {!showAnswer ? (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('question.prompt')}
-              </label>
+            {/* Question */}
+            <div className="space-y-4">
+              <p className="text-lg text-gray-700">
+                What does this word mean in English?
+              </p>
+              
               <input
                 type="text"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && userAnswer.trim()) {
-                    handleSubmitAnswer();
-                  }
-                }}
-                placeholder={t('question.placeholder')}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg"
+                onKeyPress={(e) => e.key === 'Enter' && userAnswer.trim() && handleSubmitAnswer()}
+                placeholder="Type your answer..."
+                className="w-full max-w-md mx-auto px-4 py-3 border border-gray-300 rounded-lg text-center text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isPaused}
                 autoFocus
               />
             </div>
 
-            <div className="flex items-center justify-center space-x-4">
+            {/* Action Buttons */}
+            <div className="flex justify-center space-x-4">
               <button
                 onClick={handleSkip}
-                className="btn-secondary"
+                className="px-6 py-2 text-gray-600 hover:text-gray-800"
+                disabled={isPaused}
               >
-                {t('actions.skip')}
+                Skip
               </button>
               <button
                 onClick={handleSubmitAnswer}
-                disabled={!userAnswer.trim()}
+                disabled={!userAnswer.trim() || isPaused}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('actions.submitAnswer')}
+                Submit Answer
               </button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Answer Result */}
-            <div className="text-center">
+          /* Answer Mode */
+          <div className="text-center space-y-6">
+            {/* Result Display */}
+            <div className="space-y-4">
               {sessionResults[sessionResults.length - 1]?.correct ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center space-x-2 text-green-600">
                     <CheckCircleIcon className="h-8 w-8" />
-                    <span className="text-2xl font-bold">{t('result.correct')} 🎉</span>
+                    <span className="text-2xl font-bold">Correct! 🎉</span>
                   </div>
                   <p className="text-lg text-gray-700">
-                    <strong>{currentWord.kazakh_word}</strong> {t('result.means')} <strong>{currentWord.translation}</strong>
+                    <strong>{currentWord.kazakh_word}</strong> means <strong>{currentWord.translation}</strong>
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center space-x-2 text-red-600">
                     <XCircleIcon className="h-8 w-8" />
-                    <span className="text-2xl font-bold">{t('result.incorrect')}</span>
+                    <span className="text-2xl font-bold">Not quite right</span>
                   </div>
                   <div className="text-lg text-gray-700">
-                    <p>{t('result.yourAnswer')}: <span className="text-red-600">{userAnswer}</span></p>
-                    <p>{t('result.correctAnswer')}: <span className="text-green-600 font-semibold">{currentWord.translation}</span></p>
+                    <p>Your answer: <span className="text-red-600">{userAnswer}</span></p>
+                    <p>Correct answer: <span className="text-green-600 font-semibold">{currentWord.translation}</span></p>
                   </div>
                 </div>
               )}
@@ -722,11 +503,11 @@ const PracticePage: React.FC = () => {
                 {isLastWord ? (
                   <>
                     <TrophyIcon className="h-5 w-5" />
-                    <span>{t('actions.finishSession')}</span>
+                    <span>Finish Practice</span>
                   </>
                 ) : (
                   <>
-                    <span>{t('actions.nextWord')}</span>
+                    <span>Next Word</span>
                     <ArrowRightIcon className="h-5 w-5" />
                   </>
                 )}
@@ -738,23 +519,23 @@ const PracticePage: React.FC = () => {
 
       {/* Session Stats */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('stats.title')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-2xl font-bold text-blue-600">{currentWordIndex + 1}</div>
-            <div className="text-sm text-gray-600">{t('stats.current')}</div>
+            <div className="text-sm text-gray-600">Current</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-green-600">
               {sessionResults.filter(r => r.correct).length}
             </div>
-            <div className="text-sm text-gray-600">{t('stats.correct')}</div>
+            <div className="text-sm text-gray-600">Correct</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-red-600">
               {sessionResults.filter(r => !r.correct).length}
             </div>
-            <div className="text-sm text-gray-600">{t('stats.incorrect')}</div>
+            <div className="text-sm text-gray-600">Incorrect</div>
           </div>
         </div>
       </div>

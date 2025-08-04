@@ -411,7 +411,7 @@ const LearningModulePage: React.FC = () => {
             )}
 
             {/* Learning Statistics */}
-            {learningStats && (
+            {/* {learningStats && (
               <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <ChartBarIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -439,7 +439,7 @@ const LearningModulePage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Words Available Breakdown */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">

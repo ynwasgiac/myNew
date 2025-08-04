@@ -778,3 +778,49 @@ async def count_words_by_status_excluding_learned(
     status_counts['total'] = sum(status_counts.values())
     
     return status_counts
+
+@staticmethod
+async def get_learned_words_for_practice(
+    db: AsyncSession,
+    user_id: int,
+    category_id: Optional[int] = None,
+    difficulty_level_id: Optional[int] = None,
+    limit: int = 50,
+    offset: int = 0
+) -> List[UserWordProgress]:
+    """Get only learned words for practice sessions"""
+    query = (
+        select(UserWordProgress)
+        .options(
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.translations)
+            .selectinload(Translation.language),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.category),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.difficulty_level),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.pronunciations),
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.images)
+        )
+        .where(
+            and_(
+                UserWordProgress.user_id == user_id,
+                UserWordProgress.status == LearningStatus.LEARNED  # Only learned words
+            )
+        )
+    )
+    
+    # Apply filters
+    if category_id:
+        query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
+    
+    if difficulty_level_id:
+        query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == difficulty_level_id)
+    
+    # Add ordering and pagination
+    query = query.order_by(UserWordProgress.last_practiced_at.asc()).offset(offset).limit(limit)
+    
+    result = await db.execute(query)
+    return result.scalars().all()
