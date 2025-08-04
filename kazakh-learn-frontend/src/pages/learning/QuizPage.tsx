@@ -128,9 +128,9 @@ const QuizPage: React.FC = () => {
         
         console.log(`✅ Successfully converted ${quizWords.length} learned words for quiz`);
         
-        // Check if we have enough words for quiz
-        if (quizWords.length < 2) {
-          throw new Error('Need at least 2 learned words to create a quiz. Please learn more words first.');
+        // Check if we have enough words for quiz (need at least 4 for proper quiz)
+        if (quizWords.length < 4) {
+          throw new Error('Need at least 4 learned words to create a proper quiz. Please learn more words first.');
         }
         
         // Shuffle words and select for questions
@@ -145,39 +145,74 @@ const QuizPage: React.FC = () => {
         
         console.log(`🎯 Creating ${wordsForQuestions.length} quiz questions`);
         
-        // Generate quiz questions
+        // 🔥 FIX: Generate quiz questions with proper 4 options from learned words only
         const questions: LocalQuizQuestion[] = wordsForQuestions.map((word, index) => {
-          // Get wrong options from other learned words (excluding the correct answer)
-          const wrongOptions = shuffledWords
-            .filter(w => w.id !== word.id && w.translation !== word.translation)
-            .map(w => w.translation)
-            .slice(0, 3);
+          console.log(`\n📝 Creating question ${index + 1} for word: ${word.kazakh_word}`);
           
-          // If we don't have enough wrong options, pad with generic ones
-          while (wrongOptions.length < 3) {
-            const genericOptions = ['Water', 'House', 'Book', 'Tree', 'Sky', 'Fire', 'Stone', 'Bird'];
-            const unusedGeneric = genericOptions.find(opt => 
-              opt !== word.translation && !wrongOptions.includes(opt)
-            );
-            if (unusedGeneric) {
-              wrongOptions.push(unusedGeneric);
-            } else {
-              wrongOptions.push(`Option ${wrongOptions.length + 1}`);
+          // Get all other words as potential wrong options
+          const otherWords = shuffledWords.filter(w => 
+            w.id !== word.id && 
+            w.translation !== word.translation &&
+            w.translation !== 'No translation'
+          );
+          
+          console.log(`   Available other words: ${otherWords.length}`);
+          
+          // Select exactly 3 wrong options randomly
+          const wrongOptions: string[] = [];
+          const availableWrongOptions = otherWords.map(w => w.translation);
+          
+          // Randomly select 3 unique wrong options
+          while (wrongOptions.length < 3 && availableWrongOptions.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableWrongOptions.length);
+            const wrongOption = availableWrongOptions[randomIndex];
+            
+            if (!wrongOptions.includes(wrongOption)) {
+              wrongOptions.push(wrongOption);
+            }
+            
+            // Remove used option to avoid duplicates
+            availableWrongOptions.splice(randomIndex, 1);
+          }
+          
+          // If we don't have enough wrong options from learned words, 
+          // this means the user doesn't have enough learned words
+          if (wrongOptions.length < 3) {
+            console.warn(`⚠️ Only ${wrongOptions.length} wrong options available for word ${word.kazakh_word}`);
+            // Pad with placeholder options as last resort
+            while (wrongOptions.length < 3) {
+              wrongOptions.push(`Вариант ${wrongOptions.length + 1}`);
             }
           }
           
-          // Create options array with correct answer at random position
-          const correctAnswer = Math.floor(Math.random() * 4);
-          const options = [...wrongOptions];
-          options.splice(correctAnswer, 0, word.translation);
+          // Create final 4 options: 1 correct + 3 wrong
+          const allOptions = [word.translation, ...wrongOptions];
           
-          console.log(`📝 Question ${index + 1}: ${word.kazakh_word} -> ${word.translation}`);
+          // Shuffle all 4 options
+          for (let i = allOptions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+          }
+          
+          // Find where the correct answer ended up after shuffling
+          const correctAnswer = allOptions.indexOf(word.translation);
+          
+          console.log(`   ✅ Correct answer: ${word.translation}`);
+          console.log(`   ❌ Wrong options: ${wrongOptions.join(', ')}`);
+          console.log(`   🎲 All options: ${allOptions.join(', ')}`);
+          console.log(`   📍 Correct index: ${correctAnswer}`);
+          
+          // Verify we have exactly 4 options
+          if (allOptions.length !== 4) {
+            console.error(`❌ ERROR: Expected 4 options, got ${allOptions.length}`);
+            throw new Error(`Quiz generation error: Expected 4 options, got ${allOptions.length}`);
+          }
           
           return {
             id: word.id,
             word: word.kazakh_word,
             translation: word.translation,
-            options: options,
+            options: allOptions,
             correctAnswer: correctAnswer,
             type: 'multiple_choice' as const
           };
@@ -191,7 +226,7 @@ const QuizPage: React.FC = () => {
           session_type: 'learned_quiz',
           total_questions: questions.length
         };
-
+  
       } catch (error) {
         console.error('❌ Failed to generate quiz:', error);
         throw error;
@@ -209,7 +244,7 @@ const QuizPage: React.FC = () => {
       console.error('❌ Quiz generation error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate quiz';
       toast.error(errorMessage);
-    },
+    }
   });
 
   // Submit quiz results mutation

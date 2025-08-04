@@ -1202,38 +1202,90 @@ class KazakhWordCRUD:
 
     @staticmethod
     async def get_random_words(
-    db: AsyncSession,
-    limit: int = 10,
-    difficulty_level_id: Optional[int] = None,
-    category_id: Optional[int] = None,
-    language_code: Optional[str] = None,
-    exclude_word_ids: Optional[List[int]] = None
+        db: AsyncSession,
+        count: int = 10,
+        difficulty_level_id: Optional[int] = None,
+        category_id: Optional[int] = None,
+        language_code: str = "en",
+        exclude_word_ids: Optional[List[int]] = None
     ) -> List[KazakhWord]:
         """
-        Получить случайные слова с исключением уже выбранных
+        Get random words with translations in the specified language.
+        Ensures all returned words have translations in the user's language.
+        Excludes specified word IDs to avoid duplicates.
         """
+        from sqlalchemy import and_, or_, func, select
+        from sqlalchemy.orm import selectinload, joinedload
+        
+        # Base query
         query = select(KazakhWord).options(
-            selectinload(KazakhWord.translations),
+            selectinload(KazakhWord.translations).selectinload(Translation.language),
+            selectinload(KazakhWord.category),
             selectinload(KazakhWord.difficulty_level),
-            selectinload(KazakhWord.category)
+            selectinload(KazakhWord.word_type)
         )
         
-        # Исключаем уже выбранные слова
-        if exclude_word_ids:
-            query = query.where(KazakhWord.id.not_in(exclude_word_ids))
+        # Build filters
+        filters = []
         
-        # Фильтры
         if difficulty_level_id:
-            query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+            filters.append(KazakhWord.difficulty_level_id == difficulty_level_id)
         
         if category_id:
-            query = query.where(KazakhWord.category_id == category_id)
+            filters.append(KazakhWord.category_id == category_id)
         
-        # Случайная сортировка
-        query = query.order_by(func.random()).limit(limit)
+        if exclude_word_ids:
+            filters.append(~KazakhWord.id.in_(exclude_word_ids))
+        
+        # Join with translations to ensure words have translations in the requested language
+        query = query.join(Translation).join(Language).where(
+            Language.language_code == language_code
+        )
+        
+        # Apply additional filters
+        if filters:
+            query = query.where(and_(*filters))
+        
+        # Random order and get more than needed for proper filtering
+        query = query.order_by(func.random()).limit(count * 3)
         
         result = await db.execute(query)
-        return result.scalars().all()
+        words = result.scalars().all()
+        
+        # Post-process to ensure unique translations and proper language filtering
+        filtered_words = []
+        seen_translations = set()
+        
+        for word in words:
+            if len(filtered_words) >= count:
+                break
+                
+            # Find translations in the requested language
+            user_language_translations = [
+                t for t in word.translations 
+                if t.language.language_code == language_code
+            ]
+            
+            if not user_language_translations:
+                continue  # Skip words without translation in user's language
+            
+            # Get the primary translation
+            primary_translation = user_language_translations[0].translation
+            
+            # Skip if we've already seen this translation (avoid duplicates)
+            if primary_translation in seen_translations:
+                continue
+            
+            # Filter word's translations to only include the requested language
+            word.translations = user_language_translations
+            
+            seen_translations.add(primary_translation)
+            filtered_words.append(word)
+            
+            print(f"   ✅ Added random word: {word.kazakh_word} -> {primary_translation}")
+        
+        print(f"🎲 Retrieved {len(filtered_words)} random words with {language_code} translations")
+        return filtered_words
 
     @staticmethod
     async def count_words(

@@ -261,6 +261,10 @@ async def start_batch_quiz(
                 detail="Batch must contain exactly 3 words"
             )
         
+        # Get user's language preference
+        user_language_code = current_user.main_language.language_code if current_user.main_language else 'en'
+        print(f"🌐 User language: {user_language_code}")
+        
         # Create quiz session
         session = await UserLearningSessionCRUD.create_session(
             db, 
@@ -268,40 +272,82 @@ async def start_batch_quiz(
             "quiz_batch"
         )
         
-        # Get words and generate quiz questions
-        quiz_questions = []
-        words = []
-        
+        # Get all words in the batch with their translations
+        batch_words = []
         for word_id in word_ids:
-            word = await KazakhWordCRUD.get_by_id_full(db, word_id, current_user.main_language.language_code)
-            if word:
-                words.append(word)
+            word = await KazakhWordCRUD.get_by_id_full(db, word_id, user_language_code)
+            if word and word.translations:
+                batch_words.append(word)
+        
+        if len(batch_words) != 3:
+            raise HTTPException(
+                status_code=400,
+                detail="Could not find all words in the batch"
+            )
+        
+        # Get additional random words for wrong options (we need more options)
+        additional_random_words = await KazakhWordCRUD.get_random_words(
+            db, 
+            count=10,  # Get 10 random words
+            language_code=user_language_code,
+            exclude_word_ids=word_ids  # Don't include batch words
+        )
+        
+        print(f"📚 Got {len(additional_random_words)} additional random words for wrong options")
         
         # Generate quiz questions
-        for word in words:
-            correct_translation = word.translations[0].translation if word.translations else "No translation"
+        quiz_questions = []
+        
+        for word in batch_words:
+            # Get the correct answer
+            correct_translation = word.translations[0].translation
             
-            # Generate wrong options from other words
-            wrong_options = []
-            for other_word in words:
+            # Collect all possible wrong options
+            all_possible_wrong_options = []
+            
+            # Add other words from the batch as wrong options
+            for other_word in batch_words:
                 if other_word.id != word.id and other_word.translations:
-                    wrong_options.append(other_word.translations[0].translation)
+                    other_translation = other_word.translations[0].translation
+                    if other_translation != correct_translation:
+                        all_possible_wrong_options.append(other_translation)
             
-            # Add more generic wrong options if needed
-            while len(wrong_options) < 3:
-                generic_options = ["water", "house", "tree", "book", "person", "mountain", "river", "food"]
-                for option in generic_options:
-                    if option not in wrong_options and option != correct_translation:
-                        wrong_options.append(option)
-                        break
-                if len(wrong_options) >= 3:
-                    break
+            # Add random words as wrong options
+            for random_word in additional_random_words:
+                if random_word.translations:
+                    random_translation = random_word.translations[0].translation
+                    if (random_translation != correct_translation and 
+                        random_translation not in all_possible_wrong_options):
+                        all_possible_wrong_options.append(random_translation)
             
-            # Create all options and shuffle
-            all_options = [correct_translation] + wrong_options[:3]
+            # Select exactly 3 wrong options
+            if len(all_possible_wrong_options) >= 3:
+                import random
+                wrong_options = random.sample(all_possible_wrong_options, 3)
+            else:
+                # If we don't have enough, take what we have and pad if necessary
+                wrong_options = all_possible_wrong_options[:3]
+                while len(wrong_options) < 3:
+                    wrong_options.append(f"Опция {len(wrong_options) + 1}")
+            
+            # Create the 4 final options: 1 correct + 3 wrong
+            all_options = [correct_translation] + wrong_options
+            
+            # Shuffle all options
             import random
             random.shuffle(all_options)
-            correct_index = all_options.index(correct_translation)
+            
+            # Find the correct answer index after shuffling
+            correct_answer_index = all_options.index(correct_translation)
+            
+            print(f"📝 Quiz for '{word.kazakh_word}':")
+            print(f"   ✅ Correct: {correct_translation}")
+            print(f"   ❌ Wrong: {wrong_options}")
+            print(f"   🎲 All options: {all_options}")
+            print(f"   📍 Correct index: {correct_answer_index}")
+            
+            # Verify we have exactly 4 options
+            assert len(all_options) == 4, f"Expected 4 options, got {len(all_options)}"
             
             quiz_questions.append({
                 "id": word.id,
@@ -309,9 +355,11 @@ async def start_batch_quiz(
                 "kazakh_word": word.kazakh_word,
                 "kazakh_cyrillic": word.kazakh_cyrillic,
                 "options": all_options,
-                "correct_answer_index": correct_index,
+                "correct_answer_index": correct_answer_index,
                 "correct_answer": correct_translation
             })
+        
+        print(f"🎯 Generated {len(quiz_questions)} quiz questions successfully")
         
         return {
             "session_id": session.id,
@@ -323,12 +371,13 @@ async def start_batch_quiz(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error in start_batch_quiz: {e}")
+        print(f"❌ Error in start_batch_quiz: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Failed to start quiz session: {str(e)}"
         )
-
 
 @router.post("/batch/complete")
 async def complete_learning_batch(
