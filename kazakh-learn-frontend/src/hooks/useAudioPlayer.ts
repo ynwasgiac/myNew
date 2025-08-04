@@ -1,4 +1,4 @@
-// src/hooks/useAudioPlayer.ts
+// src/hooks/useAudioPlayer.ts - ИСПРАВЛЕНО: использует sound_url из word_sounds
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { wordsAPI } from '../services/api';
@@ -6,186 +6,216 @@ import type { KazakhWord, KazakhWordSummary, WordSound } from '../types/api';
 
 interface UseAudioPlayerProps {
   wordId: number;
-  word?: KazakhWord | KazakhWordSummary;
+  word?: KazakhWord | KazakhWordSummary | any; // Добавляем any для совместимости с LearningWord
 }
 
 export const useAudioPlayer = ({ wordId, word }: UseAudioPlayerProps) => {
-  // Fetch word sounds from FastAPI
+  // Загружаем звуки слова из FastAPI
   const { data: wordSounds } = useQuery({
     queryKey: ['word-sounds', wordId],
     queryFn: () => wordsAPI.getWordSounds(wordId),
     enabled: !!wordId,
+    staleTime: 5 * 60 * 1000, // 5 минут
+    retry: 1 // Уменьшаем количество повторов для быстрой отработки
   });
 
-  // Generate fallback audio sources
-  const getAudioSources = (originalPath?: string): string[] => {
+  // Генерация fallback источников аудио (только если нет данных из БД)
+  const getAudioFallbackSources = (): string[] => {
     if (!word) return [];
     
     const sources = [];
     
-    // 1. Original database audio
-    if (originalPath) {
-      sources.push(originalPath);
+    // Структурированные пути по категории ID
+    const categoryId = word.category_id || (word.category && word.category.id);
+    if (categoryId) {
+      sources.push(`/audio/words/categories/${categoryId}/${word.id}.mp3`);
+      sources.push(`/audio/words/categories/${categoryId}/${word.id}.wav`);
+      sources.push(`/audio/words/categories/${categoryId}/${word.id}.ogg`);
     }
     
-    // 2. Expected category path
-    const safeWordName = word.kazakh_word.replace(/\s+/g, '_').toLowerCase();
-    const categoryName = 'category' in word ? word.category.category_name : word.category_name;
-    sources.push(`/audio/words/categories/${categoryName.toLowerCase()}/${safeWordName}.mp3`);
+    // Структурированные пути по имени категории
+    const categoryName = word.category_name || (word.category && word.category.category_name);
+    if (categoryName) {
+      const safeWordName = word.kazakh_word.replace(/\s+/g, '_').toLowerCase();
+      const safeCategoryName = categoryName.toLowerCase();
+      
+      sources.push(`/audio/words/categories/${safeCategoryName}/${safeWordName}.mp3`);
+      sources.push(`/audio/words/categories/${safeCategoryName}/${safeWordName}.wav`);
+      sources.push(`/audio/words/categories/${safeCategoryName}/${word.id}.mp3`);
+      sources.push(`/audio/words/categories/${safeCategoryName}/${word.id}.wav`);
+    }
     
-    // 3. Alternative audio formats
-    sources.push(`/audio/words/categories/${categoryName.toLowerCase()}/${safeWordName}.wav`);
-    sources.push(`/audio/words/categories/${categoryName.toLowerCase()}/${safeWordName}.ogg`);
+    // Прямые пути по ID слова
+    sources.push(`/audio/words/${word.id}.mp3`);
+    sources.push(`/audio/words/${word.id}.wav`);
     
-    // 4. Category-specific audio
-    sources.push(`/audio/words/placeholders/${categoryName.toLowerCase()}_sample.mp3`);
+    // Старые форматы для совместимости
+    sources.push(`/audio/${word.id}.mp3`);
     
-    // 5. Default pronunciation audio
+    // Fallback аудио для категории
+    if (categoryName) {
+      sources.push(`/audio/words/placeholders/${categoryName.toLowerCase()}_sample.mp3`);
+    }
+    
+    // Дефолтное произношение
     sources.push(`/audio/words/placeholders/default_pronunciation.mp3`);
     
-    console.log('🎵 Audio sources generated:', sources);
+    console.log(`🎵 Generated ${sources.length} fallback audio sources for word ${word.id}:`, sources);
     return sources;
   };
 
-  // Main play audio function
+  // Основная функция воспроизведения аудио
   const playAudio = async (customMessageSuccess?: string, customMessageError?: string) => {
     if (!word) {
-      console.log('❌ No word data available');
+      console.log('❌ No word data available for audio playback');
+      toast.error('Нет данных о слове');
       return;
     }
 
-    console.log('🎵 Word sounds data:', wordSounds);
+    console.log(`🎵 Starting audio playback for word: ${word.kazakh_word} (id: ${word.id})`);
+    console.log('🎵 WordSounds from database:', wordSounds);
     
-    // Try to get sound from the FastAPI endpoint first, but use React public folder
+    let audioSources: string[] = [];
+    
+    // ПРИОРИТЕТ 1: Используем sound_url из word_sounds (база данных)
     if (wordSounds && wordSounds.length > 0) {
-      const primarySound = wordSounds.find(sound => sound.sound_type === 'pronunciation') || wordSounds[0];
+      console.log('🎵 Using audio from database (word_sounds)');
       
-      let audioUrl: string | null = null;
+      // Предпочитаем звуки с типом 'pronunciation', затем любые другие
+      const pronunciationSounds = wordSounds.filter(sound => sound.sound_type === 'pronunciation');
+      const otherSounds = wordSounds.filter(sound => sound.sound_type !== 'pronunciation');
+      const orderedSounds = [...pronunciationSounds, ...otherSounds];
       
-      if (primarySound.sound_path) {
-        // Use React public folder - just use the sound_path directly
-        audioUrl = primarySound.sound_path; // e.g., "/audio/1.mp3" -> served by React at localhost:3000
-        console.log('🔄 Using React public folder URL:', audioUrl);
-      } else {
-        console.log('❌ No valid audio path found in FastAPI response');
-      }
-      
-      if (audioUrl) {
-        console.log('🔄 Trying React public folder audio URL:', audioUrl);
-        
-        try {
-          const audio = new Audio(audioUrl);
-          
-          // Test if audio can load
-          await new Promise((resolve, reject) => {
-            audio.addEventListener('canplaythrough', () => {
-              console.log(`✅ Audio loaded successfully from React public: ${audioUrl}`);
-              resolve(true);
-            }, { once: true });
-            audio.addEventListener('error', (e) => {
-              console.log(`❌ React public audio failed to load: ${audioUrl}`, e);
-              reject(e);
-            }, { once: true });
-            audio.load();
-          });
-          
-          // If successful, play the audio
-          await audio.play();
-          console.log(`🎵 Audio playing from React public: ${audioUrl}`);
-          toast.success(customMessageSuccess || 'Audio played successfully');
-          return;
-          
-        } catch (error) {
-          console.log(`❌ React public audio failed: ${audioUrl}`, error);
-          // Fall through to fallback system below
+      // Добавляем все sound_url из базы данных
+      orderedSounds.forEach(sound => {
+        if (sound.sound_url) {
+          audioSources.push(sound.sound_url);
+          console.log(`🎵 Added database audio: ${sound.sound_url} (type: ${sound.sound_type})`);
         }
-      }
+      });
     }
-
-    // Fallback to old system if FastAPI sound fails or is not available
-    console.log('🔄 Falling back to old audio system...');
     
-    // Get pronunciation data from word object if available
-    const pronunciation = 'pronunciations' in word ? word.pronunciations?.[0] : undefined;
-    console.log('🗣️ Pronunciation data:', pronunciation);
+    // ПРИОРИТЕТ 2: Пробуем старые pronunciations (если есть в объекте слова)
+    if ('pronunciations' in word && word.pronunciations && word.pronunciations.length > 0) {
+      word.pronunciations.forEach((pronunciation: any) => {
+        if (pronunciation.audio_file_path) {
+          audioSources.push(pronunciation.audio_file_path);
+          console.log(`🎵 Added pronunciation audio: ${pronunciation.audio_file_path}`);
+        }
+      });
+    }
     
-    const fallbackSources = [
-      pronunciation?.audio_file_path,
-      ...getAudioSources()
-    ].filter(Boolean);
+    // ПРИОРИТЕТ 3: Только если нет аудио из БД, используем fallback пути
+    if (audioSources.length === 0) {
+      console.log('🎵 No database audio found, using fallback sources');
+      audioSources = getAudioFallbackSources();
+    }
     
-    // Try each fallback source
-    for (let i = 0; i < fallbackSources.length; i++) {
-      const audioSrc = fallbackSources[i];
-      console.log(`🔄 Trying fallback source ${i + 1}/${fallbackSources.length}: ${audioSrc}`);
+    if (audioSources.length === 0) {
+      console.log('❌ No audio sources available');
+      toast.error(customMessageError || 'Аудио недоступно');
+      return;
+    }
+    
+    // Убираем дубликаты
+    const uniqueSources = audioSources.filter((source, index) => audioSources.indexOf(source) === index);
+    console.log(`🔄 Trying ${uniqueSources.length} unique audio sources`);
+    
+    // Пробуем каждый источник по очереди
+    for (let i = 0; i < uniqueSources.length; i++) {
+      const audioSrc = uniqueSources[i];
+      console.log(`🔄 Attempting source ${i + 1}/${uniqueSources.length}: ${audioSrc}`);
       
       try {
         const audio = new Audio(audioSrc);
         
+        // Проверяем, может ли аудио загрузиться
         await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Audio load timeout'));
+          }, 5000);
+          
           audio.addEventListener('canplaythrough', () => {
+            clearTimeout(timeout);
             resolve(true);
           }, { once: true });
+          
           audio.addEventListener('error', (e) => {
+            clearTimeout(timeout);
             reject(e);
           }, { once: true });
+          
           audio.load();
         });
         
+        // Если загрузилось успешно, воспроизводим
         await audio.play();
-        console.log(`🎵 Fallback audio playing: ${audioSrc}`);
-        toast.success(customMessageSuccess || 'Audio played successfully');
+        console.log(`✅ Successfully played audio from: ${audioSrc}`);
+        toast.success(customMessageSuccess || 'Произношение воспроизведено');
         return;
         
       } catch (error) {
-        console.log(`❌ Fallback source failed: ${audioSrc}`, error);
+        console.log(`❌ Failed to play from: ${audioSrc}`, error);
+        continue;
       }
     }
     
-    // If all sources fail
+    // Если все источники не сработали
     console.log('❌ All audio sources failed');
-    toast.error(customMessageError || 'Audio not available');
+    toast.error(customMessageError || 'Аудио недоступно');
   };
 
-  // Play individual sound from WordSound object
+  // Функция для воспроизведения конкретного звука (WordSound объект)
   const playIndividualSound = async (sound: WordSound, customMessageSuccess?: string, customMessageError?: string) => {
-    console.log('🎵 Individual sound button clicked for sound object:', sound);
+    console.log('🎵 Playing individual sound:', sound);
     
-    let audioUrl: string | null = null;
-    
-    if (sound.sound_path) {
-      // Use React public folder - just use the sound_path directly
-      audioUrl = sound.sound_path; // e.g., "/audio/1.mp3"
-      console.log('🔧 Using React public folder URL:', audioUrl);
-    } else {
-      console.log('❌ No sound_path available');
-      toast.error(customMessageError || 'No audio path available');
+    if (!sound.sound_url) {
+      console.log('❌ No sound_url available in WordSound object');
+      toast.error(customMessageError || 'URL аудио недоступен');
       return;
     }
     
-    console.log('🔄 Trying to play from React public folder:', audioUrl);
+    const audioUrl = sound.sound_url;
+    console.log('🔄 Trying to play individual sound from sound_url:', audioUrl);
     
     try {
       const audio = new Audio(audioUrl);
       
-      audio.addEventListener('error', (e) => {
-        console.log('🔍 Audio error details:', e);
-        console.log('🔍 Audio error type:', audio.error?.code, audio.error?.message);
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Audio timeout'));
+        }, 5000);
+        
+        audio.addEventListener('canplaythrough', () => {
+          clearTimeout(timeout);
+          resolve(true);
+        }, { once: true });
+        
+        audio.addEventListener('error', (e) => {
+          clearTimeout(timeout);
+          reject(e);
+        }, { once: true });
+        
+        audio.load();
       });
       
       await audio.play();
-      console.log(`✅ Successfully played from React public: ${audioUrl}`);
-      toast.success(customMessageSuccess || 'Audio played successfully');
+      console.log(`✅ Successfully played individual sound: ${audioUrl}`);
+      toast.success(customMessageSuccess || 'Аудио воспроизведено');
     } catch (error) {
-      console.log(`❌ Failed to play from React public: ${audioUrl}`, error);
-      toast.error(customMessageError || 'Audio file not found in public folder');
+      console.log(`❌ Failed to play individual sound: ${audioUrl}`, error);
+      toast.error(customMessageError || 'Аудио файл недоступен');
     }
   };
+
+  // Проверка наличия аудио
+  const hasAudio = wordSounds && wordSounds.length > 0;
 
   return {
     wordSounds,
     playAudio,
     playIndividualSound,
-    hasAudio: (wordSounds && wordSounds.length > 0) || false
+    hasAudio: hasAudio || false, // Теперь показываем только если реально есть в БД
+    getAudioSources: getAudioFallbackSources
   };
 };
