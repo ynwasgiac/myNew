@@ -245,7 +245,9 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
               difficulty_level: wordProgress.kazakh_word?.difficulty_level || 1,
               times_seen: wordProgress.times_seen,
               last_practiced: wordProgress.last_practiced_at,
-              status: wordProgress.status
+              status: wordProgress.status,
+              primary_image: wordProgress.kazakh_word?.primary_image,
+              image_url: wordProgress.kazakh_word?.primary_image,
             } as LearningWord;
           });
         
@@ -816,51 +818,45 @@ const OverviewPhase: React.FC<{
   const getImageSources = (word: LearningWord): string[] => {
     const sources: string[] = [];
     
-    // 1. Primary image from database (если есть image_url из API)
-    if (word.image_url) {
+    // ✅ ИСПРАВЛЕНИЕ: Извлекаем primary_image из вложенной структуры
+    const wordData: any = word;
+    let primaryImage = word.primary_image || word.image_url;
+    
+    // Если данные приходят во вложенной структуре kazakh_word
+    if (wordData.kazakh_word && typeof wordData.kazakh_word === 'object') {
+      primaryImage = wordData.kazakh_word.primary_image || wordData.kazakh_word.image_url;
+      // console.log(`🔍 Found nested kazakh_word.primary_image: ${primaryImage}`);
+    }
+    
+    // ✅ ОТЛАДКА: Показываем ВСЕ поля слова
+    // console.log(`🔍 DEBUG Word ${word.id} (${word.kazakh_word}) fields:`, {
+    //   image_url: word.image_url,
+    //   primary_image: word.primary_image,
+    //   extracted_primary_image: primaryImage,
+    //   category_name: word.category_name,
+    //   nested_data: wordData.kazakh_word,
+    //   allFields: Object.keys(word)
+    // });
+    
+    // 1. ✅ ПРИОРИТЕТ: Извлеченный primary_image
+    if (primaryImage) {
+      sources.push(primaryImage);
+      console.log(`🔍 Adding extracted primary_image: ${primaryImage}`);
+    }
+    
+    // 2. ✅ ПРИОРИТЕТ: image_url из API (основное поле)
+    if (word.image_url && word.image_url !== primaryImage) {
       sources.push(word.image_url);
+      console.log(`🔍 Adding image_url: ${word.image_url}`);
     }
     
-    // 2. Primary image field (если есть primary_image)
-    if (word.primary_image) {
+    // 3. ✅ ПРИОРИТЕТ: primary_image (дополнительное поле)
+    if (word.primary_image && word.primary_image !== primaryImage && word.primary_image !== word.image_url) {
       sources.push(word.primary_image);
+      console.log(`🔍 Adding primary_image: ${word.primary_image}`);
     }
     
-    // 3. Expected category path based on file structure
-    const safeWordName = word.kazakh_word.replace(/\s+/g, '_').toLowerCase();
-    const categoryName = word.category_name?.toLowerCase() || 'general';
-    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.jpg`);
-    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.png`);
-    sources.push(`/images/words/categories/${categoryName}/${safeWordName}.webp`);
-    
-    // 4. Alternative naming with word ID
-    sources.push(`/images/words/categories/${categoryName}/${word.id}.jpg`);
-    sources.push(`/images/words/categories/${categoryName}/${word.id}.png`);
-    
-    // 5. Category-specific placeholder
-    const categoryPlaceholders: Record<string, string> = {
-      'animals': '/images/words/placeholders/animals.png',
-      'food': '/images/words/placeholders/food.png',
-      'colors': '/images/words/placeholders/colors.png',
-      'family': '/images/words/placeholders/family.png',
-      'body': '/images/words/placeholders/body.png',
-      'nature': '/images/words/placeholders/nature.png',
-      'objects': '/images/words/placeholders/objects.png',
-      'actions': '/images/words/placeholders/actions.png',
-      'home': '/images/words/placeholders/home.png',
-      'clothes': '/images/words/placeholders/clothes.png',
-      'transport': '/images/words/placeholders/transport.png',
-      'general': '/images/words/placeholders/general.png'
-    };
-    
-    if (categoryPlaceholders[categoryName]) {
-      sources.push(categoryPlaceholders[categoryName]);
-    }
-    
-    // 6. Default placeholder
-    sources.push('/images/words/placeholders/default.png');
-    sources.push('/images/placeholder.png'); // Fallback если нет default.png
-  
+    // console.log(`🔍 Generated ${sources.length} image sources for word ${word.id} (${word.kazakh_word}):`, sources);
     return sources.filter(Boolean); // Remove null/undefined values
   };
 
@@ -929,13 +925,13 @@ const OverviewPhase: React.FC<{
   };
 
   // ✅ ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
-  console.log('🔍 OverviewPhase words:', words.map(w => ({
-    id: w.id,
-    kazakh_word: w.kazakh_word,
-    image_url: w.image_url,
-    primary_image: w.primary_image,
-    category_name: w.category_name
-  })));
+  // console.log('🔍 OverviewPhase words:', words.map(w => ({
+  //   id: w.id,
+  //   kazakh_word: w.kazakh_word,
+  //   image_url: w.image_url,
+  //   primary_image: w.primary_image,
+  //   category_name: w.category_name
+  // })));
 
   return (
     <div className="space-y-8">
@@ -1114,12 +1110,6 @@ const OverviewPhase: React.FC<{
   );
 };
 
-// Practice Phase Component
-// Исправление в LearningModule.tsx - проблема с асинхронностью
-
-// ПРОБЛЕМА: Пока показывается результат, система уже переключилась на следующее слово
-// РЕШЕНИЕ: Зафиксировать данные текущего слова до отправки
-
 // 1. Измените PracticePhase компонент:
 const PracticePhase: React.FC<{
   cycle: LearningCycle;
@@ -1172,14 +1162,14 @@ const PracticePhase: React.FC<{
     setIsCorrect(correct);
     setShowResult(true);
     
-    console.log('============ ОТПРАВКА ОТВЕТА ============');
-    console.log('📍 Индекс текущего слова:', currentWordIndex);
-    console.log('🆔 ID слова:', wordDataToSubmit.id);
-    console.log('🇰🇿 Казахское слово:', wordDataToSubmit.kazakh_word);
-    console.log('🇷🇺 Ожидаемый перевод:', wordDataToSubmit.translation);
-    console.log('👤 Ответ пользователя:', wordDataToSubmit.userAnswer);
-    console.log('✅ Правильно?', wordDataToSubmit.isCorrect);
-    console.log('==========================================');
+    // console.log('============ ОТПРАВКА ОТВЕТА ============');
+    // console.log('📍 Индекс текущего слова:', currentWordIndex);
+    // console.log('🆔 ID слова:', wordDataToSubmit.id);
+    // console.log('🇰🇿 Казахское слово:', wordDataToSubmit.kazakh_word);
+    // console.log('🇷🇺 Ожидаемый перевод:', wordDataToSubmit.translation);
+    // console.log('👤 Ответ пользователя:', wordDataToSubmit.userAnswer);
+    // console.log('✅ Правильно?', wordDataToSubmit.isCorrect);
+    // console.log('==========================================');
     
     try {
       await onAnswer(

@@ -226,8 +226,6 @@ async def start_batch_practice(
                     "kazakh_word": word.kazakh_word,
                     "kazakh_cyrillic": word.kazakh_cyrillic,
                     "translation": primary_translation,
-                    "image_url": getattr(word, 'image_url', None),
-                    # ✅ ДОБАВЛЯЕМ IMAGE_URL В ОТВЕТ
                     "image_url": primary_image,
                     "category_name": word.category.category_name if word.category else "Unknown"
                 })

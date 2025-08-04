@@ -321,6 +321,7 @@ export interface UserWordProgressWithWord extends UserWordProgress {
         translation: string;
         language_code: string;
       }>;
+      primary_image: string | undefined;
     };
 }
 
