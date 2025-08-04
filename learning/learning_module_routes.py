@@ -97,7 +97,19 @@ async def get_words_not_learned(
                         primary_translation = translation.translation
                         break
             
-            # ✅ ДОБАВЛЯЕМ ТОЛЬКО НЕИЗУЧЕННЫЕ СЛОВА
+            # ✅ ИЗВЛЕКАЕМ PRIMARY IMAGE ИЗ БАЗЫ ДАННЫХ
+            primary_image = None
+            if word.images:
+                # Ищем primary image
+                for image in word.images:
+                    if image.is_primary:
+                        primary_image = image.image_url
+                        break
+                # Если primary не найден, берем первое доступное
+                if not primary_image and word.images:
+                    primary_image = word.images[0].image_url
+            
+            # ✅ ДОБАВЛЯЕМ ТОЛЬКО НЕИЗУЧЕННЫЕ СЛОВА С IMAGE_URL
             all_words.append({
                 "id": word.id,
                 "kazakh_word": word.kazakh_word,
@@ -105,14 +117,16 @@ async def get_words_not_learned(
                 "translation": primary_translation,
                 "category_name": word.category.category_name if word.category else "Unknown",
                 "difficulty_level": word.difficulty_level.level_number if word.difficulty_level else 1,
-                "status": word_progress.status.value,  # для отладки
+                "status": word_progress.status.value,
                 "times_seen": word_progress.times_seen,
                 "times_correct": word_progress.times_correct,
                 "times_incorrect": word_progress.times_incorrect,
                 "user_notes": word_progress.user_notes,
                 "added_at": word_progress.added_at.isoformat() if word_progress.added_at else None,
                 "last_practiced_at": word_progress.last_practiced_at.isoformat() if word_progress.last_practiced_at else None,
-                "next_review_at": word_progress.next_review_at.isoformat() if word_progress.next_review_at else None
+                "next_review_at": word_progress.next_review_at.isoformat() if word_progress.next_review_at else None,
+                # ✅ ДОБАВЛЯЕМ IMAGE_URL
+                "image_url": primary_image
             })
             
             # Stop when we have enough words

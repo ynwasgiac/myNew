@@ -678,7 +678,10 @@ async def get_not_learned_words(
             selectinload(UserWordProgress.kazakh_word)
             .selectinload(KazakhWord.category),
             selectinload(UserWordProgress.kazakh_word)
-            .selectinload(KazakhWord.difficulty_level)
+            .selectinload(KazakhWord.difficulty_level),
+            # ✅ ДОБАВЛЯЕМ ЗАГРУЗКУ ИЗОБРАЖЕНИЙ
+            selectinload(UserWordProgress.kazakh_word)
+            .selectinload(KazakhWord.images)
         )
         .where(
             and_(
