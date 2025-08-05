@@ -16,6 +16,7 @@ class NotificationSettingsBase(BaseModel):
 class PreferencesBase(BaseModel):
     """Base preferences schema"""
     quiz_word_count: int = Field(default=5, ge=1, le=50, description="Number of words in quiz (1-50)")
+    practice_word_count: int = Field(default=5, ge=1, le=50, description="Number of words in practice (1-50)")
     daily_goal: int = Field(default=10, ge=1, le=100, description="Daily learning goal (1-100)")
     session_length: int = Field(default=10, ge=5, le=60, description="Session length in minutes (5-60)")
     notification_settings: NotificationSettingsBase = Field(default_factory=NotificationSettingsBase)
@@ -24,6 +25,12 @@ class PreferencesBase(BaseModel):
     def validate_quiz_word_count(cls, v):
         if not isinstance(v, int) or not (1 <= v <= 50):
             raise ValueError('Quiz word count must be between 1 and 50')
+        return v
+
+    @validator('practice_word_count')
+    def validate_practice_word_count(cls, v):
+        if not isinstance(v, int) or not (1 <= v <= 50):
+            raise ValueError('Peactice word count must be between 1 and 50')
         return v
 
     @validator('daily_goal')
@@ -64,6 +71,7 @@ class NotificationSettingsUpdate(BaseModel):
 
 class PreferencesUpdate(BaseModel):
     """Schema for updating user preferences"""
+    practice_word_count: Optional[int] = Field(None, ge=1, le=50, description="Number of words in quiz (1-50)")
     quiz_word_count: Optional[int] = Field(None, ge=1, le=50, description="Number of words in quiz (1-50)")
     daily_goal: Optional[int] = Field(None, ge=1, le=100, description="Daily learning goal (1-100)")
     session_length: Optional[int] = Field(None, ge=5, le=60, description="Session length in minutes (5-60)")
@@ -73,6 +81,12 @@ class PreferencesUpdate(BaseModel):
     def validate_quiz_word_count(cls, v):
         if v is not None and (not isinstance(v, int) or not (1 <= v <= 50)):
             raise ValueError('Quiz word count must be between 1 and 50')
+        return v
+
+    @validator('practice_word_count')
+    def validate_practice_word_count(cls, v):
+        if v is not None and (not isinstance(v, int) or not (1 <= v <= 50)):
+            raise ValueError('Practice word count must be between 1 and 50')
         return v
 
     @validator('daily_goal')
@@ -93,6 +107,10 @@ class PreferencesUpdate(BaseModel):
 class QuizSettingsUpdate(BaseModel):
     """Schema for updating quiz-specific settings"""
     quiz_word_count: int = Field(..., ge=1, le=50, description="Number of words in quiz")
+
+class PracticeSettingsUpdate(BaseModel):
+    """Schema for updating practice-specific settings"""
+    practice_word_count: int = Field(..., ge=1, le=50, description="Number of words in practice")
 
 
 class LearningSettingsUpdate(BaseModel):
@@ -115,6 +133,7 @@ class PreferencesResponse(BaseModel):
     id: int
     user_id: int
     quiz_word_count: int
+    practice_word_count: int
     daily_goal: int
     session_length: int
     notification_settings: Dict[str, Any]
@@ -137,6 +156,7 @@ class PreferencesWithUserResponse(PreferencesResponse):
 class DefaultPreferencesResponse(BaseModel):
     """Response schema for default preferences"""
     quiz_word_count: int
+    practice_word_count: int
     daily_goal: int
     session_length: int
     notification_settings: NotificationSettingsBase
@@ -176,6 +196,7 @@ class PreferencesStatsResponse(BaseModel):
     """Response schema for preferences statistics"""
     total_users_with_preferences: int
     average_quiz_word_count: float
+    average_practice_word_count: float
     average_daily_goal: float
     average_session_length: float
     notification_settings_stats: Dict[str, Dict[str, int]]

@@ -56,6 +56,17 @@ interface WordsAvailable {
   total: number;
 }
 
+
+// User preferences interface
+interface UserPreferences {
+  daily_goal: number;
+}
+
+const getUserPreferences = async (): Promise<UserPreferences> => {
+  const response = await api.get('/api/preferences/');
+  return response.data;
+};
+
 const LearningModulePage: React.FC = () => {
   const { t } = useTranslation(['learning', 'common']);
   const { user } = useAuth();
@@ -68,8 +79,26 @@ const LearningModulePage: React.FC = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<number | undefined>();
   const [isAddingWords, setIsAddingWords] = useState(false);
 
+  // Fetch user preferences using React Query
+  const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
+    queryKey: ['userPreferences'],
+    queryFn: async () => {
+      console.log('🔍 Fetching user preferences...');
+      try {
+        const data = await getUserPreferences();
+        console.log('✅ Preferences loaded successfully:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ Error fetching preferences:', error);
+        throw error;
+      }
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   // Get user's daily goal - simplified to use default value
-  const dailyGoal = 10; // Default daily goal, can be made configurable later
+  const dailyGoal = userPreferences?.daily_goal || 12; // Default daily goal, can be made configurable later
 
   // Fetch daily progress
   const { data: dailyProgress, isLoading: progressLoading } = useQuery({
@@ -207,8 +236,9 @@ const LearningModulePage: React.FC = () => {
       
       // Don't specify count - let it use user's daily goal from settings
       // Or you can explicitly pass dailyGoal if you want to override
-      // params.append('count', dailyGoal.toString());
-      
+      if (dailyGoal) {
+        params.append('count', dailyGoal.toString());
+      }
       if (selectedCategory) {
         params.append('category_id', selectedCategory.toString());
       }
@@ -377,9 +407,34 @@ const LearningModulePage: React.FC = () => {
           <LearningModuleMenu />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Progress & Stats */}
           <div className="space-y-6">
+            {/* Learning Tips */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-500" />
+                {t('learningTips.title')}
+              </h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>{t('learningTips.tip1')}</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>{t('learningTips.tip2')}</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>{t('learningTips.tip3')}</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>{t('learningTips.tip4')}</span>
+                </div>
+              </div>
+            </div>
             {/* Daily Progress */}
             {progressData && (
               <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -596,31 +651,6 @@ const LearningModulePage: React.FC = () => {
 
           {/* Right Column: Additional Info */}
           <div className="space-y-6">
-            {/* Learning Tips */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-500" />
-                {t('learningTips.title')}
-              </h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip1')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip2')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip3')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip4')}</span>
-                </div>
-              </div>
-            </div>
 
             
 

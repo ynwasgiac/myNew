@@ -11,11 +11,14 @@ class UserPreferences(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
 
     # Quiz preferences
-    quiz_word_count = Column(Integer, default=5)
+    quiz_word_count = Column(Integer, default=6)
+
+    # Practice preferences
+    practice_word_count = Column(Integer, default=6)
 
     # Learning preferences
-    daily_goal = Column(Integer, default=10)
-    session_length = Column(Integer, default=10)
+    daily_goal = Column(Integer, default=12)
+    session_length = Column(Integer, default=20)
 
     # Notification preferences (JSON field for flexibility)
     notification_settings = Column(JSON, default={

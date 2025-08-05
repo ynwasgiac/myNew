@@ -292,9 +292,10 @@ async def get_default_preferences():
     """Get default preference values"""
     try:
         return DefaultPreferencesResponse(
-            quiz_word_count=5,
-            daily_goal=10,
-            session_length=10,
+            quiz_word_count=6,
+            practice_word_count=6,
+            daily_goal=12,
+            session_length=12,
             notification_settings=NotificationSettingsCreate()
         )
     except Exception as e:
@@ -393,6 +394,22 @@ async def get_quiz_word_count_distribution(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get quiz distribution: {str(e)}"
+        )
+
+
+@router.get("/admin/practice-distribution")
+async def get_practice_word_count_distribution(
+        current_user: User = Depends(get_current_admin),
+        db: AsyncSession = Depends(get_db)
+):
+    """Get distribution of practice word count preferences (admin only)"""
+    try:
+        distribution = await UserPreferencesCRUD.get_practice_word_count_distribution(db)
+        return {"practice_word_count_distribution": distribution}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get practice distribution: {str(e)}"
         )
 
 

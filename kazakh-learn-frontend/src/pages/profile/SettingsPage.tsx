@@ -37,6 +37,7 @@ interface UserPreferences {
   id: number;
   user_id: number;
   quiz_word_count: number;
+  practice_word_count: number;
   daily_goal: number;
   session_length: number;
   notification_settings: NotificationSettings;
@@ -46,6 +47,7 @@ interface UserPreferences {
 
 interface PreferencesUpdateData {
   quiz_word_count?: number;
+  practice_word_count: number;
   daily_goal?: number;
   session_length?: number;
   notification_settings?: NotificationSettings;
@@ -53,6 +55,7 @@ interface PreferencesUpdateData {
 
 interface DefaultPreferences {
   quiz_word_count: number;
+  practice_word_count: number;
   daily_goal: number;
   session_length: number;
   notification_settings: NotificationSettings;
@@ -72,6 +75,11 @@ const preferencesAPI = {
 
   updateQuizSettings: async (data: { quiz_word_count: number }): Promise<UserPreferences> => {
     const response = await api.patch('/api/preferences/quiz-settings', data);
+    return response.data;
+  },
+
+  updatePracticeSettings: async (data: { practice_word_count: number }): Promise<UserPreferences> => {
+    const response = await api.patch('/api/preferences/practice-settings', data);
     return response.data;
   },
 
@@ -105,7 +113,7 @@ const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   
   // State management
-  const [activeSection, setActiveSection] = useState<'profile' | 'language' | 'learning' | 'quiz' | 'notifications'>('language');
+  const [activeSection, setActiveSection] = useState<'profile' | 'language' | 'learning' | 'practice' | 'quiz' | 'notifications'>('language');
   const [showResetModal, setShowResetModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -179,6 +187,18 @@ const SettingsPage: React.FC = () => {
     },
   });
 
+  // Update practice settings mutation
+  const updatePracticeMutation = useMutation({
+    mutationFn: preferencesAPI.updatePracticeSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-preferences'] });
+      toast.success('Practice settings updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update practice settings: ${error.response?.data?.detail || error.message}`);
+    },
+  });
+
   // Update learning settings mutation
   const updateLearningMutation = useMutation({
     mutationFn: preferencesAPI.updateLearningSettings,
@@ -242,6 +262,13 @@ const SettingsPage: React.FC = () => {
   const handleQuizWordCountChange = (value: number) => {
     if (value >= 1 && value <= 50) {
       updateQuizMutation.mutate({ quiz_word_count: value });
+    }
+  };
+
+  // Handle updates
+  const handlePracticeWordCountChange = (value: number) => {
+    if (value >= 1 && value <= 50) {
+      updatePracticeMutation.mutate({ practice_word_count: value });
     }
   };
 
@@ -337,6 +364,7 @@ const SettingsPage: React.FC = () => {
                 { id: 'language', name: 'Language', icon: GlobeAltIcon },
                 { id: 'learning', name: 'Learning', icon: AcademicCapIcon },
                 { id: 'quiz', name: 'Quiz Settings', icon: PuzzlePieceIcon },
+                { id: 'practice', name: 'Practice Settings', icon: PuzzlePieceIcon },
                 { id: 'notifications', name: 'Notifications', icon: BellIcon },
               ].map((item) => (
                 <button
@@ -547,6 +575,68 @@ const SettingsPage: React.FC = () => {
                       <div className="flex items-center text-sm text-gray-500">
                         <ClockIcon className="h-4 w-4 mr-2" />
                         Last updated: {new Date(preferences.updated_at).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Practice Settings */}
+              {activeSection === 'practice' && preferences && (
+                <div className="p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    Practice Configuration
+                  </h3>
+                  <div className="space-y-6">
+                    {/* Practice Word Count */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Words Per Practice
+                        </label>
+                        <span className="text-sm text-gray-500">
+                          Current: {preferences.practice_word_count} words
+                          {defaultValues && (
+                            <span className="ml-2 text-xs text-gray-400">
+                              (Default: {defaultValues.practice_word_count})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <input
+                          type="range"
+                          min="1"
+                          max="50"
+                          value={preferences.practice_word_count}
+                          onChange={(e) => handlePracticeWordCountChange(parseInt(e.target.value))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                          disabled={updatePracticeMutation.isPending}
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>1</span>
+                          <span>25</span>
+                          <span>50</span>
+                        </div>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Number of words to include in each practice session
+                      </p>
+                    </div>
+
+                    {/* Info Box */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                      <div className="flex">
+                        <QuestionMarkCircleIcon className="h-5 w-5 text-blue-400" />
+                        <div className="ml-3">
+                          <h4 className="text-sm font-medium text-blue-800">
+                            Practice Tips
+                          </h4>
+                          <p className="mt-1 text-sm text-blue-700">
+                            Start with fewer words (5-10) if you're new to learning. 
+                            Increase the count as you become more comfortable with the vocabulary.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -8,7 +8,7 @@ from database.user_preferences_models import UserPreferences
 from database.auth_models import User
 from database.user_preferences_schemas import (
     PreferencesCreate, PreferencesUpdate, NotificationSettingsUpdate,
-    QuizSettingsUpdate, LearningSettingsUpdate
+    QuizSettingsUpdate, LearningSettingsUpdate, PracticeSettingsUpdate
 )
 
 
@@ -27,6 +27,7 @@ class UserPreferencesCRUD:
         new_preferences = UserPreferences(
             user_id=user_id,
             quiz_word_count=preferences_data.quiz_word_count,
+            practice_word_count=preferences_data.practice_word_count,
             daily_goal=preferences_data.daily_goal,
             session_length=preferences_data.session_length,
             notification_settings=preferences_data.notification_settings.dict()
@@ -45,9 +46,10 @@ class UserPreferencesCRUD:
         """Create default preferences for a user"""
         default_preferences = UserPreferences(
             user_id=user_id,
-            quiz_word_count=5,
-            daily_goal=10,
-            session_length=10,
+            quiz_word_count=6,
+            practice_word_count=6,
+            daily_goal=12,
+            session_length=20,
             notification_settings={
                 'daily_reminders': True,
                 'review_reminders': True,
@@ -127,6 +129,8 @@ class UserPreferencesCRUD:
 
         if preferences_data.quiz_word_count is not None:
             update_data['quiz_word_count'] = preferences_data.quiz_word_count
+        if preferences_data.practice_word_count is not None:
+            update_data['practice_word_count'] = preferences_data.practice_word_count
         if preferences_data.daily_goal is not None:
             update_data['daily_goal'] = preferences_data.daily_goal
         if preferences_data.session_length is not None:
@@ -164,6 +168,24 @@ class UserPreferencesCRUD:
             .where(UserPreferences.user_id == user_id)
             .values(
                 quiz_word_count=quiz_settings.quiz_word_count,
+                updated_at=datetime.utcnow()
+            )
+        )
+        await db.commit()
+        return await UserPreferencesCRUD.get_preferences_by_user_id(db, user_id)
+
+    @staticmethod
+    async def update_practice_settings(
+            db: AsyncSession,
+            user_id: int,
+            practice_settings: PracticeSettingsUpdate
+    ) -> Optional[UserPreferences]:
+        """Update practice-specific settings"""
+        await db.execute(
+            update(UserPreferences)
+            .where(UserPreferences.user_id == user_id)
+            .values(
+                practice_word_count=practice_settings.practice_word_count,
                 updated_at=datetime.utcnow()
             )
         )
@@ -278,6 +300,8 @@ class UserPreferencesCRUD:
 
         if preferences_data.quiz_word_count is not None:
             update_data['quiz_word_count'] = preferences_data.quiz_word_count
+        if preferences_data.practice_word_count is not None:
+            update_data['practice_word_count'] = preferences_data.practice_word_count
         if preferences_data.daily_goal is not None:
             update_data['daily_goal'] = preferences_data.daily_goal
         if preferences_data.session_length is not None:
@@ -323,6 +347,7 @@ class UserPreferencesCRUD:
             return {
                 'total_users_with_preferences': 0,
                 'average_quiz_word_count': 0,
+                'average_practice_word_count': 0,
                 'average_daily_goal': 0,
                 'average_session_length': 0,
                 'most_common_interface_language': 'en',
@@ -334,11 +359,12 @@ class UserPreferencesCRUD:
         avg_result = await db.execute(
             select(
                 func.avg(UserPreferences.quiz_word_count),
+                func.avg(UserPreferences.practice_word_count),
                 func.avg(UserPreferences.daily_goal),
                 func.avg(UserPreferences.session_length)
             )
         )
-        avg_quiz, avg_goal, avg_session = avg_result.first()
+        avg_quiz, avg_practice, avg_goal, avg_session = avg_result.first()
 
         # Language distribution
         lang_result = await db.execute(
@@ -355,6 +381,7 @@ class UserPreferencesCRUD:
         return {
             'total_users_with_preferences': total_count,
             'average_quiz_word_count': round(avg_quiz, 2) if avg_quiz else 0,
+            'average_practice_word_count': round(avg_practice, 2) if avg_practice else 0,
             'average_daily_goal': round(avg_goal, 2) if avg_goal else 0,
             'average_session_length': round(avg_session, 2) if avg_session else 0,
             'notification_settings_stats': {}  # Would need JSON aggregation for detailed stats
@@ -399,5 +426,20 @@ class UserPreferencesCRUD:
             )
             .group_by(UserPreferences.quiz_word_count)
             .order_by(UserPreferences.quiz_word_count)
+        )
+        return dict(result.all())
+
+    @staticmethod
+    async def get_practice_word_count_distribution(
+            db: AsyncSession
+    ) -> Dict[int, int]:
+        """Get distribution of pracice word count preferences"""
+        result = await db.execute(
+            select(
+                UserPreferences.practice_word_count,
+                func.count(UserPreferences.id)
+            )
+            .group_by(UserPreferences.practice_word_count)
+            .order_by(UserPreferences.practice_word_count)
         )
         return dict(result.all())
