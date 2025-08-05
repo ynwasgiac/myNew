@@ -12,7 +12,7 @@ from database.user_preferences_schemas import (
 
     # Update schemas
     PreferencesUpdate, NotificationSettingsUpdate, QuizSettingsUpdate,
-    LearningSettingsUpdate,
+    LearningSettingsUpdate, PracticeSettingsUpdate,
 
     # Response schemas
     PreferencesResponse, PreferencesWithUserResponse, NotificationSettingsResponse,
@@ -173,6 +173,37 @@ async def update_quiz_settings(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update quiz settings: {str(e)}"
+        )
+
+@router.patch("/practice-settings", response_model=PreferencesResponse)
+async def update_practice_settings(
+        practice_settings: PracticeSettingsUpdate,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+):
+    """Update practice-specific settings"""
+    try:
+        # Ensure preferences exist
+        await UserPreferencesCRUD.get_or_create_preferences(db, current_user.id)
+
+        # Update practice settings
+        updated_preferences = await UserPreferencesCRUD.update_practice_settings(
+            db, current_user.id, practice_settings
+        )
+
+        if not updated_preferences:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Failed to update practice settings"
+            )
+
+        return PreferencesResponse.from_orm(updated_preferences)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update practice settings: {str(e)}"
         )
 
 
