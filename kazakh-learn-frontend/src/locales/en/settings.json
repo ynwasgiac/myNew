@@ -1,55 +1,70 @@
 {
-    "page": {
-      "title": "Settings"
-    },
-    "sections": {
-      "languagePreferences": "Language Preferences",
-      "notifications": "Notifications",
-      "learningSettings": "Learning Settings"
-    },
-    "language": {
-      "interfaceLanguage": "Interface Language",
-      "description": "This will be used for the app interface and word translations.",
-      "clearPreference": "Clear preference",
-      "languages": {
-        "english": "English",
-        "russian": "Русский (Russian)",
-        "kazakh": "Қазақша (Kazakh)"
-      }
-    },
-    "notifications": {
-      "dailyReminders": {
-        "title": "Daily Reminders",
-        "description": "Get reminded to practice daily"
-      },
-      "reviewReminders": {
-        "title": "Review Reminders", 
-        "description": "Get notified when words need review"
-      },
-      "achievementNotifications": {
-        "title": "Achievement Notifications",
-        "description": "Get notified about achievements and milestones"
-      },
-      "comingSoon": "🚧 Notification features are coming soon!"
-    },
-    "learning": {
-      "dailyGoal": "Daily Learning Goal",
-      "sessionLength": "Practice Session Length",
-      "goals": {
-        "5words": "5 words per day",
-        "10words": "10 words per day", 
-        "15words": "15 words per day",
-        "20words": "20 words per day"
-      },
-      "sessions": {
-        "10words": "10 words",
-        "15words": "15 words",
-        "20words": "20 words", 
-        "25words": "25 words"
-      },
-      "comingSoon": "🚧 Advanced learning settings are coming soon!"
-    },
-    "messages": {
-      "languageUpdateFailed": "Failed to update language preference"
+  "page": {
+    "title": "Settings"
+  },
+  "sections": {
+    "languagePreferences": "Language Preferences",
+    "notifications": "Notifications",
+    "learningSettings": "Learning Settings",
+    "quizSettings": "Quiz Settings"
+  },
+  "language": {
+    "interfaceLanguage": "Interface Language",
+    "description": "This will be used for the app interface and word translations.",
+    "clearPreference": "Clear preference",
+    "languages": {
+      "english": "English",
+      "russian": "Русский (Russian)",
+      "kazakh": "Қазақша (Kazakh)"
     }
+  },
+  "notifications": {
+    "dailyReminders": {
+      "title": "Daily Reminders",
+      "description": "Get reminded to practice daily"
+    },
+    "reviewReminders": {
+      "title": "Review Reminders", 
+      "description": "Get notified when words need review"
+    },
+    "achievementNotifications": {
+      "title": "Achievement Notifications",
+      "description": "Get notified about achievements and milestones"
+    },
+    "comingSoon": "🚧 Notification features are coming soon!"
+  },
+  "learning": {
+    "dailyGoal": "Daily Learning Goal",
+    "sessionLength": "Practice Session Length",
+    "goals": {
+      "5words": "5 words per day",
+      "10words": "10 words per day", 
+      "15words": "15 words per day",
+      "20words": "20 words per day"
+    },
+    "sessions": {
+      "10words": "10 words",
+      "15words": "15 words",
+      "20words": "20 words", 
+      "25words": "25 words"
+    },
+    "comingSoon": "🚧 Advanced learning settings are coming soon!"
+  },
+  "quiz": {
+    "defaultWordCount": "Default Quiz Length",
+    "description": "Set your preferred number of questions for quiz sessions",
+    "wordCounts": {
+      "5words": "5 questions",
+      "10words": "10 questions",
+      "15words": "15 questions",
+      "20words": "20 questions",
+      "25words": "25 questions",
+      "30words": "30 questions"
+    }
+  },
+  "messages": {
+    "languageUpdateFailed": "Failed to update language preference",
+    "settingsUpdateSuccess": "Settings updated successfully",
+    "settingsUpdateFailed": "Failed to update settings"
   }
+}

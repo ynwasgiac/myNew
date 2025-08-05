@@ -347,3 +347,33 @@ class ReviewScheduleResponse(BaseModel):
     due_this_week: int
     overdue: int
     next_review_date: Optional[datetime] = None
+
+class UserPreferencesBase(BaseModel):
+    quiz_word_count: int = Field(default=5, ge=1, le=50)
+    daily_goal: int = Field(default=10, ge=1, le=50)
+    session_length: int = Field(default=10, ge=5, le=50)
+    interface_language: Optional[str] = None
+    notification_settings: Optional[Dict[str, bool]] = Field(default={
+        'daily_reminders': True,
+        'review_reminders': True,
+        'achievement_notifications': True
+    })
+
+class UserPreferencesCreate(UserPreferencesBase):
+    pass
+
+class UserPreferencesUpdate(BaseModel):
+    quiz_word_count: Optional[int] = Field(None, ge=1, le=50)
+    daily_goal: Optional[int] = Field(None, ge=1, le=50)
+    session_length: Optional[int] = Field(None, ge=5, le=50)
+    interface_language: Optional[str] = None
+    notification_settings: Optional[Dict[str, bool]] = None
+
+class UserPreferencesResponse(UserPreferencesBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

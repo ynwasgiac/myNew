@@ -1,5 +1,5 @@
 # database/auth_models.py
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Enum, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .connection import Base
@@ -11,6 +11,35 @@ class UserRole(enum.Enum):
     WRITER = "writer"
     ADMIN = "admin"
 
+class UserPreferences(Base):
+    __tablename__ = "user_preferences"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    
+    # Quiz preferences
+    quiz_word_count = Column(Integer, default=5)
+    
+    # Learning preferences  
+    daily_goal = Column(Integer, default=10)
+    session_length = Column(Integer, default=10)
+    
+    # Interface preferences
+    interface_language = Column(String(10), default='en')
+    
+    # Notification preferences (JSON field for flexibility)
+    notification_settings = Column(JSON, default={
+        'daily_reminders': True,
+        'review_reminders': True,
+        'achievement_notifications': True
+    })
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    user = relationship("User", back_populates="preferences")
 
 class User(Base):
     __tablename__ = "users"
@@ -41,6 +70,7 @@ class User(Base):
     # Relationships - ИСПРАВЛЕНО: добавлены все необходимые связи
     sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
     main_language = relationship("Language", foreign_keys=[main_language_id])
+    preferences = relationship("UserPreferences", back_populates="user", uselist=False)
 
     # Learning progress relationships - ДОБАВЛЕНО
     word_progress = relationship("UserWordProgress", back_populates="user", cascade="all, delete-orphan")
