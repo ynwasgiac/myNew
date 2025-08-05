@@ -21,15 +21,3 @@ export interface User {
       session_length?: number;
     };
   }
-  
-  export interface UserPreferences {
-    quiz_word_count: number;
-    daily_goal: number;
-    session_length: number;
-    interface_language: string;
-    notification_settings?: {
-      daily_reminders: boolean;
-      review_reminders: boolean;
-      achievement_notifications: boolean;
-    };
-  }

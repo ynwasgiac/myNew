@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 from .connection import Base
 
+
 class UserPreferences(Base):
     __tablename__ = "user_preferences"
 
@@ -16,14 +17,13 @@ class UserPreferences(Base):
     daily_goal = Column(Integer, default=10)
     session_length = Column(Integer, default=10)
 
-    # Interface preferences
-    interface_language = Column(String(10), default='en')
-
     # Notification preferences (JSON field for flexibility)
     notification_settings = Column(JSON, default={
         'daily_reminders': True,
         'review_reminders': True,
-        'achievement_notifications': True
+        'achievement_notifications': True,
+        'streak_reminders': True,
+        'goal_reminders': True
     })
 
     # Timestamps
