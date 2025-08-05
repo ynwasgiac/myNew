@@ -45,6 +45,185 @@ def calculate_spaced_repetition(progress, was_correct: bool) -> Dict[str, Any]:
 
 # ===== LEARNING MODULE SPECIFIC ENDPOINTS =====
 
+@router.get("/words/learned")
+async def get_words_learned(
+    limit: int = Query(20, ge=1, le=100, description="Number of learned words to return"),
+    category_id: Optional[int] = Query(None, description="Filter by category ID"),
+    difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level"),
+    include_mastered: bool = Query(True, description="Include mastered words along with learned"),
+    language_code: Optional[str] = Query(None, description="Language code for translations (uses user preference if not specified)"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get random learned words by the user (status: learned or mastered)
+    
+    Returns random learned words with their progress information, filtered as requested.
+    Similar to /words/not-learned but for words that have been completed.
+    Uses user's preferred language for translations.
+    """
+    try:
+        # Use user's preferred language if not specified
+        if not language_code:
+            from database.main import get_user_language_preference
+            language_code = get_user_language_preference(current_user)
+        
+        print(f"🎓 Getting random learned words for user {current_user.id}")
+        print(f"   Parameters: limit={limit}, category_id={category_id}, difficulty_level_id={difficulty_level_id}")
+        print(f"   Include mastered: {include_mastered}")
+        print(f"   Using language: {language_code}")
+        
+        # Determine which statuses to include
+        learned_statuses = [LearningStatus.LEARNED]
+        if include_mastered:
+            learned_statuses.append(LearningStatus.MASTERED)
+        
+        print(f"   Looking for statuses: {[status.value for status in learned_statuses]}")
+        
+        # Build query for learned words with all necessary relationships
+        query = (
+            select(UserWordProgress)
+            .options(
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.translations)
+                .selectinload(Translation.language),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.category),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.difficulty_level),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.word_type),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.pronunciations),
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.images)
+            )
+            .where(
+                and_(
+                    UserWordProgress.user_id == current_user.id,
+                    UserWordProgress.status.in_(learned_statuses)
+                )
+            )
+        )
+        
+        # Apply category filter if specified
+        if category_id:
+            query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
+        
+        # Apply difficulty filter if specified  
+        if difficulty_level_id:
+            query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == difficulty_level_id)
+        
+        # RANDOM ORDER - this is the key difference from other endpoints
+        query = query.order_by(func.random()).limit(limit)
+        
+        # Execute query
+        result = await db.execute(query)
+        learned_words_progress = result.scalars().all()
+        
+        print(f"📊 Found {len(learned_words_progress)} learned words")
+        
+        if not learned_words_progress:
+            return {
+                "words": [],
+                "total_words": 0,
+                "message": "No learned words found. Complete some learning sessions to see your progress here!",
+                "filters_applied": {
+                    "category_id": category_id,
+                    "difficulty_level_id": difficulty_level_id,
+                    "include_mastered": include_mastered
+                }
+            }
+        
+        # Format the response similar to not-learned endpoint
+        formatted_words = []
+        for progress in learned_words_progress:
+            word = progress.kazakh_word
+            
+            # Get primary translation in user's preferred language
+            primary_translation = None
+            # First try user's preferred language
+            for translation in word.translations:
+                if translation.language and translation.language.language_code == language_code:
+                    primary_translation = translation.translation
+                    break
+            
+            # Fallback to English if user's language not available
+            if not primary_translation:
+                for translation in word.translations:
+                    if translation.language and translation.language.language_code == "en":
+                        primary_translation = translation.translation
+                        break
+            
+            # Final fallback to any available translation
+            if not primary_translation and word.translations:
+                primary_translation = word.translations[0].translation
+            
+            # Get primary image URL
+            primary_image = None
+            if word.images:
+                primary_image = word.images[0].image_url
+            
+            # Calculate accuracy percentage
+            total_attempts = progress.times_correct + progress.times_incorrect
+            accuracy = (progress.times_correct / total_attempts * 100) if total_attempts > 0 else 0
+            
+            formatted_word = {
+                "id": word.id,
+                "kazakh_word": word.kazakh_word,
+                "kazakh_cyrillic": word.kazakh_cyrillic,
+                "translation": primary_translation or "No translation available",
+                "pronunciation": word.pronunciations[0].pronunciation if word.pronunciations else None,
+                "image_url": primary_image,
+                "status": progress.status.value,
+                "times_seen": progress.times_seen,
+                "times_correct": progress.times_correct,
+                "times_incorrect": progress.times_incorrect,
+                "accuracy_percentage": round(accuracy, 1),
+                "difficulty_level": word.difficulty_level.level_name if word.difficulty_level else None,
+                "category_name": word.category.category_name if word.category else None,
+                "word_type_name": word.word_type.type_name if word.word_type else None,
+                "user_notes": progress.user_notes,
+                "learned_at": progress.updated_at.isoformat() if progress.updated_at else None,
+                "last_practiced_at": progress.last_practiced_at.isoformat() if progress.last_practiced_at else None,
+                "next_review_at": progress.next_review_at.isoformat() if progress.next_review_at else None
+            }
+            formatted_words.append(formatted_word)
+        
+        # Get status breakdown for additional info
+        status_breakdown = {}
+        for progress in learned_words_progress:
+            status = progress.status.value
+            status_breakdown[status] = status_breakdown.get(status, 0) + 1
+        
+        print(f"📊 Learned Words Result:")
+        print(f"   - Words returned: {len(formatted_words)}")
+        print(f"   - Status breakdown: {status_breakdown}")
+        
+        return {
+            "words": formatted_words,
+            "total_words": len(formatted_words),
+            "limit": limit,
+            "random_selection": True,
+            "status_breakdown": status_breakdown,
+            "filters_applied": {
+                "category_id": category_id,
+                "difficulty_level_id": difficulty_level_id,
+                "include_mastered": include_mastered,
+                "language_code": language_code
+            },
+            "message": f"Retrieved {len(formatted_words)} random learned words"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error in get_words_learned: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get learned words: {str(e)}"
+        )
+
 @router.get("/words/not-learned")
 async def get_words_not_learned(
     daily_goal: int = Query(10, ge=3, le=50, description="Daily learning goal from user settings"),
