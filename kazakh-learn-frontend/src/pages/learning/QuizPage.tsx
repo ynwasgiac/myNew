@@ -17,6 +17,7 @@ import { learningAPI } from '../../services/learningAPI';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import api from '../../services/api';
 
 // Define local interfaces for quiz-specific data
 interface QuizResult {
@@ -45,16 +46,33 @@ interface QuizWord {
   difficulty_level: number;
 }
 
+// User preferences interface
+interface UserPreferences {
+  id: number;
+  user_id: number;
+  quiz_word_count: number;
+  daily_goal: number;
+  session_length: number;
+  notification_settings: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+const getUserPreferences = async (): Promise<UserPreferences> => {
+  const response = await api.get('/api/preferences/');
+  return response.data;
+};
+
 const QuizPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation('quiz');
   const [searchParams] = useSearchParams();
+  
 
   // URL parameters
   const categoryId = searchParams.get('category') ? parseInt(searchParams.get('category')!) : undefined;
   const difficultyLevelId = searchParams.get('difficulty') ? parseInt(searchParams.get('difficulty')!) : undefined;
-  const questionCount = parseInt(searchParams.get('count') || '5');
 
   // State - using LocalQuizQuestion for internal state
   const [questions, setQuestions] = useState<LocalQuizQuestion[]>([]);
@@ -64,6 +82,26 @@ const QuizPage: React.FC = () => {
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [sessionId, setSessionId] = useState<number | undefined>(undefined);
+
+  // Fetch user preferences using React Query
+  const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
+    queryKey: ['userPreferences'],
+    queryFn: async () => {
+      console.log('🔍 Fetching user preferences...');
+      try {
+        const data = await getUserPreferences();
+        console.log('✅ Preferences loaded successfully:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ Error fetching preferences:', error);
+        throw error;
+      }
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
+  const questionCount = userPreferences?.quiz_word_count || 9;
 
   // Get user's preferred language
   const getUserLanguage = () => {
@@ -393,7 +431,7 @@ const QuizPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-6 mb-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">{score}%</div>
-              <div className="text-sm text-gray-600">Score</div>
+              <div className="text-sm text-gray-600">{t('progress.score')}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">{correct}</div>
@@ -492,7 +530,10 @@ const QuizPage: React.FC = () => {
           
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              Score: {results.filter(r => r.isCorrect).length} / {results.length}
+              {t('progress.score', {
+                correct: results.filter(r => r.isCorrect).length,
+                total:   questionCount,
+              })}
             </div>
             <ClockIcon className="h-5 w-5 text-gray-400" />
           </div>
