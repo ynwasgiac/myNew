@@ -172,6 +172,32 @@ export const learningAPI = {
     return response.data;
   },
   
+  async getLearnedWords(filters: LearningAPIFilters & { 
+    include_mastered?: boolean; 
+    language_code?: string; 
+  } = {}): Promise<UserWordProgressWithWord[]> {
+    const params = new URLSearchParams();
+    
+    // Required/recommended parameters based on working curl
+    if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
+    if (filters.include_mastered !== undefined) params.append('include_mastered', filters.include_mastered.toString());
+    if (filters.language_code) params.append('language_code', filters.language_code);
+    
+    // Optional filters
+    if (filters.category_id !== undefined) params.append('category_id', filters.category_id.toString());
+    if (filters.difficulty_level_id !== undefined) params.append('difficulty_level_id', filters.difficulty_level_id.toString());
+    if (filters.offset !== undefined) params.append('offset', filters.offset.toString());
+  
+    const response = await api.get(`/learning-module/words/learned?${params.toString()}`);
+    
+    // 🔍 DEBUG: Log the raw response to see the actual structure
+    console.log('🔍 Raw backend response:', JSON.stringify(response.data, null, 2));
+    
+    // The backend returns an object with { words: [], total_words: number, ... }
+    // We need to extract the words array
+    return response.data.words || [];
+  },
+  
 };
 
 export default learningAPI;

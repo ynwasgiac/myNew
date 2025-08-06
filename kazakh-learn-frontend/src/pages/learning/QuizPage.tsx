@@ -1,4 +1,4 @@
-// src/pages/learning/QuizPage.tsx - With proper translations
+// src/pages/learning/QuizPage.tsx - Updated to use getLearnedWords function
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -69,7 +69,6 @@ const QuizPage: React.FC = () => {
   const { t } = useTranslation('quiz');
   const [searchParams] = useSearchParams();
   
-
   // URL parameters
   const categoryId = searchParams.get('category') ? parseInt(searchParams.get('category')!) : undefined;
   const difficultyLevelId = searchParams.get('difficulty') ? parseInt(searchParams.get('difficulty')!) : undefined;
@@ -114,20 +113,22 @@ const QuizPage: React.FC = () => {
     queryFn: learningAPI.getStats,
   });
 
-  // 🎯 MODIFIED: Only get learned words for quiz
+  // 🎯 UPDATED: Use the new getLearnedWords function
   const generateQuizMutation = useMutation({
     mutationFn: async () => {
       console.log('🧠 Starting quiz generation with LEARNED words only...');
       console.log('Quiz parameters:', { questionCount, categoryId, difficultyLevelId });
       
       try {
-        // Get learned words directly using the learning API
-        console.log('📚 Fetching learned words for quiz...');
+        // 🆕 Use the new getLearnedWords function with correct parameters
+        console.log('📚 Fetching learned words using new getLearnedWords function...');
         
-        const learnedWordsResponse = await learningAPI.getProgress({
-          status: 'learned', // Only learned words
-          category_id: categoryId,
+        const learnedWordsResponse = await learningAPI.getLearnedWords({
           limit: 100, // Get all learned words
+          include_mastered: true, // Include mastered words for quiz
+          language_code: getUserLanguage(), // User's preferred language
+          category_id: categoryId,
+          difficulty_level_id: difficultyLevelId,
           offset: 0
         });
         
@@ -139,28 +140,18 @@ const QuizPage: React.FC = () => {
         }
         
         // Convert to quiz word format
-        const quizWords: QuizWord[] = learnedWordsResponse.map(progress => {
-          const word = progress.kazakh_word;
-          
-          // Get translation in user's preferred language
-          const userLanguageCode = getUserLanguage();
-          let translation = 'No translation';
-          
-          if (word.translations && word.translations.length > 0) {
-            const userLangTranslation = word.translations.find((t: any) => 
-              t.language_code === userLanguageCode
-            );
-            translation = userLangTranslation?.translation || word.translations[0].translation;
-          }
+        const quizWords: QuizWord[] = learnedWordsResponse.map((wordData: any) => {
+          // The backend response is already in the correct format - no nested structure!
+          console.log('🔍 Processing word data:', wordData);
           
           return {
-            id: word.id,
-            kazakh_word: word.kazakh_word,
-            kazakh_cyrillic: word.kazakh_cyrillic,
-            translation: translation,
-            pronunciation: undefined,
-            image_url: undefined,
-            difficulty_level: word.difficulty_level || 1,
+            id: wordData.id,
+            kazakh_word: wordData.kazakh_word,
+            kazakh_cyrillic: wordData.kazakh_cyrillic,
+            translation: wordData.translation, // Already in user's preferred language from backend
+            pronunciation: wordData.pronunciation,
+            image_url: wordData.image_url,
+            difficulty_level: 1, // Backend returns string, we need number
           };
         });
         
@@ -171,86 +162,56 @@ const QuizPage: React.FC = () => {
           throw new Error('Need at least 4 learned words to create a proper quiz. Please learn more words first.');
         }
         
-        // Shuffle words and select for questions
-        const shuffledWords = [...quizWords];
-        for (let i = shuffledWords.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
-        }
+        // Limit the number of questions based on user preferences and available words
+        const maxQuestions = Math.min(questionCount, quizWords.length);
+        const selectedWords = quizWords
+          .sort(() => Math.random() - 0.5) // Shuffle array
+          .slice(0, maxQuestions);
         
-        // Limit to requested question count or available words
-        const wordsForQuestions = shuffledWords.slice(0, Math.min(questionCount, shuffledWords.length));
+        console.log(`🎲 Selected ${selectedWords.length} words for quiz out of ${quizWords.length} available`);
         
-        console.log(`🎯 Creating ${wordsForQuestions.length} quiz questions`);
-        
-        // 🔥 FIX: Generate quiz questions with proper 4 options from learned words only
-        const questions: LocalQuizQuestion[] = wordsForQuestions.map((word, index) => {
-          console.log(`\n📝 Creating question ${index + 1} for word: ${word.kazakh_word}`);
+        // Generate quiz questions
+        const questions: LocalQuizQuestion[] = selectedWords.map((word, index) => {
+          console.log(`\n🔤 Generating question ${index + 1} for word: "${word.kazakh_word}"`);
           
-          // Get all other words as potential wrong options
-          const otherWords = shuffledWords.filter(w => 
-            w.id !== word.id && 
-            w.translation !== word.translation &&
-            w.translation !== 'No translation'
-          );
+          // Create wrong answers from other words
+          const otherWords = quizWords.filter(w => w.id !== word.id);
+          const wrongAnswers = otherWords
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 3)
+            .map(w => w.translation);
           
-          console.log(`   Available other words: ${otherWords.length}`);
-          
-          // Select exactly 3 wrong options randomly
-          const wrongOptions: string[] = [];
-          const availableWrongOptions = otherWords.map(w => w.translation);
-          
-          // Randomly select 3 unique wrong options
-          while (wrongOptions.length < 3 && availableWrongOptions.length > 0) {
-            const randomIndex = Math.floor(Math.random() * availableWrongOptions.length);
-            const wrongOption = availableWrongOptions[randomIndex];
-            
-            if (!wrongOptions.includes(wrongOption)) {
-              wrongOptions.push(wrongOption);
-            }
-            
-            // Remove used option to avoid duplicates
-            availableWrongOptions.splice(randomIndex, 1);
+          // Ensure we have exactly 3 wrong answers
+          while (wrongAnswers.length < 3) {
+            wrongAnswers.push(`Sample translation ${wrongAnswers.length + 1}`);
           }
           
-          // If we don't have enough wrong options from learned words, 
-          // this means the user doesn't have enough learned words
-          if (wrongOptions.length < 3) {
-            console.warn(`⚠️ Only ${wrongOptions.length} wrong options available for word ${word.kazakh_word}`);
-            // Pad with placeholder options as last resort
-            while (wrongOptions.length < 3) {
-              wrongOptions.push(`Вариант ${wrongOptions.length + 1}`);
-            }
+          // Create all options and shuffle
+          const allOptions = [word.translation, ...wrongAnswers];
+          const correctAnswer = Math.floor(Math.random() * 4);
+          
+          // Place correct answer at the random position
+          const finalOptions = [...allOptions];
+          if (correctAnswer !== 0) {
+            [finalOptions[0], finalOptions[correctAnswer]] = [finalOptions[correctAnswer], finalOptions[0]];
           }
           
-          // Create final 4 options: 1 correct + 3 wrong
-          const allOptions = [word.translation, ...wrongOptions];
-          
-          // Shuffle all 4 options
-          for (let i = allOptions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
-          }
-          
-          // Find where the correct answer ended up after shuffling
-          const correctAnswer = allOptions.indexOf(word.translation);
-          
-          console.log(`   ✅ Correct answer: ${word.translation}`);
-          console.log(`   ❌ Wrong options: ${wrongOptions.join(', ')}`);
-          console.log(`   🎲 All options: ${allOptions.join(', ')}`);
+          console.log(`   ✅ Correct answer: "${word.translation}"`);
+          console.log(`   ❌ Wrong answers: ${wrongAnswers.join(', ')}`);
+          console.log(`   🎲 All options: ${finalOptions.join(', ')}`);
           console.log(`   📍 Correct index: ${correctAnswer}`);
           
           // Verify we have exactly 4 options
-          if (allOptions.length !== 4) {
-            console.error(`❌ ERROR: Expected 4 options, got ${allOptions.length}`);
-            throw new Error(`Quiz generation error: Expected 4 options, got ${allOptions.length}`);
+          if (finalOptions.length !== 4) {
+            console.error(`❌ ERROR: Expected 4 options, got ${finalOptions.length}`);
+            throw new Error(`Quiz generation error: Expected 4 options, got ${finalOptions.length}`);
           }
           
           return {
             id: word.id,
             word: word.kazakh_word,
             translation: word.translation,
-            options: allOptions,
+            options: finalOptions,
             correctAnswer: correctAnswer,
             type: 'multiple_choice' as const
           };
@@ -320,7 +281,39 @@ const QuizPage: React.FC = () => {
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   const handleAnswerSelect = (answerIndex: number) => {
+    if (selectedAnswer !== null) return; // Prevent multiple selections
+    
     setSelectedAnswer(answerIndex);
+    
+    // Auto-advance to next question after a brief delay
+    setTimeout(() => {
+      // Process the answer immediately without needing the separate handleNextQuestion
+      if (!currentQuestion) return;
+
+      const timeSpent = Date.now() - startTime;
+      const isCorrect = answerIndex === currentQuestion.correctAnswer;
+
+      const result: QuizResult = {
+        questionId: currentQuestion.id,
+        selectedAnswer: answerIndex,
+        isCorrect,
+        timeSpent
+      };
+
+      const newResults = [...results, result];
+      setResults(newResults);
+
+      if (currentQuestionIndex === questions.length - 1) {
+        // Last question - finish quiz
+        setIsQuizComplete(true);
+        submitQuizMutation.mutate(newResults);
+      } else {
+        // Move to next question
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(null);
+        setStartTime(Date.now());
+      }
+    }, 1500); // 1.5 second delay to show the selected answer
   };
 
   const handleNextQuestion = () => {
@@ -396,232 +389,237 @@ const QuizPage: React.FC = () => {
           Quiz mode is only available for words you have already learned. 
           Complete some learning modules first to unlock quiz sessions!
         </p>
-        <div className="space-y-3">
-          <button
-            onClick={() => navigate('/app/learning-module')}
-            className="btn-primary flex items-center justify-center space-x-2 mx-auto"
-          >
-            <BookOpenIcon className="h-5 w-5" />
-            <span>Start Learning Module</span>
-          </button>
+        <div className="flex justify-center gap-4">
           <button
             onClick={() => navigate('/app/learning')}
-            className="btn-secondary mx-auto block"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            {t('actions.continueLearning')}
+            <BookOpenIcon className="w-5 h-5 inline mr-2" />
+            Start Learning
+          </button>
+          <button
+            onClick={() => navigate('/app/words')}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Browse Words
           </button>
         </div>
       </div>
     );
   }
 
-  // Quiz completed state
+  // Quiz completion state
   if (isQuizComplete) {
     const score = calculateScore();
-    const correct = results.filter(r => r.isCorrect).length;
-    const total = results.length;
+    const correctAnswers = results.filter(r => r.isCorrect).length;
+    const totalTime = results.reduce((sum, r) => sum + r.timeSpent, 0);
 
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-          <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('results.title')}</h1>
-          <p className="text-gray-600 mb-6">{t('results.yourScore', { score })}</p>
-          
-          <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{score}%</div>
-              <div className="text-sm text-gray-600">{t('progress.score')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{correct}</div>
-              <div className="text-sm text-gray-600">{t('results.correct')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-600">{total}</div>
-              <div className="text-sm text-gray-600">Total</div>
-            </div>
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4">
+            {score >= 80 ? '🏆' : score >= 60 ? '👏' : '📚'}
           </div>
-
-          <div className="space-y-4">
-            <button
-              onClick={handleRetakeQuiz}
-              className="btn-secondary w-full"
-            >
-              {t('actions.retakeQuiz')}
-            </button>
-            <button
-              onClick={handleFinishQuiz}
-              className="btn-primary w-full flex items-center justify-center space-x-2"
-            >
-              <TrophyIcon className="h-5 w-5" />
-              <span>View Progress</span>
-            </button>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Quiz Complete!
+          </h1>
+          <p className="text-xl text-gray-600">
+            You scored {correctAnswers} out of {results.length} ({score}%)
+          </p>
         </div>
 
-        {/* Question Review */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('results.reviewTitle')}</h3>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Quiz Results</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{correctAnswers}</div>
+              <div className="text-sm text-gray-600">Correct Answers</div>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{score}%</div>
+              <div className="text-sm text-gray-600">Score</div>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">
+                {Math.round(totalTime / 1000)}s
+              </div>
+              <div className="text-sm text-gray-600">Total Time</div>
+            </div>
+          </div>
+
           <div className="space-y-3">
+            <h3 className="font-semibold">Question Review:</h3>
             {results.map((result, index) => {
               const question = questions[index];
-              const isCorrect = result.isCorrect;
-              
               return (
-                <div key={question.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    {isCorrect ? (
-                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircleIcon className="h-5 w-5 text-red-600" />
-                    )}
+                <div 
+                  key={index}
+                  className={`p-3 rounded-lg flex items-center justify-between ${
+                    result.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  } border`}
+                >
+                  <div>
                     <span className="font-medium">{question.word}</span>
-                    <span className="text-gray-600">→</span>
-                    <span className="text-gray-700">{question.translation}</span>
+                    <span className="text-gray-600 ml-2">→ {question.translation}</span>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {Math.round(result.timeSpent / 1000)}s
+                  <div className="flex items-center">
+                    {result.isCorrect ? (
+                      <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <XCircleIcon className="w-5 h-5 text-red-600" />
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleRetakeQuiz}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
+          >
+            <ArrowRightIcon className="w-5 h-5 mr-2" />
+            Retake Quiz
+          </button>
+          <button
+            onClick={handleFinishQuiz}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
+          >
+            <TrophyIcon className="w-5 h-5 mr-2" />
+            View Progress
+          </button>
+        </div>
       </div>
     );
   }
 
   // Quiz in progress
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Debug Info - Remove after testing */}
-      {/* {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="font-semibold text-yellow-800 mb-2">🔍 Quiz Debug Info:</h4>
-          <div className="text-sm text-yellow-700 space-y-1">
-            <p><strong>URL:</strong> {window.location.href}</p>
-            <p><strong>Question Count:</strong> {questionCount}</p>
-            <p><strong>Category ID:</strong> {categoryId || 'all categories'}</p>
-            <p><strong>Quiz Questions:</strong> {questions.length}</p>
-            <p><strong>Stats Total Words:</strong> {stats?.total_words || 0}</p>
-            <p><strong>Learned Words:</strong> {stats?.words_by_status?.learned || 0}</p>
-          </div>
-        </div>
-      )} */}
+  if (!currentQuestion) {
+    return <LoadingSpinner fullScreen text="Loading quiz question..." />;
+  }
 
-      {/* Quiz Header */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              🧠 {t('headers.learnedWordsQuiz')}
-            </h1>
-            <p className="text-gray-600">
-              {t('progress.question', { 
-                current: currentQuestionIndex + 1, 
-                total: questions.length 
-              })}
-            </p>
-            <p className="text-sm text-blue-600 mt-1">
-              🏆 {t('headers.testingVocabulary')}
-            </p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 text-blue-600">
+                <BookOpenIcon className="w-5 h-5" />
+                <span className="font-medium">Quiz Session</span>
+              </div>
+              <span className="text-gray-400">•</span>
+              <span className="text-sm text-gray-600">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                <ClockIcon className="w-4 h-4 inline mr-1" />
+                Quiz in Progress
+              </div>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              {t('progress.score', {
-                correct: results.filter(r => r.isCorrect).length,
-                total:   questionCount,
-              })}
+          {/* Progress bar */}
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+              />
             </div>
-            <ClockIcon className="h-5 w-5 text-gray-400" />
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-          />
-        </div>
-      </div>
+        {/* Question Card */}
+        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              What does "{currentQuestion.word}" mean?
+            </h2>
+            <p className="text-gray-600">
+              Choose the correct translation
+            </p>
+          </div>
 
-      {/* Question */}
-      {currentQuestion && (
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <div className="text-center space-y-6">
-            {/* Word Display */}
-            <div className="space-y-4">
-              <div className="text-4xl font-bold text-gray-900">
-                {currentQuestion.word}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {currentQuestion.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswerSelect(index)}
+                disabled={selectedAnswer !== null} // Disable after selection
+                className={`p-4 text-left rounded-lg border-2 transition-all ${
+                  selectedAnswer === index
+                    ? 'border-blue-500 bg-blue-50'
+                    : selectedAnswer !== null
+                    ? 'border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">{option}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Show selected answer feedback */}
+          {selectedAnswer !== null && (
+            <div className="text-center mt-6">
+              <div className="text-lg font-medium text-blue-600">
+                Answer selected! Moving to next question...
               </div>
-              <p className="text-lg text-gray-700">
-                {t('question.prompt')}
-              </p>
             </div>
+          )}
 
-            {/* Answer Options */}
-            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  className={`p-4 text-left rounded-lg border-2 transition-all ${
-                    selectedAnswer === index
-                      ? 'border-blue-500 bg-blue-50 text-blue-900'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="font-medium">{String.fromCharCode(65 + index)}.</span> {option}
-                </button>
-              ))}
-            </div>
-
-            {/* Next Button */}
-            <div className="text-center pt-4">
+          {/* Next Button - Hidden during auto-advance */}
+          {selectedAnswer === null && (
+            <div className="text-center mt-8">
               <button
                 onClick={handleNextQuestion}
                 disabled={selectedAnswer === null}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto"
+                className="bg-gray-300 text-gray-500 cursor-not-allowed px-8 py-3 rounded-lg font-semibold"
               >
-                {isLastQuestion ? (
-                  <>
-                    <TrophyIcon className="h-5 w-5" />
-                    <span>{t('actions.finishQuiz')}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{t('actions.nextQuestion')}</span>
-                    <ArrowRightIcon className="h-5 w-5" />
-                  </>
-                )}
+                Select an answer to continue
               </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
 
-      {/* Quiz Stats */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('stats.title')}</h3>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold text-blue-600">{currentQuestionIndex + 1}</div>
-            <div className="text-sm text-gray-600">{t('stats.current')}</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-green-600">
-              {results.filter(r => r.isCorrect).length}
+        {/* Session Progress */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {results.filter(r => r.isCorrect).length}
+              </div>
+              <div className="text-sm text-gray-600">Correct</div>
             </div>
-            <div className="text-sm text-gray-600">{t('results.correct')}</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-red-600">
-              {results.filter(r => !r.isCorrect).length}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {results.filter(r => !r.isCorrect).length}
+              </div>
+              <div className="text-sm text-gray-600">Incorrect</div>
             </div>
-            <div className="text-sm text-gray-600">{t('results.incorrect')}</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {results.length > 0 
+                  ? Math.round((results.filter(r => r.isCorrect).length / results.length) * 100)
+                  : 0
+                }%
+              </div>
+              <div className="text-sm text-gray-600">Accuracy</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {questions.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Questions</div>
+            </div>
           </div>
         </div>
       </div>
