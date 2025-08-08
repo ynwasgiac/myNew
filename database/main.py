@@ -554,6 +554,100 @@ async def get_words_legacy(
     return summaries
 
 
+@app.get("/words/without-images", response_model=List[KazakhWordSummary])
+async def get_words_without_images(
+        skip: int = Query(0, ge=0, description="Number of words to skip"),
+        limit: int = Query(50, ge=1, le=100, description="Number of words to return"),
+        category_id: Optional[int] = Query(None, description="Filter by category ID"),
+        difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level ID"),
+        word_type_id: Optional[int] = Query(None, description="Filter by word type ID"),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Get all Kazakh words that don't have any images"""
+
+    # Build the base query to get words without images
+    query = (
+        select(KazakhWord)
+        .options(
+            joinedload(KazakhWord.category),
+            joinedload(KazakhWord.word_type),
+            joinedload(KazakhWord.difficulty_level)
+        )
+        .outerjoin(WordImage)  # Left join with images
+        .where(WordImage.id.is_(None))  # Filter where no images exist
+        .offset(skip)
+        .limit(limit)
+        .order_by(KazakhWord.id)
+    )
+
+    # Apply additional filters if provided
+    if category_id:
+        query = query.where(KazakhWord.category_id == category_id)
+
+    if difficulty_level_id:
+        query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+
+    if word_type_id:
+        query = query.where(KazakhWord.word_type_id == word_type_id)
+
+    # Execute the query
+    result = await db.execute(query)
+    words = result.unique().scalars().all()
+
+    # Convert to simple summary format
+    summaries = []
+    for word in words:
+        summaries.append(KazakhWordSummary(
+            id=word.id,
+            kazakh_word=word.kazakh_word,
+            kazakh_cyrillic=word.kazakh_cyrillic,
+            word_type_name=word.word_type.type_name,
+            category_name=word.category.category_name,
+            difficulty_level=word.difficulty_level.level_number,
+            primary_translation=None,  # No translation needed
+            primary_image=None  # No image (that's the point!)
+        ))
+
+    return summaries
+
+
+@app.get("/words/without-images/count", response_model=dict)
+async def count_words_without_images(
+        category_id: Optional[int] = Query(None, description="Filter by category ID"),
+        difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level ID"),
+        word_type_id: Optional[int] = Query(None, description="Filter by word type ID"),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Get count of words without images"""
+
+    # Build the count query
+    query = (
+        select(func.count(KazakhWord.id))
+        .outerjoin(WordImage)
+        .where(WordImage.id.is_(None))
+    )
+
+    # Apply filters if provided
+    if category_id:
+        query = query.where(KazakhWord.category_id == category_id)
+
+    if difficulty_level_id:
+        query = query.where(KazakhWord.difficulty_level_id == difficulty_level_id)
+
+    if word_type_id:
+        query = query.where(KazakhWord.word_type_id == word_type_id)
+
+    # Execute the count query
+    result = await db.execute(query)
+    count = result.scalar()
+
+    return {
+        "count": count,
+        "message": f"Found {count} words without images"
+    }
+
 @app.get("/words/{word_id}", response_model=KazakhWordResponse)
 async def get_word(
         word_id: int,
@@ -662,7 +756,6 @@ async def get_word(
         images=[WordImageResponse.from_attributes(img) for img in word.images],
         example_sentences=example_sentences_response
     )
-
 
 @app.get("/words/search/", response_model=List[KazakhWordSummary])
 async def search_words(
