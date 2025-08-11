@@ -28,7 +28,7 @@ async def run_image_generation():
         print("=" * 50)
         
         # Get token from environment or prompt once
-        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6IjAxNzBlNmRjLTA4NzYtNGY0Yi1hMjI2LTFhODcwMjEwYjQ4NSIsImV4cCI6MTc1NDY1NDc5OX0.i5SKpiJFvBwQUQtcksXf2T_Bh-gXy-gRnKno9aNF3hw"
+        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImE2Y2E0Y2E0LWY2MWQtNDU3MS1iZmMwLWFhMGI2N2JhNWFjMCIsImV4cCI6MTc1NDkxMTU0N30.W1RpDvl4llRi3tR7zO5U3VfolgiMe9Al3pHY53MxJmg"
         if not api_token or api_token == 'your-api-token-here':
             print("\nAPI Token Required")
             print("Please enter your API token:")
@@ -44,7 +44,7 @@ async def run_image_generation():
         
         async with WordImageService("http://localhost:8000", api_token) as service:
             stats = await service.process_all_words_without_images(
-                max_words=30,  # Process only 1 word for testing
+                max_words=100,  # Process only 1 word for testing
                 delay_between_words=2.0
             )
             

@@ -2204,3 +2204,27 @@ openai.BadRequestError: Error code: 400 - {'error': {'message': 'Billing hard li
 openai.BadRequestError: Error code: 400 - {'error': {'message': 'Billing hard limit has been reached', 'type': 'image_generation_user_error', 'param': None, 'code': 'billing_hard_limit_reached'}}
 
 2025-08-08 16:35:49,343 - ERROR - FAILED [30/30]: Failed to process word 116: кесіртке
+2025-08-08 17:07:03,789 - ERROR - HTTP error creating word image: 401 - {"detail":"Token has expired"}
+2025-08-08 17:07:03,789 - ERROR - FAILED: Failed to update database for word 113: '???????'
+2025-08-08 17:07:03,789 - ERROR - FAILED [27/30]: Failed to process word 113: итбалық
+2025-08-08 17:07:05,798 - ERROR - HTTP error getting word details: 401 - {"detail":"Token has expired"}
+2025-08-08 17:07:35,107 - ERROR - HTTP error creating word image: 401 - {"detail":"Token has expired"}
+2025-08-08 17:07:35,107 - ERROR - FAILED: Failed to update database for word 114: '??????'
+2025-08-08 17:07:35,107 - ERROR - FAILED [28/30]: Failed to process word 114: кәмшат
+2025-08-08 17:07:37,122 - ERROR - HTTP error getting word details: 401 - {"detail":"Token has expired"}
+2025-08-08 17:08:12,607 - ERROR - HTTP error creating word image: 401 - {"detail":"Token has expired"}
+2025-08-08 17:08:12,607 - ERROR - FAILED: Failed to update database for word 115: '?????'
+2025-08-08 17:08:12,607 - ERROR - FAILED [29/30]: Failed to process word 115: келес
+2025-08-08 17:08:14,613 - ERROR - HTTP error getting word details: 401 - {"detail":"Token has expired"}
+2025-08-08 17:08:41,687 - ERROR - HTTP error creating word image: 401 - {"detail":"Token has expired"}
+2025-08-08 17:08:41,687 - ERROR - FAILED: Failed to update database for word 116: '????????'
+2025-08-08 17:08:41,687 - ERROR - FAILED [30/30]: Failed to process word 116: кесіртке
+2025-08-08 17:09:16,599 - ERROR - HTTP error getting words without images: 401 - {"detail":"Token has expired"}
+2025-08-08 17:09:16,599 - ERROR - Error in batch processing: Client error '401 Unauthorized' for url 'http://localhost:8000/words/without-images'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-08-09 11:19:07,092 - ERROR - HTTP error getting words without images: 401 - {"detail":"Token has expired"}
+2025-08-09 11:19:07,093 - ERROR - Error in batch processing: Client error '401 Unauthorized' for url 'http://localhost:8000/words/without-images'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-08-11 12:28:28,240 - ERROR - HTTP error getting words without images: 401 - {"detail":"Token has expired"}
+2025-08-11 12:28:28,240 - ERROR - Error in batch processing: Client error '401 Unauthorized' for url 'http://localhost:8000/words/without-images'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401

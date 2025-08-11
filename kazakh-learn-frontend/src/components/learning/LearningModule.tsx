@@ -1034,6 +1034,15 @@ const OverviewPhase: React.FC<{
         </div>
       </div>
 
+      {/* Start Button */}
+      <button
+        onClick={onStart} 
+        className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors flex items-center mx-auto mt-6 shadow-lg"
+      >
+        <PlayIcon className="h-6 w-6 mr-2" />
+        {t('overview.startButton')} 
+      </button>
+
       {/* Learning Process Overview */}
       <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
         <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">
@@ -1096,15 +1105,6 @@ const OverviewPhase: React.FC<{
             </div>
           </div>
         </div>
-
-        {/* Start Button */}
-        <button
-          onClick={onStart} 
-          className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors flex items-center mx-auto mt-6 shadow-lg"
-        >
-          <PlayIcon className="h-6 w-6 mr-2" />
-          {t('overview.startButton')} 
-        </button>
       </div>
     </div>
   );
