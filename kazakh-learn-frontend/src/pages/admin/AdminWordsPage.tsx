@@ -4,7 +4,6 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import WordEditModal from '../../components/admin/WordEditModal';
-import { useQueryClient } from '@tanstack/react-query';
 import { WordImagesManager, WordSoundsManager } from '../../components/admin/WordMediaManager';
 import { 
   adminWordsAPI, 
@@ -156,7 +155,6 @@ const WordTableRow = memo<{
 WordTableRow.displayName = 'WordTableRow';
 
 const AdminWordsPage: React.FC = () => {
-  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [words, setWords] = useState<KazakhWordSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -465,24 +463,15 @@ const AdminWordsPage: React.FC = () => {
 
   const handleEditModalSave = useCallback(() => {
     console.log('💾 Word edited - refreshing list');
-    // Clear only admin-specific cache
-    queryClient.removeQueries({ 
-      queryKey: ['admin-words', 'admin-page'],
-      exact: false
-    });
     fetchWords(currentPage, true);
     toast.success('Word updated successfully');
-  }, [fetchWords, currentPage, queryClient]);
+  }, [fetchWords, currentPage]);
 
   const handleAddWordSave = useCallback(() => {
     console.log('➕ Word added - refreshing list');
-    queryClient.removeQueries({ 
-      queryKey: ['admin-words', 'admin-page'],
-      exact: false
-    });
     fetchWords(1, true, true);
     setShowAddModal(false);
-  }, [fetchWords, queryClient]);
+  }, [fetchWords]);
 
   // Delete confirmation handler
   const confirmDeleteWord = useCallback(async () => {
@@ -493,10 +482,6 @@ const AdminWordsPage: React.FC = () => {
       setDeleteError(null);
       
       await adminWordsAPI.deleteWord(deletingWordId, forceDelete);
-      queryClient.removeQueries({ 
-        queryKey: ['admin-words', 'admin-page'],
-        exact: false
-      });
       
       // Refresh the current page
       fetchWords(currentPage, true);
@@ -518,7 +503,7 @@ const AdminWordsPage: React.FC = () => {
     } finally {
       setActionLoading(false);
     }
-  }, [deletingWordId, forceDelete, fetchWords, currentPage, queryClient]);
+  }, [deletingWordId, forceDelete, fetchWords, currentPage]);
 
   // Bulk operations
   const handleBulkDelete = useCallback(async () => {
@@ -533,10 +518,6 @@ const AdminWordsPage: React.FC = () => {
     try {
       setActionLoading(true);
       await adminWordsAPI.bulkDeleteWords(selectedWords);
-      queryClient.removeQueries({ 
-        queryKey: ['admin-words', 'admin-page'],
-        exact: false
-      });
       
       setSelectedWords([]);
       fetchWords(currentPage, true);
@@ -548,7 +529,7 @@ const AdminWordsPage: React.FC = () => {
     } finally {
       setActionLoading(false);
     }
-  }, [selectedWords, fetchWords, currentPage, queryClient]);
+  }, [selectedWords, fetchWords, currentPage]);
 
   // Clear filters
   const clearFilters = useCallback(() => {

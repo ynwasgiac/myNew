@@ -83,7 +83,7 @@ const WordsPage: React.FC = () => {
     error: wordsError,
     isFetching 
   } = useQuery<PaginatedWordsResponse>({
-    queryKey: ['words-paginated', 'words-page', filters],
+    queryKey: ['words-paginated', filters],
     queryFn: () => wordsAPI.getWordsPaginated(filters),
     placeholderData: (previousData: PaginatedWordsResponse | undefined) => previousData,
     staleTime: 30000
@@ -110,7 +110,7 @@ const WordsPage: React.FC = () => {
 
   // Fetch user's learning progress
   const { data: learningProgress = [] } = useQuery({
-    queryKey: ['learning-progress-all', 'words-page'],
+    queryKey: ['learning-progress-all'],
     queryFn: () => learningAPI.getProgress({ limit: 1000 }),
     staleTime: 30000
   });
