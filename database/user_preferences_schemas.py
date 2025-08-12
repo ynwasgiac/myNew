@@ -1,7 +1,15 @@
 # database/preferences_schemas.py
+from enum import Enum
+
 from pydantic import BaseModel, Field, validator
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+
+
+class PracticeMethod(str, Enum):
+    """Practice method options"""
+    KAZ_TO_TRANSLATION = "kaz_to_translation"
+    TRANSLATION_TO_KAZ = "translation_to_kaz"
 
 
 class NotificationSettingsBase(BaseModel):
@@ -17,6 +25,7 @@ class PreferencesBase(BaseModel):
     """Base preferences schema"""
     quiz_word_count: int = Field(default=5, ge=1, le=50, description="Number of words in quiz (1-50)")
     practice_word_count: int = Field(default=5, ge=1, le=50, description="Number of words in practice (1-50)")
+    practice_method: PracticeMethod = Field(default=PracticeMethod.KAZ_TO_TRANSLATION, description="Practice method")
     daily_goal: int = Field(default=10, ge=1, le=100, description="Daily learning goal (1-100)")
     session_length: int = Field(default=10, ge=5, le=60, description="Session length in minutes (5-60)")
     notification_settings: NotificationSettingsBase = Field(default_factory=NotificationSettingsBase)
@@ -72,6 +81,7 @@ class NotificationSettingsUpdate(BaseModel):
 class PreferencesUpdate(BaseModel):
     """Schema for updating user preferences"""
     practice_word_count: Optional[int] = Field(None, ge=1, le=50, description="Number of words in quiz (1-50)")
+    practice_method: Optional[PracticeMethod] = Field(None, description="Practice method")
     quiz_word_count: Optional[int] = Field(None, ge=1, le=50, description="Number of words in quiz (1-50)")
     daily_goal: Optional[int] = Field(None, ge=1, le=100, description="Daily learning goal (1-100)")
     session_length: Optional[int] = Field(None, ge=5, le=60, description="Session length in minutes (5-60)")
@@ -111,7 +121,7 @@ class QuizSettingsUpdate(BaseModel):
 class PracticeSettingsUpdate(BaseModel):
     """Schema for updating practice-specific settings"""
     practice_word_count: int = Field(..., ge=1, le=50, description="Number of words in practice")
-
+    practice_method: Optional[PracticeMethod] = Field(None, description="Practice method")
 
 class LearningSettingsUpdate(BaseModel):
     """Schema for updating learning-specific settings"""
@@ -134,6 +144,7 @@ class PreferencesResponse(BaseModel):
     user_id: int
     quiz_word_count: int
     practice_word_count: int
+    practice_method: str
     daily_goal: int
     session_length: int
     notification_settings: Dict[str, Any]

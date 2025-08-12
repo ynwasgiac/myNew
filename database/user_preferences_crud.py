@@ -48,6 +48,7 @@ class UserPreferencesCRUD:
             user_id=user_id,
             quiz_word_count=6,
             practice_word_count=6,
+            practice_method='kaz_to_translation',
             daily_goal=12,
             session_length=20,
             notification_settings={
@@ -181,13 +182,18 @@ class UserPreferencesCRUD:
             practice_settings: PracticeSettingsUpdate
     ) -> Optional[UserPreferences]:
         """Update practice-specific settings"""
+        update_data = {
+            'practice_word_count': practice_settings.practice_word_count,
+            'updated_at': datetime.utcnow()
+        }
+
+        if practice_settings.practice_method is not None:
+            update_data['practice_method'] = practice_settings.practice_method.value
+
         await db.execute(
             update(UserPreferences)
             .where(UserPreferences.user_id == user_id)
-            .values(
-                practice_word_count=practice_settings.practice_word_count,
-                updated_at=datetime.utcnow()
-            )
+            .values(**update_data)
         )
         await db.commit()
         return await UserPreferencesCRUD.get_preferences_by_user_id(db, user_id)

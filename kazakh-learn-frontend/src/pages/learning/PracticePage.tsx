@@ -22,6 +22,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../services/api';
 
+type PracticeMethod = 'kaz_to_translation' | 'translation_to_kaz';
+
 interface PracticeWord {
   id: number;
   kazakh_word: string;
@@ -34,6 +36,12 @@ interface ScenarioQuestion {
   question: string;
   correctAnswer: string;
   userAnswer?: string;
+  method: PracticeMethod; 
+}
+
+interface PracticePreferences {
+  practice_word_count: number;
+  practice_method?: 'kaz_to_translation' | 'translation_to_kaz'; 
 }
 
 const PracticePage: React.FC = () => {
@@ -78,7 +86,10 @@ const PracticePage: React.FC = () => {
   });
 
   // Get word count from user's preferences, fallback to 9
+  const practiceMethod: PracticeMethod = (userPreferences as any)?.practice_method || 'kaz_to_translation';
   const wordCount = userPreferences?.practice_word_count || 9;
+
+  console.log('🎯 Practice method from settings:', practiceMethod);
 
   // 🎯 MODIFIED: Get learned words using existing learningAPI.getProgress
   const startSessionMutation = useMutation({
@@ -178,11 +189,43 @@ const PracticePage: React.FC = () => {
 
   // Generate simple translation questions from words
   const generateTranslationQuestions = (words: PracticeWord[]): ScenarioQuestion[] => {
-    return words.map(word => ({
-      word,
-      question: `What does "${word.kazakh_word}" mean?`,
-      correctAnswer: word.translation,
-    }));
+    return words.map(word => {
+      if (practiceMethod === 'kaz_to_translation') {
+        // Существующий метод - показываем казахское слово, пользователь вводит перевод
+        return {
+          word,
+          question: `What does "${word.kazakh_word}" mean?`,
+          correctAnswer: word.translation,
+          method: 'kaz_to_translation'
+        };
+      } else {
+        // Новый метод - показываем перевод, пользователь вводит казахское слово
+        return {
+          word,
+          question: `How do you say "${word.translation}" in Kazakh?`,
+          correctAnswer: word.kazakh_word,
+          method: 'translation_to_kaz'
+        };
+      }
+    });
+  };
+
+  const normalizeText = (text: string, method: PracticeMethod): string => {
+    let normalized = text.trim().toLowerCase();
+    
+    if (method === 'translation_to_kaz') {
+      // Для казахского языка - убрать акценты и привести к стандартному написанию
+      normalized = normalized
+        .replace(/і/g, 'i')  // казахская і в латинскую i для более гибкой проверки
+        .replace(/ү/g, 'u')  
+        .replace(/ә/g, 'a')
+        .replace(/ө/g, 'o')
+        .replace(/ң/g, 'n')
+        .replace(/ғ/g, 'g')
+        .replace(/қ/g, 'k');
+    }
+    
+    return normalized;
   };
 
   // Submit answer mutation
@@ -219,7 +262,24 @@ const PracticePage: React.FC = () => {
     if (!currentQuestion || !sessionId) return;
 
     const finalAnswer = userAnswer.trim();
-    const isCorrect = finalAnswer.toLowerCase() === currentQuestion.correctAnswer.toLowerCase();
+    
+    // ОБНОВЛЕННАЯ ЛОГИКА ПРОВЕРКИ ОТВЕТА
+    let isCorrect = false;
+    
+    if (currentQuestion.method === 'kaz_to_translation') {
+      // Для перевода с казахского - более гибкая проверка
+      const userLower = finalAnswer.toLowerCase();
+      const correctLower = currentQuestion.correctAnswer.toLowerCase();
+      
+      // Точное совпадение или содержание ключевых слов
+      isCorrect = userLower === correctLower || 
+                  correctLower.includes(userLower) || 
+                  userLower.includes(correctLower);
+    } else {
+      // Для ввода казахского слова - точное совпадение
+      isCorrect = finalAnswer.toLowerCase() === currentQuestion.correctAnswer.toLowerCase();
+    }
+
     const responseTime = Date.now() - questionStartTime;
 
     // Submit to backend
@@ -358,7 +418,9 @@ const PracticePage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-blue-600">
                 <BookOpenIcon className="w-5 h-5" />
-                <span className="font-medium">Translation Practice</span>
+                <span className="font-medium">
+                  {practiceMethod === 'kaz_to_translation' ? '🇰🇿 → 🌍' : '🌍 → 🇰🇿'} Practice
+                </span>
               </div>
               <span className="text-gray-400">•</span>
               <span className="text-sm text-gray-600">
@@ -383,29 +445,65 @@ const PracticePage: React.FC = () => {
               />
             </div>
           </div>
+  
+          {/* Practice Method Description - НОВОЕ */}
+          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-4 flex items-center justify-between">
+            <span>
+              {practiceMethod === 'kaz_to_translation' 
+                ? "🇰🇿 You'll see Kazakh words and type their meaning"
+                : "🌍 You'll see meanings and type the Kazakh word"
+              }
+            </span>
+            <button
+              onClick={() => navigate('/app/settings')}
+              className="text-blue-500 hover:text-blue-600 underline text-xs"
+            >
+              Change in Settings
+            </button>
+          </div>
         </div>
-
+  
         {/* Question Card */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
           {/* Current word display */}
           <div className="text-center mb-8">
-            
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {currentQuestion.word.kazakh_word}
-              </h2>
-              {currentQuestion.word.kazakh_cyrillic && (
-                <p className="text-lg text-gray-600">{currentQuestion.word.kazakh_cyrillic}</p>
+              {/* ОБНОВЛЕННОЕ отображение в зависимости от метода */}
+              {currentQuestion.method === 'kaz_to_translation' ? (
+                // Показываем казахское слово
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {currentQuestion.word.kazakh_word}
+                  </h2>
+                  {currentQuestion.word.kazakh_cyrillic && (
+                    <p className="text-lg text-gray-600">
+                      {currentQuestion.word.kazakh_cyrillic}
+                    </p>
+                  )}
+                </>
+              ) : (
+                // Показываем перевод
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {currentQuestion.word.translation}
+                  </h2>
+                  {/* Подсказка кириллицей для сложного режима */}
+                  {/* {currentQuestion.word.kazakh_cyrillic && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      Hint: {currentQuestion.word.kazakh_cyrillic}
+                    </p>
+                  )} */}
+                </>
               )}
             </div>
           </div>
-
+  
           {/* Question */}
           <div className="text-center mb-8">
             <p className="text-xl font-medium text-gray-800 mb-6">
               {currentQuestion.question}
             </p>
-
+  
             {/* Answer Input */}
             {!showAnswer && (
               <div className="max-w-md mx-auto">
@@ -413,14 +511,18 @@ const PracticePage: React.FC = () => {
                   type="text"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="Type your answer..."
+                  placeholder={
+                    currentQuestion.method === 'kaz_to_translation' 
+                      ? "Type the meaning..." 
+                      : "Type the Kazakh word..."
+                  }
                   className="w-full p-4 border-2 border-gray-200 rounded-lg text-center text-lg focus:border-blue-500 focus:outline-none"
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer()}
                   autoFocus
                 />
               </div>
             )}
-
+  
             {/* Answer Result */}
             {showAnswer && (
               <div className="max-w-md mx-auto">
@@ -451,13 +553,20 @@ const PracticePage: React.FC = () => {
                     <div className="text-sm text-gray-700">
                       <p><strong>Your answer:</strong> {currentQuestion.userAnswer}</p>
                       <p><strong>Correct answer:</strong> {currentQuestion.correctAnswer}</p>
+                      {/* НОВОЕ: Показать кириллицу для казахского режима */}
+                      {currentQuestion.method === 'translation_to_kaz' && 
+                       currentQuestion.word.kazakh_cyrillic && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Cyrillic: {currentQuestion.word.kazakh_cyrillic}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             )}
           </div>
-
+  
           {/* Action Buttons */}
           <div className="flex justify-center space-x-4">
             {!showAnswer ? (
@@ -487,7 +596,7 @@ const PracticePage: React.FC = () => {
             )}
           </div>
         </div>
-
+  
         {/* Session Stats */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
@@ -519,6 +628,34 @@ const PracticePage: React.FC = () => {
               </div>
               <div className="text-sm text-gray-600">Total Questions</div>
             </div>
+          </div>
+  
+          {/* НОВАЯ секция: Current Method Info */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Practice Mode:</span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  practiceMethod === 'kaz_to_translation' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-purple-100 text-purple-800'
+                }`}>
+                  {practiceMethod === 'kaz_to_translation' ? '🇰🇿 → 🌍 Recognition' : '🌍 → 🇰🇿 Production'}
+                </span>
+              </div>
+              <button
+                onClick={() => navigate('/app/settings')}
+                className="text-xs text-blue-500 hover:text-blue-600 underline"
+              >
+                Change Method
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {practiceMethod === 'kaz_to_translation' 
+                ? "Recognition mode: See Kazakh words, type meanings. Good for building vocabulary." 
+                : "Production mode: See meanings, type Kazakh words. More challenging, builds active skills."
+              }
+            </p>
           </div>
         </div>
       </div>

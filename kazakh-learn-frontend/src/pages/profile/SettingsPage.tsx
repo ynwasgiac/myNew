@@ -38,6 +38,7 @@ interface UserPreferences {
   user_id: number;
   quiz_word_count: number;
   practice_word_count: number;
+  practice_method: 'kaz_to_translation' | 'translation_to_kaz';  
   daily_goal: number;
   session_length: number;
   notification_settings: NotificationSettings;
@@ -48,6 +49,7 @@ interface UserPreferences {
 interface PreferencesUpdateData {
   quiz_word_count?: number;
   practice_word_count: number;
+  practice_method?: 'kaz_to_translation' | 'translation_to_kaz';
   daily_goal?: number;
   session_length?: number;
   notification_settings?: NotificationSettings;
@@ -78,7 +80,10 @@ const preferencesAPI = {
     return response.data;
   },
 
-  updatePracticeSettings: async (data: { practice_word_count: number }): Promise<UserPreferences> => {
+  updatePracticeSettings: async (data: { 
+    practice_word_count: number; 
+    practice_method?: 'kaz_to_translation' | 'translation_to_kaz';  
+  }): Promise<UserPreferences> => {
     const response = await api.patch('/api/preferences/practice-settings', data);
     return response.data;
   },
@@ -289,6 +294,15 @@ const SettingsPage: React.FC = () => {
     updateNotificationsMutation.mutate({
       ...currentSettings,
       [key]: value,
+    });
+  };
+  
+  const handlePracticeMethodChange = (method: 'kaz_to_translation' | 'translation_to_kaz') => {
+    if (!preferences) return;
+    
+    updatePracticeMutation.mutate({
+      practice_word_count: preferences.practice_word_count,
+      practice_method: method
     });
   };
 
@@ -584,15 +598,16 @@ const SettingsPage: React.FC = () => {
               {/* Practice Settings */}
               {activeSection === 'practice' && preferences && (
                 <div className="p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    Practice Configuration
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
+                    Practice Preferences
                   </h3>
-                  <div className="space-y-6">
+                  <div className="space-y-8">
+                    
                     {/* Practice Word Count */}
                     <div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-4">
                         <label className="block text-sm font-medium text-gray-700">
-                          Words Per Practice
+                          Practice Session Size
                         </label>
                         <span className="text-sm text-gray-500">
                           Current: {preferences.practice_word_count} words
@@ -603,42 +618,140 @@ const SettingsPage: React.FC = () => {
                           )}
                         </span>
                       </div>
-                      <div className="mt-2">
-                        <input
-                          type="range"
-                          min="1"
-                          max="50"
-                          value={preferences.practice_word_count}
-                          onChange={(e) => handlePracticeWordCountChange(parseInt(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                          disabled={updatePracticeMutation.isPending}
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>1</span>
-                          <span>25</span>
-                          <span>50</span>
-                        </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="50"
+                        value={preferences.practice_word_count}
+                        onChange={(e) => {
+                          updatePracticeMutation.mutate({
+                            practice_word_count: parseInt(e.target.value),
+                            practice_method: preferences.practice_method
+                          });
+                        }}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        disabled={updatePracticeMutation.isPending}
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-2">
+                        <span>1 word</span>
+                        <span>50 words</span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Number of words to include in each practice session
-                      </p>
                     </div>
 
-                    {/* Info Box */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                      <div className="flex">
-                        <QuestionMarkCircleIcon className="h-5 w-5 text-blue-400" />
-                        <div className="ml-3">
-                          <h4 className="text-sm font-medium text-blue-800">
-                            Practice Tips
-                          </h4>
-                          <p className="mt-1 text-sm text-blue-700">
-                            Start with fewer words (5-10) if you're new to learning. 
-                            Increase the count as you become more comfortable with the vocabulary.
-                          </p>
+                    {/* Practice Method */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
+                        Practice Method
+                      </label>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Choose how you want to practice your vocabulary. This setting affects all practice sessions.
+                      </p>
+                      
+                      <div className="space-y-4">
+                        {/* Kazakh to Translation */}
+                        <div
+                          className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
+                            preferences.practice_method === 'kaz_to_translation'
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => handlePracticeMethodChange('kaz_to_translation')}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              name="practice-method"
+                              value="kaz_to_translation"
+                              checked={preferences.practice_method === 'kaz_to_translation'}
+                              onChange={() => handlePracticeMethodChange('kaz_to_translation')}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <div className="ml-4 flex-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-base font-medium text-gray-900">
+                                  🇰🇿 Kazakh → Your Language
+                                </h4>
+                                {preferences.practice_method === 'kaz_to_translation' && (
+                                  <CheckCircleIcon className="h-5 w-5 text-blue-500" />
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-2">
+                                You'll see a Kazakh word and type its meaning in your language
+                              </p>
+                              <div className="mt-3 p-3 bg-gray-100 rounded text-sm">
+                                <div className="font-medium text-gray-700">Example:</div>
+                                <div className="text-blue-600 mt-1">Question: What does "сәлем" mean?</div>
+                                <div className="text-green-600">Your answer: hello</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Translation to Kazakh */}
+                        <div
+                          className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
+                            preferences.practice_method === 'translation_to_kaz'
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => handlePracticeMethodChange('translation_to_kaz')}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              name="practice-method"
+                              value="translation_to_kaz"
+                              checked={preferences.practice_method === 'translation_to_kaz'}
+                              onChange={() => handlePracticeMethodChange('translation_to_kaz')}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <div className="ml-4 flex-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-base font-medium text-gray-900">
+                                  🌍 Your Language → Kazakh
+                                </h4>
+                                {preferences.practice_method === 'translation_to_kaz' && (
+                                  <CheckCircleIcon className="h-5 w-5 text-blue-500" />
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-2">
+                                You'll see the meaning and type the Kazakh word (more challenging)
+                              </p>
+                              <div className="mt-3 p-3 bg-gray-100 rounded text-sm">
+                                <div className="font-medium text-gray-700">Example:</div>
+                                <div className="text-blue-600 mt-1">Question: How do you say "hello" in Kazakh?</div>
+                                <div className="text-green-600">Your answer: сәлем</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Additional info */}
+                      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex">
+                          <QuestionMarkCircleIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
+                          <div className="ml-3">
+                            <h4 className="text-sm font-medium text-yellow-800">
+                              Which method should I choose?
+                            </h4>
+                            <p className="text-sm text-yellow-700 mt-1">
+                              <strong>Kazakh → Your Language</strong> is better for beginners and recognition practice.
+                              <br />
+                              <strong>Your Language → Kazakh</strong> is more challenging and helps with active recall and production.
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Status indicator */}
+                    {updatePracticeMutation.isPending && (
+                      <div className="flex items-center space-x-2 text-sm text-blue-600">
+                        <LoadingSpinner size="sm" />
+                        <span>Updating practice settings...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -704,6 +817,8 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              
 
               {/* Notifications */}
               {activeSection === 'notifications' && preferences && (

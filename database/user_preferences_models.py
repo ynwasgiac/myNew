@@ -15,6 +15,7 @@ class UserPreferences(Base):
 
     # Practice preferences
     practice_word_count = Column(Integer, default=6)
+    practice_method = Column(String(50), default='kaz_to_translation')
 
     # Learning preferences
     daily_goal = Column(Integer, default=12)
