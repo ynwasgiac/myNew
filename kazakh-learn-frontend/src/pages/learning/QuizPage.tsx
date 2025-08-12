@@ -1,7 +1,7 @@
 // src/pages/learning/QuizPage.tsx - Updated to use getLearnedWords function
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   CheckCircleIcon, 
   XCircleIcon, 
@@ -68,6 +68,7 @@ const QuizPage: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation('quiz');
   const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   
   // URL parameters
   const categoryId = searchParams.get('category') ? parseInt(searchParams.get('category')!) : undefined;
@@ -86,21 +87,19 @@ const QuizPage: React.FC = () => {
   const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
     queryKey: ['userPreferences'],
     queryFn: async () => {
-      console.log('🔍 Fetching user preferences...');
+      // console.log('🔍 Fetching user preferences...');
       try {
         const data = await getUserPreferences();
-        console.log('✅ Preferences loaded successfully:', data);
+        // console.log('✅ Preferences loaded successfully:', data);
         return data;
       } catch (error) {
-        console.error('❌ Error fetching preferences:', error);
+        // console.error('❌ Error fetching preferences:', error);
         throw error;
       }
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-  
-  const questionCount = userPreferences?.quiz_word_count || 9;
 
   // Get user's preferred language
   const getUserLanguage = () => {
@@ -116,12 +115,31 @@ const QuizPage: React.FC = () => {
   // 🎯 UPDATED: Use the new getLearnedWords function
   const generateQuizMutation = useMutation({
     mutationFn: async () => {
-      console.log('🧠 Starting quiz generation with LEARNED words only...');
-      console.log('Quiz parameters:', { questionCount, categoryId, difficultyLevelId });
+      if (!userPreferences) {
+        throw new Error('User preferences not loaded yet');
+      }
+      
+      const questionCount = userPreferences.quiz_word_count || 9;
+      
+      // console.log('🔍 QUIZ DEBUG:');
+      // console.log('  userPreferences:', userPreferences);
+      // console.log('  quiz_word_count from settings:', userPreferences.quiz_word_count);
+      // console.log('  questionCount (final):', questionCount);
+      
+      // console.log('🧠 Starting quiz generation with LEARNED words only...');
+      // console.log('Quiz parameters:', { 
+      //   questionCount, 
+      //   'userPreferences.quiz_word_count': userPreferences.quiz_word_count,
+      //   categoryId, 
+      //   difficultyLevelId 
+      // });
+
+      // console.log('🧠 Starting quiz generation with LEARNED words only...');
+      // console.log('Quiz parameters:', { questionCount, categoryId, difficultyLevelId });
       
       try {
         // 🆕 Use the new getLearnedWords function with correct parameters
-        console.log('📚 Fetching learned words using new getLearnedWords function...');
+        // console.log('📚 Fetching learned words using new getLearnedWords function...');
         
         const learnedWordsResponse = await learningAPI.getLearnedWords({
           limit: 100, // Get all learned words
@@ -132,8 +150,8 @@ const QuizPage: React.FC = () => {
           offset: 0
         });
         
-        console.log('📊 Learned words response for quiz:', learnedWordsResponse);
-        console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
+        // console.log('📊 Learned words response for quiz:', learnedWordsResponse);
+        // console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
         
         if (learnedWordsResponse.length === 0) {
           throw new Error('No learned words available for quiz. Please complete some learning modules first to unlock quiz mode.');
@@ -142,7 +160,7 @@ const QuizPage: React.FC = () => {
         // Convert to quiz word format
         const quizWords: QuizWord[] = learnedWordsResponse.map((wordData: any) => {
           // The backend response is already in the correct format - no nested structure!
-          console.log('🔍 Processing word data:', wordData);
+          // console.log('🔍 Processing word data:', wordData);
           
           return {
             id: wordData.id,
@@ -155,7 +173,7 @@ const QuizPage: React.FC = () => {
           };
         });
         
-        console.log(`✅ Successfully converted ${quizWords.length} learned words for quiz`);
+        // console.log(`✅ Successfully converted ${quizWords.length} learned words for quiz`);
         
         // Check if we have enough words for quiz (need at least 4 for proper quiz)
         if (quizWords.length < 4) {
@@ -168,11 +186,11 @@ const QuizPage: React.FC = () => {
           .sort(() => Math.random() - 0.5) // Shuffle array
           .slice(0, maxQuestions);
         
-        console.log(`🎲 Selected ${selectedWords.length} words for quiz out of ${quizWords.length} available`);
+        // console.log(`🎲 Selected ${selectedWords.length} words for quiz out of ${quizWords.length} available`);
         
         // Generate quiz questions
         const questions: LocalQuizQuestion[] = selectedWords.map((word, index) => {
-          console.log(`\n🔤 Generating question ${index + 1} for word: "${word.kazakh_word}"`);
+          // console.log(`\n🔤 Generating question ${index + 1} for word: "${word.kazakh_word}"`);
           
           // Create wrong answers from other words
           const otherWords = quizWords.filter(w => w.id !== word.id);
@@ -196,10 +214,10 @@ const QuizPage: React.FC = () => {
             [finalOptions[0], finalOptions[correctAnswer]] = [finalOptions[correctAnswer], finalOptions[0]];
           }
           
-          console.log(`   ✅ Correct answer: "${word.translation}"`);
-          console.log(`   ❌ Wrong answers: ${wrongAnswers.join(', ')}`);
-          console.log(`   🎲 All options: ${finalOptions.join(', ')}`);
-          console.log(`   📍 Correct index: ${correctAnswer}`);
+          // console.log(`   ✅ Correct answer: "${word.translation}"`);
+          // console.log(`   ❌ Wrong answers: ${wrongAnswers.join(', ')}`);
+          // console.log(`   🎲 All options: ${finalOptions.join(', ')}`);
+          // console.log(`   📍 Correct index: ${correctAnswer}`);
           
           // Verify we have exactly 4 options
           if (finalOptions.length !== 4) {
@@ -217,7 +235,7 @@ const QuizPage: React.FC = () => {
           };
         });
         
-        console.log(`🎯 Generated ${questions.length} quiz questions from learned words`);
+        // console.log(`🎯 Generated ${questions.length} quiz questions from learned words`);
         
         return {
           session_id: Math.floor(Math.random() * 10000),
@@ -232,7 +250,7 @@ const QuizPage: React.FC = () => {
       }
     },
     onSuccess: (data) => {
-      console.log('🧠 Quiz generated successfully:', data);
+      // console.log('🧠 Quiz generated successfully:', data);
       setSessionId(data.session_id);
       setQuestions(data.questions);
       setStartTime(Date.now());
@@ -249,18 +267,18 @@ const QuizPage: React.FC = () => {
   // Submit quiz results mutation
   const submitQuizMutation = useMutation({
     mutationFn: async (results: QuizResult[]) => {
-      console.log('📊 Submitting quiz results:', results);
+      // console.log('📊 Submitting quiz results:', results);
       
       try {
         // Try to submit to backend, but don't fail if it doesn't work
         return await quizAPI.submitQuizResults(sessionId, results, getUserLanguage());
       } catch (error) {
-        console.log('⚠️ Backend submission failed, logging locally:', error);
+        // console.log('⚠️ Backend submission failed, logging locally:', error);
         return { success: true, message: 'Quiz completed locally' };
       }
     },
     onSuccess: (data) => {
-      console.log('✅ Quiz results submitted:', data);
+      // console.log('✅ Quiz results submitted:', data);
       toast.success(t('results.title'));
     },
     onError: (error) => {
@@ -271,10 +289,15 @@ const QuizPage: React.FC = () => {
   // Initialize quiz when component mounts
   useEffect(() => {
     if (!questions.length && !isQuizComplete && stats !== undefined) {
-      console.log('🚀 Auto-starting quiz generation...');
+      // console.log('🚀 Auto-starting quiz generation...');
       generateQuizMutation.mutate();
     }
-  }, [stats, questions.length, isQuizComplete]);
+  }, [stats, questions.length, isQuizComplete, userPreferences]);
+
+  // useEffect(() => {
+  //   console.log('QuizPage: userPreferences updated:', userPreferences);
+  //   console.log('QuizPage: quiz_word_count:', userPreferences?.quiz_word_count);
+  // }, [userPreferences]);
 
   // Event handlers
   const currentQuestion = questions[currentQuestionIndex];
