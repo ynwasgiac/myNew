@@ -1,4 +1,4 @@
-// src/pages/learning/PracticePage.tsx - Enhanced with Combined Scenarios
+// src/pages/learning/PracticePage.tsx - Inline Letter Hints
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -12,7 +12,8 @@ import {
   ClockIcon,
   TrophyIcon,
   BookOpenIcon,
-  AcademicCapIcon
+  AcademicCapIcon,
+  LightBulbIcon // ДОБАВЛЕНО: иконка для подсказок
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
@@ -21,6 +22,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../services/api';
+// ДОБАВЛЕНО: импорт помощника подсказок
+import { LetterHintHelper, LetterHintState } from '../../utils/letterHintHelper';
 
 type PracticeMethod = 'kaz_to_translation' | 'translation_to_kaz';
 
@@ -65,6 +68,11 @@ const PracticePage: React.FC = () => {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [isPaused, setIsPaused] = useState(false);
+
+  // ДОБАВЛЕНО: состояния для подсказок букв
+  const [hintHelper, setHintHelper] = useState<LetterHintHelper | null>(null);
+  const [hintState, setHintState] = useState<LetterHintState | null>(null);
+  const [isHintMode, setIsHintMode] = useState(false);
 
   // URL parameters
   const practiceType = searchParams.get('type') || 'combined';
@@ -117,120 +125,66 @@ const PracticePage: React.FC = () => {
           throw new Error('No learned words available for practice. Please complete some learning modules first to unlock practice mode.');
         }
 
-        // Convert progress objects to practice words with correct language handling
-        const practiceWords: PracticeWord[] = learnedWordsResponse
-          .filter(progress => progress.kazakh_word)
-          .map(progress => {
-            const word = progress.kazakh_word;
-            
-            // Get translation in user's main language
-            let translation = 'No translation';
-            if (word.translations && word.translations.length > 0) {
-              // Try to find translation in user's main language
-              const userLangTranslation = word.translations.find(t => 
-                t.language_code === user?.main_language?.language_code
-              );
-              
-              if (userLangTranslation) {
-                translation = userLangTranslation.translation;
-              } else {
-                // Fallback to first available translation (likely English)
-                translation = word.translations[0].translation;
-              }
-            }
-            
+        // Shuffle and select words for practice
+        const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
+        const practiceWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
+
+        // Create scenario questions
+        const questions: ScenarioQuestion[] = practiceWords.map(wordProgress => {
+          const word: PracticeWord = {
+            id: wordProgress.kazakh_word.id,
+            kazakh_word: wordProgress.kazakh_word.kazakh_word,
+            kazakh_cyrillic: wordProgress.kazakh_word.kazakh_cyrillic,
+            translation: wordProgress.kazakh_word.translations?.[0]?.translation || 'No translation'
+          };
+
+          if (practiceMethod === 'kaz_to_translation') {
             return {
-              id: word.id,
-              kazakh_word: word.kazakh_word,
-              kazakh_cyrillic: word.kazakh_cyrillic,
-              translation: translation
+              word,
+              question: `What does "${word.kazakh_word}" mean?`,
+              correctAnswer: word.translation,
+              method: 'kaz_to_translation'
             };
-          });
+          } else {
+            return {
+              word,
+              question: `How do you say "${word.translation}" in Kazakh?`,
+              correctAnswer: word.kazakh_word,
+              method: 'translation_to_kaz'
+            };
+          }
+        });
 
-        console.log(`🔄 Converted ${practiceWords.length} learned words to practice format`);
+        // Create practice session
+        const sessionData = await learningAPI.startPracticeSession({
+          session_type: 'combined_scenarios',
+          word_count: wordCount,
+          category_id: categoryId,
+          language_code: 'en'
+        });
 
-        // Shuffle and limit words
-        const shuffledWords = [...practiceWords].sort(() => Math.random() - 0.5);
-        const selectedWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
+        console.log('✅ Practice session created:', sessionData);
 
-        // Generate simple translation questions
-        const questions = generateTranslationQuestions(selectedWords);
+        setSessionId(sessionData.session_id);
         setScenarioQuestions(questions);
-
-        // Create a mock session (since we're working with learned words directly)
-        const mockSessionId = Date.now();
-        setSessionId(mockSessionId);
-        setStartTime(Date.now());
         setQuestionStartTime(Date.now());
 
-        console.log(`🎯 Generated ${questions.length} translation questions`);
-        return {
-          session_id: mockSessionId,
-          words: selectedWords,
-          questions: questions.length,
-          total_questions: questions.length
-        };
-        
+        return { session: sessionData, questions };
+
       } catch (error) {
         console.error('❌ Error starting practice session:', error);
         throw error;
       }
     },
-    onSuccess: (data) => {
-      console.log('✅ Translation practice session started:', data);
-      toast.success(`Practice started with ${data.questions} translation questions!`);
-    },
     onError: (error: any) => {
-      console.error('❌ Failed to start practice session:', error);
-      const errorMessage = error?.message || 'Failed to start practice session';
-      toast.error(errorMessage);
-    },
-  });
-
-  // Generate simple translation questions from words
-  const generateTranslationQuestions = (words: PracticeWord[]): ScenarioQuestion[] => {
-    return words.map(word => {
-      if (practiceMethod === 'kaz_to_translation') {
-        // Существующий метод - показываем казахское слово, пользователь вводит перевод
-        return {
-          word,
-          question: `What does "${word.kazakh_word}" mean?`,
-          correctAnswer: word.translation,
-          method: 'kaz_to_translation'
-        };
-      } else {
-        // Новый метод - показываем перевод, пользователь вводит казахское слово
-        return {
-          word,
-          question: `How do you say "${word.translation}" in Kazakh?`,
-          correctAnswer: word.kazakh_word,
-          method: 'translation_to_kaz'
-        };
-      }
-    });
-  };
-
-  const normalizeText = (text: string, method: PracticeMethod): string => {
-    let normalized = text.trim().toLowerCase();
-    
-    if (method === 'translation_to_kaz') {
-      // Для казахского языка - убрать акценты и привести к стандартному написанию
-      normalized = normalized
-        .replace(/і/g, 'i')  // казахская і в латинскую i для более гибкой проверки
-        .replace(/ү/g, 'u')  
-        .replace(/ә/g, 'a')
-        .replace(/ө/g, 'o')
-        .replace(/ң/g, 'n')
-        .replace(/ғ/g, 'g')
-        .replace(/қ/g, 'k');
+      console.error('Failed to start practice session:', error);
+      toast.error(error.message || 'Failed to start practice session');
     }
-    
-    return normalized;
-  };
+  });
 
   // Submit answer mutation
   const submitAnswerMutation = useMutation({
-    mutationFn: async (data: {
+    mutationFn: async (params: {
       sessionId: number;
       wordId: number;
       wasCorrect: boolean;
@@ -238,25 +192,62 @@ const PracticePage: React.FC = () => {
       correctAnswer: string;
       responseTime: number;
     }) => {
-      console.log('📝 Submitting translation answer:', data);
-      
-      // For learned words practice, we'll log locally since we're not using the traditional session system
-      return { success: true, message: 'Answer logged for translation practice' };
-    },
-    onSuccess: () => {
-      console.log('✅ Translation answer submitted successfully');
-    },
+      return await learningAPI.submitPracticeAnswer(params.sessionId, {
+        word_id: params.wordId,
+        was_correct: params.wasCorrect,
+        user_answer: params.userAnswer,
+        correct_answer: params.correctAnswer,
+        response_time_ms: params.responseTime
+      });
+    }
   });
 
-  // Initialize session when component mounts
+  // Initialize session
   useEffect(() => {
-    if (!sessionId && stats !== undefined && userPreferences !== undefined) {
-      console.log('🚀 Auto-starting translation practice session...');
+    if (stats && !sessionId && userPreferences) {
       startSessionMutation.mutate();
     }
   }, [stats, sessionId, userPreferences]);
 
-  // Event handlers
+  const currentQuestion = scenarioQuestions[currentQuestionIndex];
+  // ДОБАВЛЕНО: инициализация помощника подсказок при смене вопроса
+  useEffect(() => {
+    if (currentQuestion && !showAnswer) {
+      const helper = new LetterHintHelper(currentQuestion.correctAnswer);
+      setHintHelper(helper);
+      setHintState(helper.getState());
+      setIsHintMode(false);
+    }
+  }, [currentQuestion, showAnswer]);
+
+  // ДОБАВЛЕНО: обновление состояния подсказок при вводе пользователя
+  useEffect(() => {
+    if (hintHelper && isHintMode) {
+      const newState = hintHelper.updateUserInput(userAnswer);
+      setHintState(newState);
+    }
+  }, [userAnswer, hintHelper, isHintMode]);
+
+  // ДОБАВЛЕНО: функция получения подсказки (улучшенная)
+  const handleGetHint = () => {
+    if (!hintHelper) return;
+  
+    setIsHintMode(true);
+    const newState = hintHelper.getNextHint(userAnswer); // << передаём текущий ввод
+    setHintState(newState);
+    setUserAnswer(newState.hintedPart);                  // << просто перезаписываем инпут тем, что собрал хелпер
+  
+    setTimeout(() => {
+      const input = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+      if (input) {
+        const len = newState.hintedPart.length;
+        input.focus();
+        input.setSelectionRange(len, len);
+      }
+    }, 0);
+  };
+
+  // Event handlers (ваши оригинальные функции)
   const handleSubmitAnswer = () => {
     const currentQuestion = scenarioQuestions[currentQuestionIndex];
     if (!currentQuestion || !sessionId) return;
@@ -318,6 +309,9 @@ const PracticePage: React.FC = () => {
       setUserAnswer('');
       setShowAnswer(false);
       setQuestionStartTime(Date.now());
+      // ДОБАВЛЕНО: сброс состояния подсказок
+      setIsHintMode(false);
+      setHintState(null);
     }
   };
 
@@ -369,8 +363,7 @@ const PracticePage: React.FC = () => {
     handleNextQuestion();
   };
 
-  // Get current question and progress
-  const currentQuestion = scenarioQuestions[currentQuestionIndex];
+  // Get current question and progress (ваш оригинальный код)
   const isLastQuestion = currentQuestionIndex === scenarioQuestions.length - 1;
   const progress = scenarioQuestions.length > 0 ? ((currentQuestionIndex + 1) / scenarioQuestions.length) * 100 : 0;
 
@@ -412,7 +405,7 @@ const PracticePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header (ваш оригинальный код) */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -446,158 +439,139 @@ const PracticePage: React.FC = () => {
             </div>
           </div>
   
-          {/* Practice Method Description - НОВОЕ */}
+          {/* Practice Method Description */}
           <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-4 flex items-center justify-between">
             <span>
               {practiceMethod === 'kaz_to_translation' 
-                ? "🇰🇿 You'll see Kazakh words and type their meaning"
-                : "🌍 You'll see meanings and type the Kazakh word"
+                ? 'Recognition Mode: See Kazakh words, provide translations' 
+                : 'Production Mode: See translations, write Kazakh words'
               }
             </span>
             <button
               onClick={() => navigate('/app/settings')}
-              className="text-blue-500 hover:text-blue-600 underline text-xs"
+              className="text-blue-500 hover:text-blue-600 text-xs underline"
             >
-              Change in Settings
+              Change
             </button>
           </div>
         </div>
-  
+
         {/* Question Card */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          {/* Current word display */}
           <div className="text-center mb-8">
-            <div className="space-y-2">
-              {/* ОБНОВЛЕННОЕ отображение в зависимости от метода */}
-              {currentQuestion.method === 'kaz_to_translation' ? (
-                // Показываем казахское слово
-                <>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {currentQuestion.word.kazakh_word}
-                  </h2>
-                  {currentQuestion.word.kazakh_cyrillic && (
-                    <p className="text-lg text-gray-600">
-                      {currentQuestion.word.kazakh_cyrillic}
-                    </p>
-                  )}
-                </>
-              ) : (
-                // Показываем перевод
-                <>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {currentQuestion.word.translation}
-                  </h2>
-                  {/* Подсказка кириллицей для сложного режима */}
-                  {/* {currentQuestion.word.kazakh_cyrillic && (
-                    <p className="text-sm text-gray-400 mt-2">
-                      Hint: {currentQuestion.word.kazakh_cyrillic}
-                    </p>
-                  )} */}
-                </>
-              )}
-            </div>
-          </div>
-  
-          {/* Question */}
-          <div className="text-center mb-8">
-            <p className="text-xl font-medium text-gray-800 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {currentQuestion.question}
-            </p>
-  
-            {/* Answer Input */}
-            {!showAnswer && (
-              <div className="max-w-md mx-auto">
+            </h2>
+            <p className="text-gray-600">Type your answer below</p>
+          </div>
+
+          {!showAnswer ? (
+            <div className="space-y-6">
+              {/* МОДИФИЦИРОВАНО: Поле ввода с встроенными подсказками */}
+              <div className="relative">
                 <input
                   type="text"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder={
-                    currentQuestion.method === 'kaz_to_translation' 
-                      ? "Type the meaning..." 
-                      : "Type the Kazakh word..."
-                  }
-                  className="w-full p-4 border-2 border-gray-200 rounded-lg text-center text-lg focus:border-blue-500 focus:outline-none"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer()}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && userAnswer.trim()) {
+                      handleSubmitAnswer();
+                    }
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                  placeholder="Type your answer here..."
+                  disabled={showAnswer}
                   autoFocus
+                  style={{
+                    // ДОБАВЛЕНО: стилизация для режима подсказок
+                    backgroundColor: isHintMode ? '#fefce8' : 'white',
+                    borderColor: isHintMode ? '#facc15' : undefined,
+                    color: '#1f2937'
+                  }}
                 />
-              </div>
-            )}
-  
-            {/* Answer Result */}
-            {showAnswer && (
-              <div className="max-w-md mx-auto">
-                <div className={`p-4 rounded-lg border-2 ${
-                  currentQuestion.userAnswer?.toLowerCase() === currentQuestion.correctAnswer.toLowerCase()
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-red-500 bg-red-50'
-                }`}>
-                  <div className="flex items-center justify-center mb-2">
-                    {currentQuestion.userAnswer?.toLowerCase() === currentQuestion.correctAnswer.toLowerCase() ? (
-                      <CheckCircleIcon className="w-6 h-6 text-green-600 mr-2" />
-                    ) : (
-                      <XCircleIcon className="w-6 h-6 text-red-600 mr-2" />
-                    )}
-                    <span className={`font-medium ${
-                      currentQuestion.userAnswer?.toLowerCase() === currentQuestion.correctAnswer.toLowerCase()
-                        ? 'text-green-800'
-                        : 'text-red-800'
-                    }`}>
-                      {currentQuestion.userAnswer?.toLowerCase() === currentQuestion.correctAnswer.toLowerCase()
-                        ? 'Correct!'
-                        : 'Incorrect'
-                      }
+                {/* ДОБАВЛЕНО: индикатор прогресса подсказок */}
+                {isHintMode && hintState && (
+                  <div className="absolute -bottom-6 left-0 right-0 flex justify-between items-center text-xs text-gray-500">
+                    <span className="flex items-center space-x-1">
+                      <span className="text-yellow-600">💡</span>
+                      <span>Hints: {hintHelper?.getProgress()}% complete</span>
                     </span>
+                    {hintState.errors > 0 && (
+                      <span className="text-red-500">Errors: {hintState.errors}</span>
+                    )}
                   </div>
-                  
-                  {currentQuestion.userAnswer?.toLowerCase() !== currentQuestion.correctAnswer.toLowerCase() && (
-                    <div className="text-sm text-gray-700">
-                      <p><strong>Your answer:</strong> {currentQuestion.userAnswer}</p>
-                      <p><strong>Correct answer:</strong> {currentQuestion.correctAnswer}</p>
-                      {/* НОВОЕ: Показать кириллицу для казахского режима */}
-                      {currentQuestion.method === 'translation_to_kaz' && 
-                       currentQuestion.word.kazakh_cyrillic && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Cyrillic: {currentQuestion.word.kazakh_cyrillic}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            )}
-          </div>
-  
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-4">
-            {!showAnswer ? (
-              <>
-                <button
-                  onClick={handleSubmitAnswer}
-                  disabled={!userAnswer.trim()}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  Submit Answer
-                </button>
-                <button
-                  onClick={handleSkip}
-                  className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                >
-                  Skip
-                </button>
-              </>
-            ) : (
+
+              {/* ДОБАВЛЕНО: дополнительное пространство когда активны подсказки */}
+              {isHintMode && <div className="h-2"></div>}
+
+              {/* Action Buttons - МОДИФИЦИРОВАНО */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSubmitAnswer}
+                    disabled={!userAnswer.trim()}
+                    className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Submit Answer
+                  </button>
+                  <button
+                    onClick={handleSkip}
+                    className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Skip
+                  </button>
+                </div>
+                
+                {/* ДОБАВЛЕНО: Кнопка подсказки */}
+                {hintHelper && !hintState?.isCompleted && (
+                  <button
+                    onClick={handleGetHint}
+                    className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium"
+                    title={isHintMode ? `Letters revealed: ${hintState?.hintedPart.length || 0}` : 'Get the next letter as a hint'}
+                  >
+                    <LightBulbIcon className="w-4 h-4" />
+                    <span>{isHintMode ? 'Next Letter' : 'Help me'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              {/* Answer Result */}
+              <div className={`text-3xl font-bold ${
+                sessionResults[currentQuestionIndex]?.correct ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {sessionResults[currentQuestionIndex]?.correct ? '✅ Correct!' : '❌ Incorrect'}
+              </div>
+
+              {/* Correct Answer Display */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <p className="text-lg mb-2">
+                  <strong>"{currentQuestion.word.kazakh_word}"</strong> means{' '}
+                  <strong className="text-blue-600">"{currentQuestion.correctAnswer}"</strong>
+                </p>
+                {!sessionResults[currentQuestionIndex]?.correct && (
+                  <p className="text-gray-600">
+                    Your answer: <span className="font-medium">"{userAnswer}"</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Next Button */}
               <button
                 onClick={handleNextQuestion}
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2 mx-auto"
               >
                 <span>{isLastQuestion ? 'Finish Practice' : 'Next Question'}</span>
                 <ArrowRightIcon className="w-5 h-5" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
   
-        {/* Session Stats */}
+        {/* Session Stats (ваш оригинальный код) */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -629,8 +603,8 @@ const PracticePage: React.FC = () => {
               <div className="text-sm text-gray-600">Total Questions</div>
             </div>
           </div>
-  
-          {/* НОВАЯ секция: Current Method Info */}
+
+          {/* Practice Method Info */}
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -656,6 +630,15 @@ const PracticePage: React.FC = () => {
                 : "Production mode: See meanings, type Kazakh words. More challenging, builds active skills."
               }
             </p>
+
+            {/* ДОБАВЛЕНО: компактная информация о функции подсказок */}
+            <div className="mt-3 p-2 bg-yellow-50 rounded border-l-2 border-yellow-300">
+              <div className="flex items-center space-x-1 text-xs">
+                <LightBulbIcon className="w-3 h-3 text-yellow-600" />
+                <span className="text-yellow-800 font-medium">Letter Hints:</span>
+                <span className="text-yellow-700">Click "Help me" to reveal letters one by one in the input field.</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
