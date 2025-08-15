@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, update, and_
+from sqlalchemy import select, func, update, and_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
@@ -301,10 +301,10 @@ async def get_words_not_learned(
             LearningStatus.LEARNING: 2, 
             LearningStatus.REVIEW: 3
         }
-        
+
         query = query.order_by(
-            func.case(
-                *[(UserWordProgress.status == status, priority) 
+            case(
+                *[(UserWordProgress.status == status, priority)
                   for status, priority in status_priority.items()],
                 else_=4
             ),

@@ -28,7 +28,7 @@ async def run_image_generation():
         print("=" * 50)
         
         # Get token from environment or prompt once
-        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImNiNjI4Y2UyLWY2NGQtNGY3ZS05MjVmLTZkNjg3Yjk3MDhhOSIsImV4cCI6MTc1NTA2NzQxNX0.enRPUljSZgv4LCDT4iTuHSiVKhMuw3dpARYVZukHfH0"
+        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImQ0NmE1ZjQ1LWVjNTEtNDZmNC1iM2I0LWU0NjIzMmI2YzliZiIsImV4cCI6MTc1NTI1NTIwNX0.1gvPVh6w51zTxSNQ_gXtvkkTACZ1ajHR2bpK5nvsgvw"
         if not api_token or api_token == 'your-api-token-here':
             print("\nAPI Token Required")
             print("Please enter your API token:")

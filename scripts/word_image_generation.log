@@ -2231,3 +2231,6 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-08-12 11:13:57,680 - ERROR - HTTP error getting words without images: 401 - {"detail":"Token has expired"}
 2025-08-12 11:13:57,680 - ERROR - Error in batch processing: Client error '401 Unauthorized' for url 'http://localhost:8000/words/without-images'
 For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-08-15 14:49:16,554 - ERROR - HTTP error getting words without images: 401 - {"detail":"Token has expired"}
+2025-08-15 14:49:16,554 - ERROR - Error in batch processing: Client error '401 Unauthorized' for url 'http://localhost:8000/words/without-images'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401

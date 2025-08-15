@@ -201,64 +201,30 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
   
   // Fetch words that need learning (not learned status)
   const { data: wordsToLearn, isLoading } = useQuery({
-    queryKey: ['words-to-learn', user?.main_language?.language_code],
+    queryKey: ['words-to-learn', dailyGoal, user?.main_language?.language_code],
     queryFn: async (): Promise<LearningWord[]> => {
       try {
-        const response = await learningAPI.getProgress({
-          limit: dailyGoal * 3,
-        });
+        console.log('🔍 Fetching words using learningModuleAPI...');
         
-        const processedWords = response
-          .filter(wordProgress => 
-            IN_PROGRESS_STATUSES.includes(wordProgress.status)
-          )
-          .map(wordProgress => {
-            // Get translation in user's language
-            let translation = 'No translation';
-            const userLanguageCode = user?.main_language?.language_code || 'en';
-            
-            if (wordProgress.kazakh_word?.translations) {
-              const userLangTranslation = wordProgress.kazakh_word.translations.find(
-                t => t.language_code === userLanguageCode
-              );
-              
-              if (userLangTranslation) {
-                translation = userLangTranslation.translation;
-              } else if (wordProgress.kazakh_word.translations.length > 0) {
-                translation = wordProgress.kazakh_word.translations[0].translation;
-              }
-            }
-            
-            // ОТЛАДКА: Логируем каждое слово
-            console.log('🔍 Processing word:', {
-              id: wordProgress.kazakh_word_id,
-              kazakh_word: wordProgress.kazakh_word?.kazakh_word,
-              translation: translation,
-              allTranslations: wordProgress.kazakh_word?.translations
-            });
-            
-            return {
-              id: wordProgress.kazakh_word_id,
-              kazakh_word: wordProgress.kazakh_word?.kazakh_word || `Word ${wordProgress.kazakh_word_id}`,
-              kazakh_cyrillic: wordProgress.kazakh_word?.kazakh_cyrillic,
-              translation: translation,
-              difficulty_level: wordProgress.kazakh_word?.difficulty_level || 1,
-              times_seen: wordProgress.times_seen,
-              last_practiced: wordProgress.last_practiced_at,
-              status: wordProgress.status,
-              primary_image: wordProgress.kazakh_word?.primary_image,
-              image_url: wordProgress.kazakh_word?.primary_image,
-            } as LearningWord;
-          });
+        // Use the correct learning module API
+        const response = await learningModuleAPI.getWordsNotLearned(dailyGoal);
         
-        console.log('📝 Final processed words:', processedWords);
-        return processedWords;
+        console.log('📝 Learning module API response:', response);
+        
+        // The API returns { total_words: number, batches: WordBatch[], ... }
+        // Extract words from batches
+        const words = response.batches?.flatMap(batch => batch.words) || [];
+        
+        console.log('📝 Extracted words from batches:', words);
+        
+        // Words are already in the correct format from the learning module API
+        return words;
       } catch (error) {
         console.error('Failed to fetch learning words:', error);
         return [];
       }
     },
-    enabled: !!user
+    enabled: !!user && dailyGoal > 0
   });
 
   // Debug: Add logging to see what language is being used

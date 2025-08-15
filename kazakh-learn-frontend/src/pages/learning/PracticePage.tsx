@@ -104,7 +104,7 @@ const PracticePage: React.FC = () => {
         const learnedWordsResponse = await learningAPI.getLearnedWords({
           category_id: categoryId,
           limit: 100, // Get all learned words
-          include_mastered: true,
+          include_mastered: false,
           language_code: userLanguage
         });
         

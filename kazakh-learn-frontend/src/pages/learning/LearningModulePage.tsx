@@ -67,6 +67,7 @@ const getUserPreferences = async (): Promise<UserPreferences> => {
   return response.data;
 };
 
+
 const LearningModulePage: React.FC = () => {
   const { t } = useTranslation(['learning', 'common']);
   const { user } = useAuth();
@@ -174,6 +175,7 @@ const LearningModulePage: React.FC = () => {
     },
     enabled: !!user && !showModule,
   });
+  
 
   // Fetch learning statistics
   const { data: learningStats } = useQuery({
@@ -202,6 +204,7 @@ const LearningModulePage: React.FC = () => {
     },
     enabled: !!user,
   });
+  
 
   // Fetch categories for filter
   const { data: categories } = useQuery({
