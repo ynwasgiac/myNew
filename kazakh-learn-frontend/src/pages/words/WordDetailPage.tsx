@@ -853,7 +853,7 @@ const WordDetailPage: React.FC = () => {
             <div className="mt-6 lg:mt-0 lg:ml-8">
               <WordImageDisplay 
                 word={word}
-                className="w-48 h-32"
+                className="w-80 h-80"
               />
             </div>
           </div>

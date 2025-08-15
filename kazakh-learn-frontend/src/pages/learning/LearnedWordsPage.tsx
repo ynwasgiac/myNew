@@ -2,110 +2,176 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Star, StarOff, RotateCcw, BookOpen, Trophy, Search, Filter } from 'lucide-react';
+import { Trophy, Search, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown, Filter } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import { learningAPI } from '../../services/learningAPI';
+import { useAuth } from '../../contexts/AuthContext';
 import type { UserWordProgressWithWord } from '../../types/api';
 import type { LearningStatus } from '../../types/learning';
-import { LEARNING_STATUSES, LEARNED_STATUSES } from '../../types/learning';
-import { getStatusColor } from '../../utils/statusUtils';
+import { LEARNED_STATUSES } from '../../types/learning';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+
+interface LearnedWord {
+  id: number;
+  kazakh_word: string;
+  translation: string;
+  times_correct: number;
+  times_incorrect: number;
+  last_practiced_at: string | null;
+  status: string;
+}
 
 const LearnedWordsPage: React.FC = () => {
   const { t } = useTranslation(['learning', 'common']);
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
-  const [selectedStatus, setSelectedStatus] = useState<LearningStatus | undefined>(undefined);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [showKazakhWord, setShowKazakhWord] = useState(true);
+  const [showTranslation, setShowTranslation] = useState(true);
+  const [sortBy, setSortBy] = useState<'status' | 'times_correct' | 'times_incorrect' | 'last_practiced' | 'kazakh_word'>('status');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Получаем изученные и освоенные слова
-  const { data: learnedWords, isLoading, error } = useQuery({
-    queryKey: ['learned-words', searchTerm, selectedCategory, selectedStatus],
-    queryFn: () => learningAPI.getProgress({
-      status: selectedStatus,
-      category_id: selectedCategory,
-      limit: 100,
-      offset: 0
-    }),
-    select: (data) => data?.filter(word => 
-      LEARNED_STATUSES.includes(word.status as LearningStatus)
-    ) || []
-  });
-
-  // Мутация для изменения статуса слова
+  // Mutation for updating word status
   const updateStatusMutation = useMutation({
-    mutationFn: ({ wordId, status }: { wordId: number; status: LearningStatus }) =>
-      learningAPI.updateWordProgress(wordId, { status }),
+    mutationFn: ({ wordId, status }: { wordId: number; status: string }) =>
+      learningAPI.updateWordProgress(wordId, { status: status as any }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['learned-words'] });
-      queryClient.invalidateQueries({ queryKey: ['learning-stats'] });
-      toast.success(t('messages.statusUpdated'));
+      toast.success('Word status updated successfully');
     },
     onError: () => {
-      toast.error(t('errors.statusUpdateFailed'));
+      toast.error('Failed to update word status');
     }
   });
 
-  // Мутация для добавления в избранное (можно использовать заметки)
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: ({ wordId, isFavorite }: { wordId: number; isFavorite: boolean }) =>
-      learningAPI.updateWordProgress(wordId, { 
-        user_notes: isFavorite ? 'favorite' : '' 
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['learned-words'] });
-      toast.success(t('messages.favoriteUpdated'));
-    },
-    onError: () => {
-      toast.error(t('errors.favoriteUpdateFailed'));
-    }
-  });
-
-  // Фильтруем слова по поиску и избранному
-  const filteredWords = learnedWords?.filter(word => {
-    const matchesSearch = !searchTerm || 
-      word.kazakh_word?.kazakh_word?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      word.kazakh_word?.translations?.some(t => 
-        t.translation.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    
-    const matchesFavorites = !showFavoritesOnly || 
-      word.user_notes?.includes('favorite');
-    
-    return matchesSearch && matchesFavorites;
-  }) || [];
-
-  // Статистика по изученным словам
-  const stats = {
-    total: filteredWords.length,
-    learned: filteredWords.filter(w => w.status === LEARNING_STATUSES.LEARNED).length,
-    mastered: filteredWords.filter(w => w.status === LEARNING_STATUSES.MASTERED).length,
-    favorites: filteredWords.filter(w => w.user_notes?.includes('favorite')).length,
-  };
-
-  const handleStatusChange = (wordId: number, newStatus: LearningStatus) => {
+  const handleStatusChange = (wordId: number, newStatus: string) => {
     updateStatusMutation.mutate({ wordId, status: newStatus });
   };
 
-  const handleToggleFavorite = (wordId: number, isFavorite: boolean) => {
-    toggleFavoriteMutation.mutate({ wordId, isFavorite: !isFavorite });
+  // Get user's preferred language or default to English
+  const userLanguage = user?.main_language?.language_code || 'en';
+
+  // Получаем изученные и освоенные слова
+  const { data: learnedWords, isLoading, error } = useQuery({
+    queryKey: ['learned-words', searchTerm, userLanguage],
+    queryFn: () => learningAPI.getLearnedWords({
+      limit: 1000, // Get all learned words
+      include_mastered: true,
+      language_code: userLanguage
+    }),
+    select: (data: any) => {
+      // The getLearnedWords API returns an array directly or { words: [] }
+      const wordsArray = Array.isArray(data) ? data : (data?.words || []);
+
+      // Transform to simple structure for table
+      return wordsArray.map((wordData: any): LearnedWord => {
+        // Use the flattened API response structure
+        const kazakh = wordData.kazakh_word || 'Unknown';
+        const translation = wordData.translation || 'No translation';
+        
+        return {
+          id: wordData.id,
+          kazakh_word: kazakh,
+          translation,
+          times_correct: wordData.times_correct || 0,
+          times_incorrect: wordData.times_incorrect || 0,
+          last_practiced_at: wordData.last_practiced_at || null,
+          status: wordData.status || 'learned'
+        };
+      });
+    }
+  });
+
+  // Filter and sort words based on search term, status filter, and sort options
+  const filteredAndSortedWords = learnedWords?.filter((word: LearnedWord) => {
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = word.kazakh_word.toLowerCase().includes(searchLower) ||
+                           word.translation.toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+    
+    // Status filter
+    if (statusFilter !== 'all' && word.status !== statusFilter) {
+      return false;
+    }
+    
+    return true;
+  }).sort((a: LearnedWord, b: LearnedWord) => {
+    let compareValue = 0;
+    
+    switch (sortBy) {
+      case 'status':
+        const statusOrder = ['want_to_learn', 'learning', 'learned', 'mastered', 'review'];
+        const aIndex = statusOrder.indexOf(a.status);
+        const bIndex = statusOrder.indexOf(b.status);
+        compareValue = aIndex - bIndex;
+        break;
+      case 'times_correct':
+        compareValue = a.times_correct - b.times_correct;
+        break;
+      case 'times_incorrect':
+        compareValue = a.times_incorrect - b.times_incorrect;
+        break;
+      case 'last_practiced':
+        const aDate = new Date(a.last_practiced_at || 0).getTime();
+        const bDate = new Date(b.last_practiced_at || 0).getTime();
+        compareValue = aDate - bDate;
+        break;
+      case 'kazakh_word':
+        compareValue = a.kazakh_word.localeCompare(b.kazakh_word);
+        break;
+      default:
+        compareValue = 0;
+    }
+    
+    return sortOrder === 'asc' ? compareValue : -compareValue;
+  }) || [];
+
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
   };
 
-  const handleResetToLearning = (wordId: number) => {
-    updateStatusMutation.mutate({ wordId, status: LEARNING_STATUSES.LEARNING });
+  const getSortIcon = (field: typeof sortBy) => {
+    if (sortBy !== field) return <ArrowUpDown className="h-4 w-4 opacity-40" />;
+    return sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  };
+
+  // Format date helper
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Invalid date';
+    }
   };
 
   if (isLoading) {
-    return <LoadingSpinner fullScreen text={t('loading.learnedWords')} />;
+    return <LoadingSpinner fullScreen text="Loading learned words..." />;
   }
 
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">{t('errors.loadingFailed')}</p>
+        <p className="text-red-600">Error loading learned words</p>
       </div>
     );
   }
@@ -113,191 +179,255 @@ const LearnedWordsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-lg">
-        <h1 className="text-2xl font-bold mb-2 flex items-center">
-          <Trophy className="h-8 w-8 mr-3" />
-          {t('learnedWords.title')}
-        </h1>
-        <p className="text-green-100">{t('learnedWords.subtitle')}</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{t('stats.total')}</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <BookOpen className="h-8 w-8 text-blue-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{t('stats.learned')}</p>
-              <p className="text-2xl font-bold text-green-600">{stats.learned}</p>
-            </div>
-            <Trophy className="h-8 w-8 text-green-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{t('stats.mastered')}</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.mastered}</p>
-            </div>
-            <Star className="h-8 w-8 text-purple-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{t('stats.favorites')}</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.favorites}</p>
-            </div>
-            <Star className="h-8 w-8 text-yellow-500 fill-current" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Trophy className="h-8 w-8 text-yellow-500" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Learned Words
+            </h1>
+            <p className="text-gray-600">
+              {filteredAndSortedWords.length} words learned • Language: {userLanguage.toUpperCase()}
+              {statusFilter !== 'all' && (
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  Filtered by: {statusFilter.replace('_', ' ')}
+                </span>
+              )}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder={t('search.placeholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+      {/* Search Bar and Filter Controls */}
+      <div className="flex items-center justify-between space-x-4">
+        <div className="flex items-center space-x-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search learned words..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
-
+          
           {/* Status Filter */}
-          <div className="w-full md:w-48">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-500" />
             <select
-              value={selectedStatus || ''}
-              onChange={(e) => setSelectedStatus(e.target.value as LearningStatus || undefined)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">{t('filters.allStatuses')}</option>
-              <option value={LEARNING_STATUSES.LEARNED}>{t('status.learned')}</option>
-              <option value={LEARNING_STATUSES.MASTERED}>{t('status.mastered')}</option>
+              <option value="all">All Status</option>
+              <option value="want_to_learn">Want to Learn</option>
+              <option value="learning">Learning</option>
+              <option value="learned">Learned</option>
+              <option value="mastered">Mastered</option>
+              <option value="review">Review</option>
             </select>
           </div>
-
-          {/* Favorites Toggle */}
-          <button
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
-              showFavoritesOnly
-                ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
-            }`}
-          >
-            <Star className={`h-4 w-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-            <span>{t('filters.favorites')}</span>
-          </button>
         </div>
       </div>
 
-      {/* Words List */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        {filteredWords.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg text-gray-600 mb-2">{t('learnedWords.noWords')}</p>
-            <p className="text-gray-500">{t('learnedWords.noWordsDescription')}</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {filteredWords.map((wordProgress) => {
-              const word = wordProgress.kazakh_word;
-              const isFavorite = wordProgress.user_notes?.includes('favorite') || false;
-              
-              return (
-                <div key={wordProgress.id} className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {word?.kazakh_word || 'Unknown'}
-                        </h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(wordProgress.status)}`}>
-                          {t(`status.${wordProgress.status}`)}
-                        </span>
-                        <button
-                          onClick={() => handleToggleFavorite(wordProgress.id, isFavorite)}
-                          className={`p-1 rounded-full transition-colors ${
-                            isFavorite
-                              ? 'text-yellow-500 hover:text-yellow-600'
-                              : 'text-gray-400 hover:text-yellow-500'
-                          }`}
-                        >
-                          <Star className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
-                        </button>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <p className="text-gray-600">
-                          <span className="font-medium">{t('common.translation')}:</span>{' '}
-                          {word?.translations?.map(t => t.translation).join(', ') || 'No translation'}
-                        </p>
-                        {word?.kazakh_cyrillic && (
-                          <p className="text-gray-600">
-                            <span className="font-medium">{t('common.cyrillic')}:</span>{' '}
-                            {word.kazakh_cyrillic}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                        <span>{t('stats.correctAnswers')}: {wordProgress.times_correct || 0}</span>
-                        <span>{t('stats.totalAttempts')}: {wordProgress.times_seen || 0}</span>
-                        <span>{t('stats.incorrectAnswers')}: {wordProgress.times_incorrect || 0}</span>
-                        {wordProgress.last_practiced_at && (
-                          <span>{t('stats.lastPracticed')}: {new Date(wordProgress.last_practiced_at).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2 ml-4">
-                      {/* Reset to Learning */}
-                      <button
-                        onClick={() => handleResetToLearning(wordProgress.id)}
-                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                        title={t('actions.resetToLearning')}
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </button>
-
-                      {/* Status Change Dropdown */}
-                      <select
-                        value={wordProgress.status}
-                        onChange={(e) => handleStatusChange(wordProgress.id, e.target.value as LearningStatus)}
-                        className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value={LEARNING_STATUSES.LEARNED}>{t('status.learned')}</option>
-                        <option value={LEARNING_STATUSES.MASTERED}>{t('status.mastered')}</option>
-                        <option value={LEARNING_STATUSES.LEARNING}>{t('status.learning')}</option>
-                        <option value={LEARNING_STATUSES.REVIEW}>{t('status.review')}</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      {/* Floating Toggle Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex items-center space-x-2">
+        <button
+          onClick={() => setShowKazakhWord(!showKazakhWord)}
+          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all shadow-lg backdrop-blur-sm ${
+            showKazakhWord 
+              ? 'bg-blue-100/90 text-blue-700 hover:bg-blue-200/90 border border-blue-200' 
+              : 'bg-gray-100/90 text-gray-500 hover:bg-gray-200/90 border border-gray-200'
+          }`}
+          title="Toggle Kazakh words visibility"
+        >
+          {showKazakhWord ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          <span>Kazakh</span>
+        </button>
+        
+        <button
+          onClick={() => setShowTranslation(!showTranslation)}
+          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all shadow-lg backdrop-blur-sm ${
+            showTranslation 
+              ? 'bg-green-100/90 text-green-700 hover:bg-green-200/90 border border-green-200' 
+              : 'bg-gray-100/90 text-gray-500 hover:bg-gray-200/90 border border-gray-200'
+          }`}
+          title="Toggle translations visibility"
+        >
+          {showTranslation ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          <span>Translation</span>
+        </button>
       </div>
+
+      {/* Words Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {showKazakhWord && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('kazakh_word')}
+                    className="flex items-center space-x-1 hover:text-gray-700"
+                  >
+                    <span>Kazakh Word</span>
+                    {getSortIcon('kazakh_word')}
+                  </button>
+                </th>
+              )}
+              {showTranslation && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Translation
+                </th>
+              )}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button
+                  onClick={() => handleSort('times_correct')}
+                  className="flex items-center space-x-1 hover:text-gray-700"
+                >
+                  <span>Correct Answers</span>
+                  {getSortIcon('times_correct')}
+                </button>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button
+                  onClick={() => handleSort('times_incorrect')}
+                  className="flex items-center space-x-1 hover:text-gray-700"
+                >
+                  <span>Incorrect Answers</span>
+                  {getSortIcon('times_incorrect')}
+                </button>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button
+                  onClick={() => handleSort('last_practiced')}
+                  className="flex items-center space-x-1 hover:text-gray-700"
+                >
+                  <span>Last Practiced</span>
+                  {getSortIcon('last_practiced')}
+                </button>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <button
+                  onClick={() => handleSort('status')}
+                  className="flex items-center space-x-1 hover:text-gray-700"
+                >
+                  <span>Status</span>
+                  {getSortIcon('status')}
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredAndSortedWords.length === 0 ? (
+              <tr>
+                <td 
+                  colSpan={
+                    (showKazakhWord ? 1 : 0) + 
+                    (showTranslation ? 1 : 0) + 
+                    4
+                  } 
+                  className="px-6 py-8 text-center text-gray-500"
+                >
+                  {searchTerm || statusFilter !== 'all' 
+                    ? 'No words found matching your search/filter criteria' 
+                    : 'No learned words yet'
+                  }
+                </td>
+              </tr>
+            ) : (
+              filteredAndSortedWords.map((word: LearnedWord) => (
+                <tr key={word.id} className="hover:bg-gray-50">
+                  {showKazakhWord && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">
+                        {word.kazakh_word}
+                      </div>
+                    </td>
+                  )}
+                  {showTranslation && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-900">
+                        {word.translation}
+                      </div>
+                    </td>
+                  )}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-green-600 font-semibold">
+                      {word.times_correct}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-red-600 font-semibold">
+                      {word.times_incorrect}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-gray-600 text-sm">
+                      {formatDate(word.last_practiced_at)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={word.status}
+                      onChange={(e) => handleStatusChange(word.id, e.target.value)}
+                      disabled={updateStatusMutation.isPending}
+                      className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="want_to_learn">Want to Learn</option>
+                      <option value="learning">Learning</option>
+                      <option value="learned">Learned</option>
+                      <option value="mastered">Mastered</option>
+                      <option value="review">Review</option>
+                    </select>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Summary Stats */}
+      {filteredAndSortedWords.length > 0 && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Summary Statistics
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {filteredAndSortedWords.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Words</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + word.times_correct, 0)}
+              </div>
+              <div className="text-sm text-gray-600">Total Correct</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + word.times_incorrect, 0)}
+              </div>
+              <div className="text-sm text-gray-600">Total Incorrect</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {filteredAndSortedWords.length > 0 
+                  ? Math.round(
+                      (filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + word.times_correct, 0) / 
+                       filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + (word.times_correct + word.times_incorrect), 0)) * 100
+                    ) 
+                  : 0}%
+              </div>
+              <div className="text-sm text-gray-600">Average Accuracy</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

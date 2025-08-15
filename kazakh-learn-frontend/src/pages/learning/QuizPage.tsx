@@ -143,7 +143,7 @@ const QuizPage: React.FC = () => {
         
         const learnedWordsResponse = await learningAPI.getLearnedWords({
           limit: 100, // Get all learned words
-          include_mastered: true, // Include mastered words for quiz
+          include_mastered: false, // Include mastered words for quiz
           language_code: getUserLanguage(), // User's preferred language
           category_id: categoryId,
           difficulty_level_id: difficultyLevelId,

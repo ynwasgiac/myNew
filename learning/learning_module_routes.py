@@ -47,7 +47,7 @@ def calculate_spaced_repetition(progress, was_correct: bool) -> Dict[str, Any]:
 
 @router.get("/words/learned")
 async def get_words_learned(
-    limit: int = Query(20, ge=1, le=100, description="Number of learned words to return"),
+    limit: int = Query(20, ge=1, le=1000, description="Number of learned words to return"),
     category_id: Optional[int] = Query(None, description="Filter by category ID"),
     difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level"),
     include_mastered: bool = Query(True, description="Include mastered words along with learned"),
