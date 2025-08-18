@@ -42,15 +42,6 @@ const LearningGoals: React.FC = () => {
   // Mock goals for demonstration (excluding daily_words since we're using DailyProgress component)
   const mockGoals = [
     {
-      id: 2,
-      goal_type: 'weekly_practice',
-      target_value: 5,
-      current_value: 3,
-      is_completed: false,
-      target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
       id: 3,
       goal_type: 'category_mastery',
       target_value: 50,
@@ -79,10 +70,6 @@ const LearningGoals: React.FC = () => {
 
   const getGoalIcon = (goalType: string) => {
     switch (goalType) {
-      case 'daily_words':
-        return <BookOpenIcon className="h-5 w-5 text-blue-600" />;
-      case 'weekly_practice':
-        return <AcademicCapIcon className="h-5 w-5 text-green-600" />;
       case 'category_mastery':
         return <TrophyIcon className="h-5 w-5 text-purple-600" />;
       default:
