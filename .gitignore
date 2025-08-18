@@ -10,3 +10,4 @@ __pycache__
 .env.local
 .env.production
 .env.staging
+word_image_generation.log

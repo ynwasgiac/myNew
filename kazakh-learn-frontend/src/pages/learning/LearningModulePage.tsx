@@ -31,6 +31,18 @@ import {
   SparklesIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import LearningTips from '../../components/learning/LearningTips';
+import DailyProgress from '../../components/learning/DailyProgress';
+import QuickActionCards from '../../components/learning/QuickActionCards';
+import WordsAvailableBreakdown from '../../components/learning/WordsAvailableBreakdown';
+import MotivationalQuote from '../../components/learning/MotivationalQuote';
+
+interface WordsAvailableData {
+  want_to_learn: number;
+  learning: number;
+  review: number;
+  total: number;
+}
 
 interface DailyProgress {
   words_learned_today: number;
@@ -79,6 +91,7 @@ const LearningModulePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [selectedDifficulty, setSelectedDifficulty] = useState<number | undefined>();
   const [isAddingWords, setIsAddingWords] = useState(false);
+  const [wordsAvailableData, setWordsAvailableData] = useState<WordsAvailableData | null>(null);
 
   // Fetch user preferences using React Query
   const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
@@ -270,6 +283,19 @@ const LearningModulePage: React.FC = () => {
       setIsAddingWords(false);
     },
   });
+  
+  // Mock data - replace with actual API calls
+  useEffect(() => {
+    // Fetch learning data
+    // This should be replaced with actual API calls
+    const mockWordsData: WordsAvailableData = {
+      want_to_learn: 25,
+      learning: 15,
+      review: 8,
+      total: 48
+    };
+    setWordsAvailableData(mockWordsData);
+  }, []);
 
   // Handle adding random words
   const handleAddRandomWords = () => {
@@ -414,59 +440,9 @@ const LearningModulePage: React.FC = () => {
           {/* Left Column: Progress & Stats */}
           <div className="space-y-6">
             {/* Learning Tips */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-500" />
-                {t('learningTips.title')}
-              </h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip1')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip2')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip3')}</span>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{t('learningTips.tip4')}</span>
-                </div>
-              </div>
-            </div>
+            <LearningTips />
             {/* Daily Progress */}
-            {progressData && (
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                    <TrophyIcon className="h-6 w-6 mr-2 text-yellow-500" />
-                    {t('dailyProgress.title')}
-                  </h2>
-                  <span className="text-sm text-gray-600">
-                    {dailyProgress?.words_learned_today}/{dailyProgress?.daily_goal} 
-                  </span>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        progressData.percentage >= 100 ? 'bg-green-500' : 'bg-blue-500'
-                      }`}
-                      style={{ width: `${progressData.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <p className={`text-center font-semibold mt-3 ${progressData.color}`}>
-                  {progressData.message}
-                </p>
-              </div>
-            )}
+            <DailyProgress />
 
             {/* Learning Statistics */}
             {/* {learningStats && (
@@ -500,34 +476,7 @@ const LearningModulePage: React.FC = () => {
             )} */}
 
             {/* Words Available Breakdown */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <BookOpenIcon className="h-5 w-5 mr-2 text-green-500" />
-                {t('wordsAvailable.title')}
-              </h3>
-              {wordsAvailable && wordsAvailable.total > 0 ? (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="text-blue-700 font-medium">{t('wordsAvailable.wantToLearn')}</span>
-                    <span className="font-bold text-blue-900">{wordsAvailable.want_to_learn}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                    <span className="text-yellow-700 font-medium">{t('wordsAvailable.learning')}</span>
-                    <span className="font-bold text-yellow-900">{wordsAvailable.learning}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                    <span className="text-orange-700 font-medium">{t('wordsAvailable.review')}</span>
-                    <span className="font-bold text-orange-900">{wordsAvailable.review}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg border-2 border-gray-300">
-                    <span className="text-gray-700 font-semibold">{t('wordsAvailable.total')}</span>
-                    <span className="font-bold text-gray-900 text-lg">{wordsAvailable.total}</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500">{t('wordsAvailable.noWordsAvailable')}</p>
-              )}
-            </div>
+            <WordsAvailableBreakdown wordsAvailable={wordsAvailableData} />
           </div>
 
           {/* Center Column: Main Action */}
@@ -623,47 +572,13 @@ const LearningModulePage: React.FC = () => {
             </div>
 
             {/* Quick Action Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button
-                onClick={() => navigate('/app/practice')}
-                className="p-6 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all text-left group"
-              >
-                <div className="flex items-center mb-3">
-                  <PencilIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-600" />
-                  <h4 className="text-lg font-semibold text-gray-900 ml-3">{t('quickActions.quickPractice')}</h4>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  {t('quickActions.quickPracticeDesc')}
-                </p>
-              </button>
-
-              <button
-                onClick={() => navigate('/app/quiz')}
-                className="p-6 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-md transition-all text-left group"
-              >
-                <div className="flex items-center mb-3">
-                  <QuestionMarkCircleIcon className="h-8 w-8 text-green-500 group-hover:text-green-600" />
-                  <h4 className="text-lg font-semibold text-gray-900 ml-3">{t('quickActions.takeQuiz')}</h4>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  {t('quickActions.takeQuizDesc')}
-                </p>
-              </button>
-            </div>
+            <QuickActionCards />
           </div>
 
           {/* Right Column: Additional Info */}
           <div className="space-y-6">
-
-            
-
             {/* Motivational Quote */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">
-              <h3 className="text-lg font-semibold mb-3">{t('motivation.title')}</h3>
-              <p className="text-purple-100 text-sm italic">
-                {t('motivation.quote')}
-              </p>
-            </div>
+            <MotivationalQuote />
           </div>
         </div>
       </div>

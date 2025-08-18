@@ -17,6 +17,7 @@ from database.learning_schemas import (
 )
 from database.learning_crud import UserWordProgressCRUD, UserLearningSessionCRUD
 from database.crud import KazakhWordCRUD
+from database.user_preferences_crud import UserPreferencesCRUD
 
 router = APIRouter(prefix="/learning-module", tags=["Learning Module"])
 
@@ -942,10 +943,8 @@ async def get_daily_progress(
         )
         
         # Get daily goal (this would come from user settings)
-        daily_goal = 10  # Default, should be from user preferences
-        if current_user.main_language:
-            # Assuming we add daily_goal to user preferences
-            daily_goal = getattr(current_user.main_language, 'daily_goal', 10)
+        user_preferences = await UserPreferencesCRUD.get_preferences_by_user_id(db, current_user.id)
+        daily_goal = user_preferences.daily_goal if user_preferences else 10
         
         progress_percentage = min((words_learned_today / daily_goal) * 100, 100) if daily_goal > 0 else 0
         
