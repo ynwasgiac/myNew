@@ -244,6 +244,55 @@ class UserWordProgressCRUD:
 class UserLearningSessionCRUD:
     """CRUD operations for learning sessions"""
 
+
+    @staticmethod
+    async def count_words_learned_today(
+            db: AsyncSession,
+            user_id: int,
+            target_date
+    ) -> int:
+        """Count words learned on a specific date"""
+        start_of_day = datetime.combine(target_date, datetime.min.time())
+        end_of_day = datetime.combine(target_date, datetime.max.time())
+
+        result = await db.execute(
+            select(func.count(UserWordProgress.id))
+            .where(
+                and_(
+                    UserWordProgress.user_id == user_id,
+                    UserWordProgress.status.in_([LearningStatus.LEARNED, LearningStatus.MASTERED]),
+                    UserWordProgress.first_learned_at >= start_of_day,
+                    UserWordProgress.first_learned_at <= end_of_day
+                )
+            )
+        )
+        return result.scalar() or 0
+
+
+    # In UserLearningSessionCRUD class:
+    @staticmethod
+    async def count_sessions_today(
+            db: AsyncSession,
+            user_id: int,
+            target_date
+    ) -> int:
+        """Count learning sessions on a specific date"""
+        start_of_day = datetime.combine(target_date, datetime.min.time())
+        end_of_day = datetime.combine(target_date, datetime.max.time())
+
+        result = await db.execute(
+            select(func.count(UserLearningSession.id))
+            .where(
+                and_(
+                    UserLearningSession.user_id == user_id,
+                    UserLearningSession.started_at >= start_of_day,
+                    UserLearningSession.started_at <= end_of_day,
+                    UserLearningSession.finished_at.isnot(None)  # Only completed sessions
+                )
+            )
+        )
+        return result.scalar() or 0
+
     @staticmethod
     async def create_session(
             db: AsyncSession,

@@ -18,6 +18,7 @@ from database.learning_schemas import (
 from database.learning_crud import UserWordProgressCRUD, UserLearningSessionCRUD
 from database.crud import KazakhWordCRUD
 from database.user_preferences_crud import UserPreferencesCRUD
+from database.learning_crud_extensions import UserWordProgressCRUD as ExtendedUserWordProgressCRUD
 
 router = APIRouter(prefix="/learning-module", tags=["Learning Module"])
 
@@ -933,7 +934,7 @@ async def get_daily_progress(
         today = datetime.utcnow().date()
         
         # Count words learned today
-        words_learned_today = await UserWordProgressCRUD.count_words_learned_today(
+        words_learned_today = await ExtendedUserWordProgressCRUD.count_words_learned_today(
             db, current_user.id, today
         )
         
