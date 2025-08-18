@@ -873,3 +873,69 @@ async def get_learned_words_for_practice(
     
     result = await db.execute(query)
     return result.scalars().all()
+
+@staticmethod
+async def get_user_word_progress(
+    db: AsyncSession,
+    user_id: int,
+    word_id: int
+) -> Optional[UserWordProgress]:
+    """Get specific word progress for a user"""
+    stmt = (
+        select(UserWordProgress)
+        .where(
+            and_(
+                UserWordProgress.user_id == user_id,
+                UserWordProgress.kazakh_word_id == word_id
+            )
+        )
+    )
+    
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+@staticmethod
+async def update_word_progress(
+    db: AsyncSession,
+    user_id: int,
+    word_id: int,
+    status: Optional[LearningStatus] = None,
+    next_review_at: Optional[datetime] = None,
+    repetition_interval: Optional[int] = None,
+    updated_at: Optional[datetime] = None,
+    **kwargs
+) -> Optional[UserWordProgress]:
+    """Update word progress with any fields"""
+    
+    # Build update dictionary
+    update_data = {}
+    if status is not None:
+        update_data["status"] = status
+    if next_review_at is not None:
+        update_data["next_review_at"] = next_review_at
+    if repetition_interval is not None:
+        update_data["repetition_interval"] = repetition_interval
+    if updated_at is not None:
+        update_data["updated_at"] = updated_at
+    
+    # Add any additional kwargs
+    update_data.update(kwargs)
+    
+    if not update_data:
+        return None
+    
+    stmt = (
+        update(UserWordProgress)
+        .where(
+            and_(
+                UserWordProgress.user_id == user_id,
+                UserWordProgress.kazakh_word_id == word_id
+            )
+        )
+        .values(**update_data)
+        .returning(UserWordProgress)
+    )
+    
+    result = await db.execute(stmt)
+    await db.commit()
+    return result.scalar_one_or_none()

@@ -1,19 +1,9 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+// src/components/learning/BatchReviewActions.tsx
+import React, { useState, ChangeEvent } from 'react';
+import Button from '../ui/Button';
+import Modal from '../ui/Modal';
 import { RotateCcw } from 'lucide-react';
-import { learningAPI } from '../../services/learningAPI'; // Updated import path
+import { learningAPI } from '../../services/learningAPI';
 import { toast } from 'react-hot-toast';
 
 interface BatchReviewActionsProps {
@@ -53,61 +43,107 @@ export const BatchReviewActions: React.FC<BatchReviewActionsProps> = ({
     }
   };
 
+  const handleRadioChange = (value: string) => {
+    setReviewType(value as 'immediate' | 'scheduled');
+  };
+
+  const handleDaysChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setDaysFromNow(parseInt(e.target.value) || 7);
+  };
+
   if (selectedWordIds.length === 0) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <RotateCcw className="w-4 h-4" />
-          Schedule Review ({selectedWordIds.length})
-        </Button>
-      </DialogTrigger>
+    <>
+      <Button 
+        variant="secondary" 
+        onClick={() => setIsOpen(true)}
+        className="gap-2"
+      >
+        <RotateCcw className="w-4 h-4" />
+        Schedule Review ({selectedWordIds.length})
+      </Button>
       
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Schedule Batch Review</DialogTitle>
-          <DialogDescription>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Schedule Batch Review"
+        className="max-w-md"
+      >
+        <div className="space-y-6">
+          <p className="text-gray-600">
             Schedule {selectedWordIds.length} selected words for review
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <RadioGroup value={reviewType} onValueChange={(value) => setReviewType(value as 'immediate' | 'scheduled')}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="immediate" id="immediate" />
-              <Label htmlFor="immediate">Review immediately</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="scheduled" id="scheduled" />
-              <Label htmlFor="scheduled">Schedule for later</Label>
-            </div>
-          </RadioGroup>
+          </p>
           
-          {reviewType === 'scheduled' && (
-            <div className="space-y-2">
-              <Label htmlFor="days">Days from now</Label>
-              <Input
-                id="days"
-                type="number"
-                min="1"
-                max="365"
-                value={daysFromNow}
-                onChange={(e) => setDaysFromNow(parseInt(e.target.value) || 7)}
-              />
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <label className="font-medium text-gray-900">Review Type</label>
+              
+              <div className="space-y-2">
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="reviewType"
+                    value="immediate"
+                    checked={reviewType === 'immediate'}
+                    onChange={() => handleRadioChange('immediate')}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-3 text-gray-700">Review immediately</span>
+                </label>
+                
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="reviewType"
+                    value="scheduled"
+                    checked={reviewType === 'scheduled'}
+                    onChange={() => handleRadioChange('scheduled')}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-3 text-gray-700">Schedule for later</span>
+                </label>
+              </div>
             </div>
-          )}
+            
+            {reviewType === 'scheduled' && (
+              <div className="space-y-2">
+                <label htmlFor="days" className="block font-medium text-gray-900">
+                  Days from now
+                </label>
+                <input
+                  id="days"
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={daysFromNow}
+                  onChange={handleDaysChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-sm text-gray-500">
+                  Words will be scheduled for review in {daysFromNow} {daysFromNow === 1 ? 'day' : 'days'}
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button 
+              variant="secondary" 
+              onClick={() => setIsOpen(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleBatchReview} 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Schedule Review'}
+            </Button>
+          </div>
         </div>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleBatchReview} disabled={isLoading}>
-            {isLoading ? 'Processing...' : 'Schedule Review'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </Modal>
+    </>
   );
 };

@@ -228,13 +228,11 @@ export const learningAPI = {
     return response.data;
   },
 
-  // Get review statistics
   async getReviewStats(): Promise<ReviewStats> {
     const response = await api.get('/learning/review/statistics');
     return response.data;
   },
 
-  // Batch trigger reviews
   async batchTriggerReviews(request: BatchReviewRequest) {
     const response = await api.post('/learning/review/batch-trigger', request);
     return response.data;

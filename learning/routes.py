@@ -1739,3 +1739,190 @@ async def get_learning_words(
         ))
 
     return result    
+
+@router.post("/words/{word_id}/review")
+async def trigger_word_review(
+    word_id: int,
+    review_type: str = Query("immediate", description="immediate or scheduled"),
+    days_from_now: int = Query(7, description="Days from now for scheduled review"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Trigger immediate or scheduled review for a word"""
+    
+    # Verify word exists and user has progress with it
+    progress = await UserWordProgressCRUD.get_user_word_progress(
+        db, current_user.id, word_id
+    )
+    
+    if not progress:
+        raise HTTPException(
+            status_code=404, 
+            detail="Word not found in your learning list"
+        )
+    
+    # Only allow review for learned/mastered words
+    if progress.status not in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
+        raise HTTPException(
+            status_code=400,
+            detail="Only learned or mastered words can be scheduled for review"
+        )
+    
+    now = datetime.utcnow()
+    
+    if review_type == "immediate":
+        # Set for immediate review
+        next_review_at = now
+        repetition_interval = 1
+    else:
+        # Schedule for future
+        next_review_at = now + timedelta(days=days_from_now)
+        repetition_interval = days_from_now
+    
+    # Update the word progress
+    await UserWordProgressCRUD.update_word_progress(
+        db, current_user.id, word_id,
+        status=LearningStatus.REVIEW,
+        next_review_at=next_review_at,
+        repetition_interval=repetition_interval,
+        updated_at=now
+    )
+    
+    return {
+        "message": f"Word scheduled for {review_type} review",
+        "word_id": word_id,
+        "review_type": review_type,
+        "next_review_at": next_review_at.isoformat()
+    }
+
+
+@router.get("/review/statistics")
+async def get_review_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get review statistics for current user"""
+    now = datetime.utcnow()
+    today_end = now.replace(hour=23, minute=59, second=59)
+    
+    # Words due for review now
+    due_now_stmt = (
+        select(func.count(UserWordProgress.id))
+        .where(
+            and_(
+                UserWordProgress.user_id == current_user.id,
+                UserWordProgress.status == LearningStatus.REVIEW,
+                UserWordProgress.next_review_at <= now
+            )
+        )
+    )
+    
+    # Words due today
+    due_today_stmt = (
+        select(func.count(UserWordProgress.id))
+        .where(
+            and_(
+                UserWordProgress.user_id == current_user.id,
+                UserWordProgress.status == LearningStatus.REVIEW,
+                UserWordProgress.next_review_at <= today_end,
+                UserWordProgress.next_review_at > now
+            )
+        )
+    )
+    
+    # Overdue words (learned/mastered words past their review date)
+    overdue_stmt = (
+        select(func.count(UserWordProgress.id))
+        .where(
+            and_(
+                UserWordProgress.user_id == current_user.id,
+                UserWordProgress.status.in_([LearningStatus.LEARNED, LearningStatus.MASTERED]),
+                UserWordProgress.next_review_at < now
+            )
+        )
+    )
+    
+    due_now_result = await db.execute(due_now_stmt)
+    due_today_result = await db.execute(due_today_stmt)
+    overdue_result = await db.execute(overdue_stmt)
+    
+    return {
+        "due_now": due_now_result.scalar() or 0,
+        "due_today": due_today_result.scalar() or 0,
+        "overdue": overdue_result.scalar() or 0
+    }
+
+
+@router.post("/review/batch-trigger")
+async def batch_trigger_reviews(
+    word_ids: List[int],
+    review_type: str = "immediate",
+    days_from_now: int = 7,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Trigger review for multiple words"""
+    results = []
+    successful_count = 0
+    
+    now = datetime.utcnow()
+    
+    for word_id in word_ids:
+        try:
+            # Get word progress
+            progress = await UserWordProgressCRUD.get_user_word_progress(
+                db, current_user.id, word_id
+            )
+            
+            if not progress:
+                results.append({
+                    "word_id": word_id,
+                    "success": False,
+                    "error": "Word not found in learning list"
+                })
+                continue
+            
+            if progress.status not in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
+                results.append({
+                    "word_id": word_id,
+                    "success": False,
+                    "error": "Word is not learned or mastered"
+                })
+                continue
+            
+            # Set review schedule
+            if review_type == "immediate":
+                next_review_at = now
+                repetition_interval = 1
+            else:
+                next_review_at = now + timedelta(days=days_from_now)
+                repetition_interval = days_from_now
+            
+            # Update the word
+            await UserWordProgressCRUD.update_word_progress(
+                db, current_user.id, word_id,
+                status=LearningStatus.REVIEW,
+                next_review_at=next_review_at,
+                repetition_interval=repetition_interval,
+                updated_at=now
+            )
+            
+            results.append({
+                "word_id": word_id,
+                "success": True
+            })
+            successful_count += 1
+            
+        except Exception as e:
+            results.append({
+                "word_id": word_id,
+                "success": False,
+                "error": str(e)
+            })
+    
+    return {
+        "message": f"Processed {len(word_ids)} words, {successful_count} successful",
+        "results": results,
+        "successful_count": successful_count,
+        "total_count": len(word_ids)
+    }

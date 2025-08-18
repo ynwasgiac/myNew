@@ -21,6 +21,8 @@ import StatsCard from '../../components/ui/StatsCard';
 import WordsToReview from '../../components/dashboard/WordsToReview';
 import { ReviewWidget } from '../../components/dashboard/ReviewWidget';
 import { useReviewNotifications } from '../../hooks/useReviewNotifications';
+import { AlertTriangle } from 'lucide-react'; 
+import Button from '../../components/ui/Button';
 
 const LearningPage: React.FC = () => {
   const { user } = useAuth();
@@ -164,9 +166,10 @@ const LearningPage: React.FC = () => {
             <span className="font-medium text-orange-800">
               You have {notifications?.overdue} overdue reviews!
             </span>
-            <Button 
-              size="sm" 
-              onClick={() => navigate('/learning/practice?mode=review')}
+            <Button
+              onClick={() => window.location.href = '/app/practice?type=review'}
+              variant="secondary"
+              size="sm"
               className="ml-auto"
             >
               Review Now
