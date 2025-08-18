@@ -19,6 +19,7 @@ class UserPreferences(Base):
 
     # Learning preferences
     daily_goal = Column(Integer, default=12)
+    weekly_goal = Column(Integer, default=5) 
     session_length = Column(Integer, default=20)
 
     # Notification preferences (JSON field for flexibility)

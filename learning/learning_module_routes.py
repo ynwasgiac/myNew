@@ -1145,6 +1145,66 @@ async def add_random_words_to_learning(
         )
 
 
+@router.get("/user/weekly-progress")
+async def get_weekly_progress(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get user's weekly learning progress for goals tracking
+    """
+    try:
+        # Get current week's date range
+        today = datetime.utcnow().date()
+        start_of_week = today - timedelta(days=today.weekday())  # Monday
+        end_of_week = start_of_week + timedelta(days=6)  # Sunday
+        
+        # Count sessions this week
+        sessions_this_week = 0
+        for i in range(7):  # Monday to Sunday
+            current_date = start_of_week + timedelta(days=i)
+            daily_sessions = await UserLearningSessionCRUD.count_sessions_today(
+                db, current_user.id, current_date
+            )
+            sessions_this_week += daily_sessions
+        
+        # Get user's weekly goal from preferences
+        user_preferences = await UserPreferencesCRUD.get_preferences_by_user_id(db, current_user.id)
+        weekly_goal = user_preferences.weekly_goal if user_preferences else 5  # Default fallback
+        
+        # Calculate progress
+        progress_percentage = min((sessions_this_week / weekly_goal) * 100, 100) if weekly_goal > 0 else 0
+        goal_reached = sessions_this_week >= weekly_goal
+        sessions_remaining = max(0, weekly_goal - sessions_this_week)
+        
+        # Get session analytics for this week
+        try:
+            week_analytics = await UserLearningSessionCRUD.get_session_analytics(
+                db, current_user.id, days=7
+            )
+        except Exception as analytics_error:
+            print(f"Warning: Could not get session analytics: {analytics_error}")
+            week_analytics = {}
+        
+        return {
+            "weekly_goal": weekly_goal,
+            "sessions_completed_this_week": sessions_this_week,
+            "progress_percentage": round(progress_percentage, 1),
+            "goal_reached": goal_reached,
+            "sessions_remaining": sessions_remaining,
+            "week_start_date": start_of_week.isoformat(),
+            "week_end_date": end_of_week.isoformat(),
+            "session_analytics": week_analytics
+        }
+        
+    except Exception as e:
+        print(f"Error in get_weekly_progress: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get weekly progress: {str(e)}"
+        )
+
+
 @router.get("/user/recommendations")
 async def get_learning_recommendations(
     db: AsyncSession = Depends(get_db),

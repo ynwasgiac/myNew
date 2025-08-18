@@ -29,6 +29,7 @@ class UserPreferencesCRUD:
             quiz_word_count=preferences_data.quiz_word_count,
             practice_word_count=preferences_data.practice_word_count,
             daily_goal=preferences_data.daily_goal,
+            weekly_goal=preferences_data.weekly_goal,
             session_length=preferences_data.session_length,
             notification_settings=preferences_data.notification_settings.dict()
         )
@@ -50,6 +51,7 @@ class UserPreferencesCRUD:
             practice_word_count=6,
             practice_method='kaz_to_translation',
             daily_goal=12,
+            weekly_goal=5, 
             session_length=20,
             notification_settings={
                 'daily_reminders': True,
@@ -134,6 +136,8 @@ class UserPreferencesCRUD:
             update_data['practice_word_count'] = preferences_data.practice_word_count
         if preferences_data.daily_goal is not None:
             update_data['daily_goal'] = preferences_data.daily_goal
+        if preferences_data.weekly_goal is not None:
+            update_data['weekly_goal'] = preferences_data.weekly_goal
         if preferences_data.session_length is not None:
             update_data['session_length'] = preferences_data.session_length
         if preferences_data.notification_settings is not None:
@@ -209,6 +213,8 @@ class UserPreferencesCRUD:
 
         if learning_settings.daily_goal is not None:
             update_data['daily_goal'] = learning_settings.daily_goal
+        if learning_settings.weekly_goal is not None:
+            update_data['weekly_goal'] = learning_settings.weekly_goal
         if learning_settings.session_length is not None:
             update_data['session_length'] = learning_settings.session_length
 

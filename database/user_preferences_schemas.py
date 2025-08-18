@@ -27,6 +27,7 @@ class PreferencesBase(BaseModel):
     practice_word_count: int = Field(default=5, ge=1, le=50, description="Number of words in practice (1-50)")
     practice_method: PracticeMethod = Field(default=PracticeMethod.KAZ_TO_TRANSLATION, description="Practice method")
     daily_goal: int = Field(default=10, ge=1, le=100, description="Daily learning goal (1-100)")
+    weekly_goal: int = Field(5, ge=1, le=50, description="Weekly practice sessions goal (1-50)")
     session_length: int = Field(default=10, ge=5, le=60, description="Session length in minutes (5-60)")
     notification_settings: NotificationSettingsBase = Field(default_factory=NotificationSettingsBase)
 
@@ -84,6 +85,7 @@ class PreferencesUpdate(BaseModel):
     practice_method: Optional[PracticeMethod] = Field(None, description="Practice method")
     quiz_word_count: Optional[int] = Field(None, ge=1, le=50, description="Number of words in quiz (1-50)")
     daily_goal: Optional[int] = Field(None, ge=1, le=100, description="Daily learning goal (1-100)")
+    weekly_goal: Optional[int] = Field(None, ge=1, le=50, description="Weekly practice sessions goal (1-50)")
     session_length: Optional[int] = Field(None, ge=5, le=60, description="Session length in minutes (5-60)")
     notification_settings: Optional[NotificationSettingsUpdate] = None
 
@@ -103,6 +105,12 @@ class PreferencesUpdate(BaseModel):
     def validate_daily_goal(cls, v):
         if v is not None and (not isinstance(v, int) or not (1 <= v <= 100)):
             raise ValueError('Daily goal must be between 1 and 100')
+        return v
+
+    @validator('weekly_goal')
+    def validate_weekly_goal(cls, v):
+        if v is not None and (not isinstance(v, int) or not (1 <= v <= 50)):
+            raise ValueError('Weekly goal must be between 1 and 50')
         return v
 
     @validator('session_length')
@@ -126,6 +134,7 @@ class PracticeSettingsUpdate(BaseModel):
 class LearningSettingsUpdate(BaseModel):
     """Schema for updating learning-specific settings"""
     daily_goal: Optional[int] = Field(None, ge=1, le=100, description="Daily learning goal")
+    weekly_goal: Optional[int] = Field(None, ge=1, le=50, description="Weekly practice sessions goal")
     session_length: Optional[int] = Field(None, ge=5, le=60, description="Session length in minutes")
 
 
@@ -146,6 +155,7 @@ class PreferencesResponse(BaseModel):
     practice_word_count: int
     practice_method: str
     daily_goal: int
+    weekly_goal: int
     session_length: int
     notification_settings: Dict[str, Any]
     created_at: datetime

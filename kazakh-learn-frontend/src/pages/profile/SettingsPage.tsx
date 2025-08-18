@@ -15,6 +15,7 @@ import {
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
   GlobeAltIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -40,6 +41,7 @@ interface UserPreferences {
   practice_word_count: number;
   practice_method: 'kaz_to_translation' | 'translation_to_kaz';  
   daily_goal: number;
+  weekly_goal: number;
   session_length: number;
   notification_settings: NotificationSettings;
   created_at: string;
@@ -51,6 +53,7 @@ interface PreferencesUpdateData {
   practice_word_count: number;
   practice_method?: 'kaz_to_translation' | 'translation_to_kaz';
   daily_goal?: number;
+  weekly_goal?: number;
   session_length?: number;
   notification_settings?: NotificationSettings;
 }
@@ -59,6 +62,7 @@ interface DefaultPreferences {
   quiz_word_count: number;
   practice_word_count: number;
   daily_goal: number;
+  weekly_goal: number;
   session_length: number;
   notification_settings: NotificationSettings;
 }
@@ -88,7 +92,11 @@ const preferencesAPI = {
     return response.data;
   },
 
-  updateLearningSettings: async (data: { daily_goal?: number; session_length?: number }): Promise<UserPreferences> => {
+  updateLearningSettings: async (data: { 
+    daily_goal?: number; 
+    weekly_goal?: number;
+    session_length?: number; 
+  }): Promise<UserPreferences> => {
     const response = await api.patch('/api/preferences/learning-settings', data);
     return response.data;
   },
@@ -157,6 +165,12 @@ const SettingsPage: React.FC = () => {
       toast.error(`Failed to update language: ${error.response?.data?.detail || error.message}`);
     },
   });
+
+  const handleWeeklyGoalChange = (value: number) => {
+    updateLearningMutation.mutate({ 
+      weekly_goal: value 
+    });
+  };
 
   const clearLanguageMutation = useMutation({
     mutationFn: clearMainLanguage,
@@ -545,6 +559,42 @@ const SettingsPage: React.FC = () => {
                       </div>
                       <p className="mt-1 text-sm text-gray-500">
                         Number of words to learn per day
+                      </p>
+                    </div>
+
+                    {/* Weekly Goal Setting */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Weekly Practice Goal
+                        </label>
+                        <span className="text-sm text-gray-500">
+                          Current: {preferences.weekly_goal} sessions
+                          {defaultValues && (
+                            <span className="ml-2 text-xs text-gray-400">
+                              (Default: {defaultValues.weekly_goal})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <input
+                          type="range"
+                          min="1"
+                          max="50"
+                          value={preferences.weekly_goal}
+                          onChange={(e) => handleWeeklyGoalChange(parseInt(e.target.value))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                          disabled={updateLearningMutation.isPending}
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>1 session</span>
+                          <span>25 sessions</span>
+                          <span>50 sessions</span>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-sm text-gray-600">
+                        Number of practice sessions you want to complete each week. This helps track your consistency and builds a regular learning habit.
                       </p>
                     </div>
 
