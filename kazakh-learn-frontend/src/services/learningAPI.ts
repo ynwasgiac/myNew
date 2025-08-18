@@ -29,6 +29,23 @@ export interface AddMultipleWordsRequest {
   status: LearningStatus;
 }
 
+export interface ReviewStats {
+  due_now: number;
+  due_today: number;
+  overdue: number;
+}
+
+export interface ReviewTriggerRequest {
+  review_type: 'immediate' | 'scheduled';
+  days_from_now?: number;
+}
+
+export interface BatchReviewRequest {
+  word_ids: number[];
+  review_type: 'immediate' | 'scheduled';
+  days_from_now?: number;
+}
+
 export const learningAPI = {
   // Получить прогресс изучения слов с фильтрами
   async getProgress(filters: LearningAPIFilters = {}): Promise<UserWordProgressWithWord[]> {
@@ -196,6 +213,31 @@ export const learningAPI = {
     // The backend returns an object with { words: [], total_words: number, ... }
     // We need to extract the words array
     return response.data.words || [];
+  },
+  
+  async triggerWordReview(
+    wordId: number, 
+    request: ReviewTriggerRequest
+  ): Promise<{ message: string; word_id: number; review_type: string }> {
+    const params = new URLSearchParams({
+      review_type: request.review_type,
+      ...(request.days_from_now && { days_from_now: request.days_from_now.toString() })
+    });
+    
+    const response = await api.post(`/learning/words/${wordId}/review?${params}`);
+    return response.data;
+  },
+
+  // Get review statistics
+  async getReviewStats(): Promise<ReviewStats> {
+    const response = await api.get('/learning/review/statistics');
+    return response.data;
+  },
+
+  // Batch trigger reviews
+  async batchTriggerReviews(request: BatchReviewRequest) {
+    const response = await api.post('/learning/review/batch-trigger', request);
+    return response.data;
   },
   
 };

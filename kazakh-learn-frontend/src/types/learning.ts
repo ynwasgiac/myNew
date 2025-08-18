@@ -107,3 +107,4 @@ export const IN_PROGRESS_STATUSES: LearningStatus[] = [
 export const isLearnedStatus = (status: LearningStatus): boolean => {
   return LEARNED_STATUSES.includes(status);
 };
+

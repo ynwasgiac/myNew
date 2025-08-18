@@ -19,10 +19,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import StatsCard from '../../components/ui/StatsCard';
 import WordsToReview from '../../components/dashboard/WordsToReview';
+import { ReviewWidget } from '../../components/dashboard/ReviewWidget';
+import { useReviewNotifications } from '../../hooks/useReviewNotifications';
 
 const LearningPage: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation('learning');
+  const { notifications, hasOverdue, totalDue } = useReviewNotifications(30);
 
   // Fetch learning stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -153,6 +156,25 @@ const LearningPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Review notification banner */}
+      {hasOverdue && (
+        <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-600" />
+            <span className="font-medium text-orange-800">
+              You have {notifications?.overdue} overdue reviews!
+            </span>
+            <Button 
+              size="sm" 
+              onClick={() => navigate('/learning/practice?mode=review')}
+              className="ml-auto"
+            >
+              Review Now
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {quickStats.map((stat, index) => (
@@ -273,6 +295,9 @@ const LearningPage: React.FC = () => {
         {/* Words to Review */}
         <div className="lg:col-span-2">
           <WordsToReview />
+        </div>
+        <div className="lg:col-span-2">
+          <ReviewWidget />
         </div>
 
         {/* Learning Status Breakdown */}

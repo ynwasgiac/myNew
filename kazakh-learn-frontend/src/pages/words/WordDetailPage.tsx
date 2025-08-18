@@ -31,6 +31,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import type { KazakhWord, UserWordProgress, WordSound } from '../../types/api';
 import { useLearningMutations } from '../../hooks/useLearningMutations';
+import { ReviewButton } from '../../components/learning/ReviewButton';
 
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
