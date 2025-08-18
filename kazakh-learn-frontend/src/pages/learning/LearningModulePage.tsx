@@ -44,15 +44,6 @@ interface WordsAvailableData {
   total: number;
 }
 
-interface DailyProgress {
-  words_learned_today: number;
-  sessions_completed_today: number;
-  daily_goal: number;
-  progress_percentage: number;
-  goal_reached: boolean;
-  words_remaining: number;
-}
-
 interface LearningStats {
   total_words_learning: number;
   words_learned_this_week: number;
@@ -113,36 +104,6 @@ const LearningModulePage: React.FC = () => {
 
   // Get user's daily goal - simplified to use default value
   const dailyGoal = userPreferences?.daily_goal || 12; // Default daily goal, can be made configurable later
-
-  // Fetch daily progress
-  const { data: dailyProgress, isLoading: progressLoading } = useQuery({
-    queryKey: ['daily-progress'],
-    queryFn: async (): Promise<DailyProgress> => {
-      try {
-        // This would be a real API call to get daily progress
-        // For now, we'll return mock data
-        return {
-          words_learned_today: 5,
-          sessions_completed_today: 2,
-          daily_goal: dailyGoal,
-          progress_percentage: (5 / dailyGoal) * 100,
-          goal_reached: false,
-          words_remaining: dailyGoal - 5
-        };
-      } catch (error) {
-        console.error('Failed to fetch daily progress:', error);
-        return {
-          words_learned_today: 0,
-          sessions_completed_today: 0,
-          daily_goal: dailyGoal,
-          progress_percentage: 0,
-          goal_reached: false,
-          words_remaining: dailyGoal
-        };
-      }
-    },
-    enabled: !!user && !showModule,
-  });
 
   // Fetch words available for learning
   const { data: wordsAvailable, isLoading: wordsLoading } = useQuery({
@@ -347,42 +308,6 @@ const LearningModulePage: React.FC = () => {
     // Replace with your analytics service (Google Analytics, Mixpanel, etc.)
   };
 
-  // Calculate progress data
-  const calculateProgressData = () => {
-    if (!dailyProgress) return null;
-
-    const percentage = Math.min((dailyProgress.words_learned_today / dailyProgress.daily_goal) * 100, 100);
-    let message = '';
-    let color = '';
-
-    if (dailyProgress.goal_reached) {
-      message = t('dailyProgress.goalComplete');
-      color = 'text-green-600';
-    } else if (percentage >= 75) {
-      message = t('dailyProgress.almostThere', {
-        remaining: dailyProgress.words_remaining
-      });
-      color = 'text-blue-600';
-    } else if (percentage >= 50) {
-      message = t('dailyProgress.greatProgress', {
-        remaining: dailyProgress.words_remaining
-      });
-      color = 'text-yellow-600';
-    } else if (percentage >= 25) {
-      message = t('dailyProgress.goodStart', {
-        remaining: dailyProgress.words_remaining
-      });
-      color = 'text-orange-600';
-    } else {
-      message = t('dailyProgress.readyToLearn', {
-        remaining: dailyProgress.words_remaining
-      });
-      color = 'text-gray-600';
-    }
-
-    return { percentage: Math.round(percentage), message, color };
-  };
-
   // Estimate session time
   const estimateSessionTime = () => {
     if (!wordsAvailable) return '0 min';
@@ -403,7 +328,7 @@ const LearningModulePage: React.FC = () => {
     );
   }
 
-  if (progressLoading || wordsLoading) {
+  if (wordsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -413,8 +338,6 @@ const LearningModulePage: React.FC = () => {
       </div>
     );
   }
-
-  const progressData = calculateProgressData();
 
   return (
     <div className="min-h-screen bg-gray-50">
