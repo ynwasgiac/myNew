@@ -89,88 +89,75 @@ const PracticePage: React.FC = () => {
   console.log('🎯 Practice method from settings:', practiceMethod);
 
   // Start session mutation - using getLearnedWords
-  const startSessionMutation = useMutation({
-    mutationFn: async () => {
-      console.log('🔍 Starting practice with LEARNED words only...');
-      console.log('Practice type from URL:', practiceType);
-      console.log('Category filter:', categoryId);
-      console.log('Word count from settings:', wordCount);
-      
-      try {
-        // Get learned words using learningAPI.getLearnedWords method
-        console.log('📚 Fetching learned words...');
+  // В src/pages/learning/PracticePage.tsx - ИСПРАВЛЕНИЕ TypeScript ошибок
+
+const startSessionMutation = useMutation({
+  mutationFn: async () => {
+    console.log('🔍 Starting practice with practiceType:', practiceType);
+    console.log('Category filter:', categoryId);
+    console.log('Word count from settings:', wordCount);
+    
+    try {
+      const userLanguage = user?.main_language?.language_code || 'en';
+
+      // ✅ ТОЛЬКО ДЛЯ type=review используем новую логику
+      if (practiceType === 'review') {
+        console.log('📚 Fetching words for REVIEW...');
         
-        const userLanguage = user?.main_language?.language_code || 'en';
-        const learnedWordsResponse = await learningAPI.getLearnedWords({
-          category_id: categoryId,
-          limit: 100, // Get all learned words
-          include_mastered: false,
-          language_code: userLanguage
-        });
+        const reviewWords = await learningAPI.getWordsForReview(wordCount, userLanguage);
+        console.log('📊 Review words response:', reviewWords);
         
-        console.log('📊 Learned words response:', learnedWordsResponse);
-        console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
-        
-        if (learnedWordsResponse.length === 0) {
-          throw new Error('No learned words available for practice. Please complete some learning modules first to unlock practice mode.');
+        if (reviewWords.length === 0) {
+          throw new Error('No words are due for review right now. Check back later or learn more words!');
         }
-
-        // Shuffle and select words for practice
-        const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
-        const practiceWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
-
-        // Create scenario questions using the actual API response structure
-        const questions: ScenarioQuestion[] = practiceWords
-          .map((wordData: any) => {
-            console.log('🔍 Processing word for practice:', {
-              wordData: wordData,
-              structure: Object.keys(wordData)
-            });
-
-            // Handle both possible response structures
-            let word: PracticeWord;
+        
+        // Create scenario questions for review words
+        const questions: ScenarioQuestion[] = reviewWords
+          .slice(0, wordCount)
+          .map(wordData => {
+            // Данные от /due-for-review имеют структуру: { kazakh_word: { translations: [...] } }
+            const kazakhWord = (wordData as any).kazakh_word;
             
-            // Check if it's the flattened structure (actual API response)
-            if (wordData.translation && wordData.kazakh_word && typeof wordData.kazakh_word === 'string') {
-              word = {
-                id: wordData.id,
-                kazakh_word: wordData.kazakh_word,
-                kazakh_cyrillic: wordData.kazakh_cyrillic,
-                translation: wordData.translation,
-              };
-            }
-            // Handle nested structure (TypeScript type)
-            else if (wordData.kazakh_word && typeof wordData.kazakh_word === 'object') {
-              // Get translation in user's language
-              let translation = 'No translation';
-              const userLanguage = user?.main_language?.language_code || 'en';
-              
-              if (wordData.kazakh_word.translations) {
-                const userLangTranslation = wordData.kazakh_word.translations.find(
-                  (t: any) => t.language_code === userLanguage
-                );
-                
-                if (userLangTranslation) {
-                  translation = userLangTranslation.translation;
-                } else if (wordData.kazakh_word.translations.length > 0) {
-                  translation = wordData.kazakh_word.translations[0].translation;
-                }
-              }
-
-              word = {
-                id: wordData.kazakh_word.id,
-                kazakh_word: wordData.kazakh_word.kazakh_word,
-                kazakh_cyrillic: wordData.kazakh_word.kazakh_cyrillic,
-                translation: translation,
-              };
-            }
-            else {
-              console.warn('Unknown word data structure:', wordData);
+            if (!kazakhWord) {
+              console.log('⚠️ No kazakh_word data found');
               return null;
             }
+            
+            // Ищем перевод на нужном языке
+            let translation = '';
+            if (kazakhWord.translations && Array.isArray(kazakhWord.translations)) {
+              // Ищем перевод на языке пользователя (ru)
+              const userLangTranslation = kazakhWord.translations.find(
+                (t: any) => t.language_code === userLanguage
+              );
+              
+              if (userLangTranslation) {
+                translation = userLangTranslation.translation;
+              } else {
+                // Fallback: ищем английский перевод
+                const enTranslation = kazakhWord.translations.find(
+                  (t: any) => t.language_code === 'en'
+                );
+                if (enTranslation) {
+                  translation = enTranslation.translation;
+                } else if (kazakhWord.translations.length > 0) {
+                  // Последний fallback: используем первый доступный перевод
+                  translation = kazakhWord.translations[0].translation;
+                }
+              }
+            }
 
-            // Skip words without valid translation or kazakh word
+            const word = {
+              id: kazakhWord.id,
+              kazakh_word: kazakhWord.kazakh_word,
+              kazakh_cyrillic: kazakhWord.kazakh_cyrillic,
+              translation: translation
+            };
+
+            console.log('🔍 Processing review word:', word.kazakh_word, '→', word.translation, `(${userLanguage})`);
+
             if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
+              console.log('⚠️ Skipping word - no valid translation');
               return null;
             }
 
@@ -194,43 +181,128 @@ const PracticePage: React.FC = () => {
           })
           .filter(q => q !== null) as ScenarioQuestion[];
 
-        console.log('✨ Generated scenario questions:', questions);
-        console.log('📊 Valid questions created:', questions.length, 'out of', practiceWords.length, 'words');
-
         if (questions.length === 0) {
-          throw new Error('No valid words with translations found for practice. Please check if learned words have proper translations.');
+          throw new Error('No words with valid translations found for review');
         }
 
+        console.log('✅ Review session ready with', questions.length, 'questions');
+        
         // Create practice session
         const sessionData = await learningAPI.startPracticeSession({
-          session_type: 'combined_scenarios',
+          session_type: 'review',
           word_count: wordCount,
           category_id: categoryId,
           language_code: userLanguage
         });
-
-        console.log('✅ Practice session created:', sessionData);
 
         setSessionId(sessionData.session_id);
         setScenarioQuestions(questions);
         setQuestionStartTime(Date.now());
 
         return { session: sessionData, questions };
-
-      } catch (error) {
-        console.error('❌ Error starting practice session:', error);
-        throw error;
       }
-    },
-    onError: (error: any) => {
-      console.error('Failed to start practice session:', error);
-      toast.error(error.message || 'Failed to start practice session');
-    },
-    onSuccess: (data) => {
-      console.log('✅ Session started successfully:', data);
-      toast.success('Practice session started!');
-    },
-  });
+
+      // ✅ ДЛЯ ОБЫЧНОЙ ПРАКТИКИ - ТОЧНО ОРИГИНАЛЬНАЯ ЛОГИКА
+      console.log('📚 Fetching learned words...');
+      
+      const learnedWordsResponse = await learningAPI.getLearnedWords({
+        category_id: categoryId,
+        limit: 100, // Get all learned words
+        include_mastered: false,
+        language_code: userLanguage
+      });
+      
+      console.log('📊 Learned words response:', learnedWordsResponse);
+      console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
+      
+      if (learnedWordsResponse.length === 0) {
+        throw new Error('No learned words available for practice. Please complete some learning modules first to unlock practice mode.');
+      }
+
+      // Shuffle for variety and limit to requested word count
+      const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
+      
+      console.log(`🎲 Shuffled ${shuffledWords.length} words`);
+      
+      // Take up to wordCount words
+      const selectedWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
+      console.log(`✂️ Selected ${selectedWords.length} words for practice`);
+
+      // Create scenario questions from words
+      const questions: ScenarioQuestion[] = selectedWords
+        .map(wordData => {
+          // ✅ ИСПРАВЛЕНИЕ: правильная обработка структуры данных из getLearnedWords
+          const word = {
+            id: (wordData as any).id,
+            kazakh_word: (wordData as any).kazakh_word,
+            kazakh_cyrillic: (wordData as any).kazakh_cyrillic,
+            translation: (wordData as any).translation
+          };
+
+          // Skip words without valid translation or kazakh word
+          if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
+            console.log(`⚠️ Skipping word ${word.id}: invalid translation or kazakh word`);
+            return null;
+          }
+
+          const method = practiceMethod;
+          
+          if (method === 'kaz_to_translation') {
+            return {
+              word,
+              question: `What does "${word.kazakh_word}" mean?`,
+              correctAnswer: word.translation,
+              method: 'kaz_to_translation'
+            };
+          } else {
+            return {
+              word,
+              question: `How do you say "${word.translation}" in Kazakh?`,
+              correctAnswer: word.kazakh_word,
+              method: 'translation_to_kaz'
+            };
+          }
+        })
+        .filter(q => q !== null) as ScenarioQuestion[];
+
+      console.log('✨ Generated scenario questions:', questions);
+      console.log('📊 Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
+
+      if (questions.length === 0) {
+        throw new Error('No valid words with translations found for practice. Please check if learned words have proper translations.');
+      }
+
+      // Create practice session
+      const sessionData = await learningAPI.startPracticeSession({
+        session_type: 'combined_scenarios',
+        word_count: wordCount,
+        category_id: categoryId,
+        language_code: userLanguage
+      });
+
+      console.log('✅ Practice session created:', sessionData);
+
+      setSessionId(sessionData.session_id);
+      setScenarioQuestions(questions);
+      setQuestionStartTime(Date.now());
+
+      return { session: sessionData, questions };
+
+    } catch (error) {
+      console.error('❌ Error starting practice session:', error);
+      throw error;
+    }
+  },
+  onError: (error: any) => {
+    console.error('Failed to start practice session:', error);
+    toast.error(error.message || 'Failed to start practice session');
+  },
+  onSuccess: (data) => {
+    console.log('✅ Session started successfully:', data);
+    const message = practiceType === 'review' ? 'Review session started!' : 'Practice session started!';
+    toast.success(message);
+  }
+});
 
   // Submit answer mutation
   const submitAnswerMutation = useMutation({

@@ -124,7 +124,7 @@ const DashboardPage: React.FC = () => {
           value={stats?.words_due_review || 0}
           icon={ClockIcon}
           color="bg-orange-500"
-          link="/app/practice"
+          link="/app/practice?type=review"
         />
         <StatsCard
           title={t('stats.accuracyRate')}

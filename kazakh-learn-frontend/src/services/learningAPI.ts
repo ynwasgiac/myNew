@@ -92,9 +92,34 @@ export const learningAPI = {
   },
 
   // Получить слова для повторения
-  async getWordsForReview(limit: number = 20): Promise<UserWordProgressWithWord[]> {
-    const response = await api.get(`/learning/words/review?limit=${limit}`);
-    return response.data;
+  async getWordsForReview(limit: number = 20, language_code?: string): Promise<UserWordProgressWithWord[]> {
+    try {
+      console.log('🔍 Fetching words for review with limit:', limit, 'language:', language_code);
+      
+      // Передаем language_code в параметрах
+      const params = new URLSearchParams();
+      params.append('limit', limit.toString());
+      if (language_code) {
+        params.append('language_code', language_code);
+      }
+      
+      const response = await api.get(`/learning/words/due-for-review?${params.toString()}`);
+      console.log('✅ Review words response:', response.data);
+      return response.data || [];
+      
+    } catch (error) {
+      console.error('❌ Error fetching due-for-review, trying fallback:', error);
+      
+      // Fallback: используем обычный endpoint с фильтром по статусу
+      try {
+        const response = await api.get(`/learning/words/due-for-review?limit=${limit}`);
+        console.log('✅ Review words response:', response.data);
+        return response.data || [];
+      } catch (error) {
+        console.error('❌ Error fetching review words:', error);
+        return [];
+      }
+    }
   },
 
   // Начать сессию практики
