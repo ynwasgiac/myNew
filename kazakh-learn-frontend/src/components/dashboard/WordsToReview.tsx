@@ -161,12 +161,6 @@ const WordsToReview: React.FC = () => {
             >
               {t('actions.startReviewSession')}
             </Link>
-            <Link
-              to="/app/practice?type=quick"
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-            >
-              {t('actions.quickPractice')}
-            </Link>
           </div>
         </div>
       )}

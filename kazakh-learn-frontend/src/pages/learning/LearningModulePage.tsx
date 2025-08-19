@@ -34,15 +34,7 @@ import {
 import LearningTips from '../../components/learning/LearningTips';
 import DailyProgress from '../../components/learning/DailyProgress';
 import QuickActionCards from '../../components/learning/QuickActionCards';
-import WordsAvailableBreakdown from '../../components/learning/WordsAvailableBreakdown';
 import MotivationalQuote from '../../components/learning/MotivationalQuote';
-
-interface WordsAvailableData {
-  want_to_learn: number;
-  learning: number;
-  review: number;
-  total: number;
-}
 
 interface LearningStats {
   total_words_learning: number;
@@ -82,7 +74,6 @@ const LearningModulePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [selectedDifficulty, setSelectedDifficulty] = useState<number | undefined>();
   const [isAddingWords, setIsAddingWords] = useState(false);
-  const [wordsAvailableData, setWordsAvailableData] = useState<WordsAvailableData | null>(null);
 
   // Fetch user preferences using React Query
   const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
@@ -244,19 +235,6 @@ const LearningModulePage: React.FC = () => {
       setIsAddingWords(false);
     },
   });
-  
-  // Mock data - replace with actual API calls
-  useEffect(() => {
-    // Fetch learning data
-    // This should be replaced with actual API calls
-    const mockWordsData: WordsAvailableData = {
-      want_to_learn: 25,
-      learning: 15,
-      review: 8,
-      total: 48
-    };
-    setWordsAvailableData(mockWordsData);
-  }, []);
 
   // Handle adding random words
   const handleAddRandomWords = () => {
@@ -362,51 +340,8 @@ const LearningModulePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Progress & Stats */}
           <div className="space-y-6">
-            {/* Learning Tips */}
-            <LearningTips />
-            {/* Daily Progress */}
-            <DailyProgress />
 
-            {/* Learning Statistics */}
-            {/* {learningStats && (
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <ChartBarIcon className="h-5 w-5 mr-2 text-blue-500" />
-                  {t('learningStats.title')}
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('learningStats.wordsLearning')}</span>
-                    <span className="font-semibold">{learningStats.total_words_learning}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('learningStats.thisWeek')}</span>
-                    <span className="font-semibold">{learningStats.words_learned_this_week}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('learningStats.streak')}</span>
-                    <span className="font-semibold flex items-center">
-                      <FireIcon className="h-4 w-4 mr-1 text-orange-500" />
-                      {learningStats.current_streak} {t('learningStats.days')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{t('learningStats.accuracy')}</span>
-                    <span className="font-semibold">{learningStats.average_accuracy}%</span>
-                  </div>
-                </div>
-              </div>
-            )} */}
-
-            {/* Words Available Breakdown */}
-            <WordsAvailableBreakdown wordsAvailable={wordsAvailableData} />
-          </div>
-
-          {/* Center Column: Main Action */}
-          <div className="space-y-6">
-            {/* Main Action Section */}
-            <div className="text-center space-y-6">
-              {wordsAvailable && wordsAvailable.total >= 3 ? (
+            {wordsAvailable && wordsAvailable.total >= 3 ? (
                 /* User has enough words - show start learning button */
                 <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
                   <PlayIcon className="h-16 w-16 mx-auto mb-4 text-white" />
@@ -492,16 +427,21 @@ const LearningModulePage: React.FC = () => {
                   </p>
                 </div>
               )}
-            </div>
 
-            {/* Quick Action Cards */}
-            <QuickActionCards />
+              {/* Quick Action Cards */}
+              <QuickActionCards />
           </div>
 
-          {/* Right Column: Additional Info */}
+          {/* Center Column: Main Action */}
           <div className="space-y-6">
+
+            
             {/* Motivational Quote */}
             <MotivationalQuote />
+            {/* Learning Tips */}
+            <LearningTips />
+            {/* Daily Progress */}
+            <DailyProgress />
           </div>
         </div>
       </div>

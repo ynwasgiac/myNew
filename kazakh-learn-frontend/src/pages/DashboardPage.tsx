@@ -18,6 +18,7 @@ import StatsCard from '../components/ui/StatsCard';
 import RecentActivity from '../components/dashboard/RecentActivity';
 import LearningGoals from '../components/dashboard/LearningGoals';
 import WordsToReview from '../components/dashboard/WordsToReview';
+import WordsAvailableBreakdown from '../components/learning/WordsAvailableBreakdown';
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation('dashboard');
@@ -167,48 +168,23 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      <LearningGoals />
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Words to Review */}
-        <div className="lg:col-span-2">
-          <WordsToReview />
-        </div>
 
         {/* Sidebar Content */}
         <div className="space-y-6">
-          <LearningGoals />
-          <RecentActivity />
+          {/* <RecentActivity /> */}
+        </div>
+        {/* Words to Review */}
+        <div className="grid-cols-2">
+          <div><WordsToReview /></div>
+        </div>
+        <div className="grid-cols-2">
+          {/* Words Available Breakdown */}
+          <div><WordsAvailableBreakdown /></div>
         </div>
       </div>
-
-      {/* Learning Progress Chart */}
-      {stats && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {t('learningProgress.title')}
-          </h3>
-          <div className="space-y-4">
-            {Object.entries(stats.words_by_status).map(([status, count]) => (
-              <div key={status} className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">
-                  {getStatusLabel(status)}
-                </span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{
-                        width: `${Math.min(100, (count / (stats.total_words || 1)) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm text-gray-600 w-8 text-right">{count}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

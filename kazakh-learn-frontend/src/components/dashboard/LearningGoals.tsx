@@ -118,13 +118,13 @@ const LearningGoals: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">{t('title')}</h3>
-        <button
+        {/* <button
           onClick={() => setShowAddGoal(!showAddGoal)}
           className="btn-primary text-sm flex items-center space-x-2"
         >
           <PlusIcon className="h-4 w-4" />
           <span>{t('addNewGoal')}</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Daily Progress Section - Always shown first */}
@@ -138,7 +138,7 @@ const LearningGoals: React.FC = () => {
       </div>
 
       {/* Other Goals */}
-      {mockGoals.length > 0 ? (
+      {/* {mockGoals.length > 0 ? (
         <div className="space-y-4">
           <h4 className="text-md font-medium text-gray-800 border-b border-gray-200 pb-2">
             {t('otherGoals', { defaultValue: 'Additional Goals' })}
@@ -172,7 +172,6 @@ const LearningGoals: React.FC = () => {
                   )}
                 </div>
 
-                {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                   <div
                     className={`h-2 rounded-full transition-all duration-300 ${
@@ -184,7 +183,6 @@ const LearningGoals: React.FC = () => {
                   />
                 </div>
 
-                {/* Goal Meta Info */}
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>{t('progress.created')} {formatDate(goal.created_at)}</span>
                   {goal.target_date && (
@@ -212,10 +210,10 @@ const LearningGoals: React.FC = () => {
             {t('noGoals.createFirst')}
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Create Goal Form */}
-      {showAddGoal && (
+      {/* {showAddGoal && (
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h4 className="font-medium text-blue-900 mb-3">{t('createGoal.title')}</h4>
           <form onSubmit={handleCreateGoal} className="space-y-4">
@@ -282,10 +280,10 @@ const LearningGoals: React.FC = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
       {/* Quick Goal Templates */}
-      {!showAddGoal && mockGoals.length > 0 && (
+      {/* {!showAddGoal && mockGoals.length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <h4 className="text-sm font-medium text-gray-700 mb-3">{t('quickGoals.title')}</h4>
           <div className="grid grid-cols-2 gap-2">
@@ -311,7 +309,7 @@ const LearningGoals: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
