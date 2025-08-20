@@ -15,6 +15,7 @@ import { learningAPI } from '../../services/learningAPI';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import DailyProgress from '../learning/DailyProgress';
 import WeeklyProgress from '../goals/WeeklyProgress';
+import WordProgress from '../learning/WordProgress';
 
 interface NewGoal {
   goal_type: string;
@@ -50,6 +51,24 @@ const LearningGoals: React.FC = () => {
       target_date: null,
       created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     },
+    {
+      id: 4,
+      goal_type: 'weekly_practice',
+      target_value: 7,
+      current_value: 3,
+      is_completed: false,
+      target_date: null,
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 5,
+      goal_type: 'streak_maintenance',
+      target_value: 30,
+      current_value: 12,
+      is_completed: false,
+      target_date: null,
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }
   ];
 
   const createGoalMutation = useMutation({
@@ -64,139 +83,174 @@ const LearningGoals: React.FC = () => {
       setNewGoal({ goal_type: 'weekly_practice', target_value: 5 });
     },
     onError: () => {
-      toast.error(t('messages.goalCreateFailed'));
+      toast.error(t('messages.goalError'));
     },
   });
-
-  const getGoalIcon = (goalType: string) => {
-    switch (goalType) {
-      case 'category_mastery':
-        return <TrophyIcon className="h-5 w-5 text-purple-600" />;
-      default:
-        return <ClockIcon className="h-5 w-5 text-gray-600" />;
-    }
-  };
-
-  const getGoalTitle = (goalType: string) => {
-    return t(`goalTypes.${goalType}`, { defaultValue: goalType.replace('_', ' ') });
-  };
-
-  const getGoalUnit = (goalType: string) => {
-    if (goalType === 'daily_words' || goalType === 'category_mastery') {
-      return t('goalUnits.words');
-    }
-    if (goalType === 'weekly_practice') {
-      return t('goalUnits.sessions');
-    }
-    return '';
-  };
-
-  const getProgressPercentage = (current: number, target: number) => {
-    return Math.min(100, Math.round((current / target) * 100));
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     createGoalMutation.mutate(newGoal);
   };
 
+  const getGoalIcon = (goalType: string) => {
+    const iconProps = { className: "h-5 w-5" };
+    
+    switch (goalType) {
+      case 'weekly_practice':
+        return <ClockIcon {...iconProps} className="h-5 w-5 text-blue-600" />;
+      case 'category_mastery':
+        return <BookOpenIcon {...iconProps} className="h-5 w-5 text-purple-600" />;
+      case 'streak_maintenance':
+        return <TrophyIcon {...iconProps} className="h-5 w-5 text-yellow-600" />;
+      default:
+        return <AcademicCapIcon {...iconProps} className="h-5 w-5 text-gray-600" />;
+    }
+  };
+
+  const getGoalTitle = (goalType: string) => {
+    switch (goalType) {
+      case 'weekly_practice':
+        return t('goalTypes.weeklyPractice', { defaultValue: 'Weekly Practice' });
+      case 'category_mastery':
+        return t('goalTypes.categoryMastery', { defaultValue: 'Category Mastery' });
+      case 'streak_maintenance':
+        return t('goalTypes.streakMaintenance', { defaultValue: 'Streak Maintenance' });
+      default:
+        return t('goalTypes.unknown', { defaultValue: 'Unknown Goal' });
+    }
+  };
+
+  const getGoalUnit = (goalType: string) => {
+    switch (goalType) {
+      case 'weekly_practice':
+        return t('units.sessions', { defaultValue: 'sessions' });
+      case 'category_mastery':
+        return t('units.words', { defaultValue: 'words' });
+      case 'streak_maintenance':
+        return t('units.days', { defaultValue: 'days' });
+      default:
+        return '';
+    }
+  };
+
+  const getProgressPercentage = (current: number, target: number) => {
+    return Math.min((current / target) * 100, 100);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
   if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('title')}</h3>
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      {/* Header */}
+    <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">{t('title')}</h3>
-        {/* <button
-          onClick={() => setShowAddGoal(!showAddGoal)}
-          className="btn-primary text-sm flex items-center space-x-2"
-        >
-          <PlusIcon className="h-4 w-4" />
-          <span>{t('addNewGoal')}</span>
-        </button> */}
+        <h3 className="text-lg font-semibold text-gray-900">
+          {t('title', { defaultValue: 'Learning Goals' })}
+        </h3>
+        {!showAddGoal && (
+          <button
+            onClick={() => setShowAddGoal(true)}
+            className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <PlusIcon className="h-4 w-4" />
+            <span className="text-sm font-medium">{t('addGoal', { defaultValue: 'Add Goal' })}</span>
+          </button>
+        )}
       </div>
 
-      {/* Daily Progress Section - Always shown first */}
-      <div className="mb-6">
+      {/* Progress Components - Horizontal Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <DailyProgress />
-      </div>
-
-      {/* Weekly Progress Section */}
-      <div className="mb-6">
         <WeeklyProgress />
+        <WordProgress />
       </div>
 
-      {/* Other Goals */}
-      {/* {mockGoals.length > 0 ? (
+      {/* Other Goals - Horizontal Layout */}
+      {mockGoals.length > 0 ? (
         <div className="space-y-4">
           <h4 className="text-md font-medium text-gray-800 border-b border-gray-200 pb-2">
             {t('otherGoals', { defaultValue: 'Additional Goals' })}
           </h4>
-          {mockGoals.map((goal) => {
-            const progressPercentage = getProgressPercentage(goal.current_value, goal.target_value);
-            
-            return (
-              <div
-                key={goal.id}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  goal.is_completed 
-                    ? 'border-green-200 bg-green-50' 
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    {getGoalIcon(goal.goal_type)}
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {getGoalTitle(goal.goal_type)}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {goal.current_value}/{goal.target_value} {getGoalUnit(goal.goal_type)}
-                      </p>
+          
+          {/* Horizontal container for goals */}
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {mockGoals.map((goal) => {
+              const progressPercentage = getProgressPercentage(goal.current_value, goal.target_value);
+              
+              return (
+                <div
+                  key={goal.id}
+                  className={`flex-shrink-0 w-64 p-4 rounded-lg border-2 transition-all ${
+                    goal.is_completed 
+                      ? 'border-green-200 bg-green-50' 
+                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      {getGoalIcon(goal.goal_type)}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-gray-900 truncate">
+                          {getGoalTitle(goal.goal_type)}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {goal.current_value}/{goal.target_value} {getGoalUnit(goal.goal_type)}
+                        </p>
+                      </div>
                     </div>
+                    {goal.is_completed && (
+                      <CheckCircleIcon className="h-6 w-6 text-green-600 flex-shrink-0" />
+                    )}
                   </div>
-                  {goal.is_completed && (
-                    <CheckCircleIcon className="h-6 w-6 text-green-600" />
-                  )}
-                </div>
 
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      goal.is_completed 
-                        ? 'bg-green-500' 
-                        : 'bg-blue-500'
-                    }`}
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        goal.is_completed 
+                          ? 'bg-green-500' 
+                          : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
 
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>{t('progress.created')} {formatDate(goal.created_at)}</span>
-                  {goal.target_date && (
-                    <span>{t('progress.due')} {formatDate(goal.target_date)}</span>
-                  )}
-                  {goal.is_completed && (
-                    <span className="text-green-600 font-medium">
-                      {t('progress.completed')}
-                    </span>
-                  )}
+                  <div className="space-y-1 text-xs text-gray-500">
+                    <div>{t('progress.created')} {formatDate(goal.created_at)}</div>
+                    {goal.target_date && (
+                      <div>{t('progress.due')} {formatDate(goal.target_date)}</div>
+                    )}
+                    {goal.is_completed && (
+                      <div className="text-green-600 font-medium">
+                        {t('progress.completed')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Add Goal Card */}
+            {!showAddGoal && (
+              <div
+                onClick={() => setShowAddGoal(true)}
+                className="flex-shrink-0 w-64 p-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group"
+              >
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <PlusIcon className="h-8 w-8 text-gray-400 group-hover:text-blue-500 mb-2" />
+                  <h4 className="font-medium text-gray-600 group-hover:text-blue-600 mb-1">
+                    {t('addGoal', { defaultValue: 'Add Goal' })}
+                  </h4>
+                  <p className="text-xs text-gray-500 group-hover:text-blue-500">
+                    {t('addGoalDescription', { defaultValue: 'Set a new learning goal' })}
+                  </p>
                 </div>
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
       ) : (
         <div className="text-center py-6">
@@ -210,60 +264,45 @@ const LearningGoals: React.FC = () => {
             {t('noGoals.createFirst')}
           </button>
         </div>
-      )} */}
+      )}
 
-      {/* Create Goal Form */}
-      {/* {showAddGoal && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-3">{t('createGoal.title')}</h4>
+      {/* Add Goal Form */}
+      {showAddGoal && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
           <form onSubmit={handleCreateGoal} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-1">
-                {t('createGoal.goalType')}
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('createGoal.type')}
               </label>
               <select
                 value={newGoal.goal_type}
                 onChange={(e) => setNewGoal({ ...newGoal, goal_type: e.target.value })}
-                className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="weekly_practice">{t('goalTypeOptions.weekly_practice')}</option>
-                <option value="category_mastery">{t('goalTypeOptions.category_mastery')}</option>
-                <option value="monthly_streak">{t('goalTypeOptions.monthly_streak')}</option>
+                <option value="weekly_practice">{t('goalTypes.weeklyPractice')}</option>
+                <option value="category_mastery">{t('goalTypes.categoryMastery')}</option>
+                <option value="streak_maintenance">{t('goalTypes.streakMaintenance')}</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-1">
-                {t('createGoal.targetValue')}
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('createGoal.target')}
               </label>
               <input
                 type="number"
-                value={newGoal.target_value}
-                onChange={(e) => setNewGoal({ ...newGoal, target_value: parseInt(e.target.value) || 0 })}
-                placeholder={t('createGoal.targetPlaceholder')}
-                className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 min="1"
-                required
+                value={newGoal.target_value}
+                onChange={(e) => setNewGoal({ ...newGoal, target_value: parseInt(e.target.value) })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-blue-800 mb-1">
-                {t('createGoal.targetDate')}
-              </label>
-              <input
-                type="date"
-                value={newGoal.target_date || ''}
-                onChange={(e) => setNewGoal({ ...newGoal, target_date: e.target.value || undefined })}
-                className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div className="flex space-x-3">
+            <div className="flex space-x-2 pt-2">
               <button
                 type="submit"
                 disabled={createGoalMutation.isPending}
-                className="btn-primary text-sm flex-1 disabled:opacity-50"
+                className="btn-primary text-sm flex-1"
               >
                 {createGoalMutation.isPending ? t('createGoal.creating') : t('createGoal.create')}
               </button>
@@ -280,36 +319,7 @@ const LearningGoals: React.FC = () => {
             </div>
           </form>
         </div>
-      )} */}
-
-      {/* Quick Goal Templates */}
-      {/* {!showAddGoal && mockGoals.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">{t('quickGoals.title')}</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => {
-                setNewGoal({ goal_type: 'weekly_practice', target_value: 3 });
-                setShowAddGoal(true);
-              }}
-              className="text-left p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <div className="text-sm font-medium text-green-900">{t('quickGoals.relaxedPace.title', { defaultValue: '3 sessions/week' })}</div>
-              <div className="text-xs text-green-600">{t('quickGoals.relaxedPace.description', { defaultValue: 'Relaxed pace' })}</div>
-            </button>
-            <button
-              onClick={() => {
-                setNewGoal({ goal_type: 'category_mastery', target_value: 100 });
-                setShowAddGoal(true);
-              }}
-              className="text-left p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <div className="text-sm font-medium text-purple-900">{t('quickGoals.categoryMastery.title', { defaultValue: 'Master 100 words' })}</div>
-              <div className="text-xs text-purple-600">{t('quickGoals.categoryMastery.description', { defaultValue: 'Category challenge' })}</div>
-            </button>
-          </div>
-        </div>
-      )} */}
+      )}
     </div>
   );
 };

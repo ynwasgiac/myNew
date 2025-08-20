@@ -182,7 +182,7 @@ const DashboardPage: React.FC = () => {
         </div>
         <div className="grid-cols-2">
           {/* Words Available Breakdown */}
-          <div><WordsAvailableBreakdown /></div>
+          {/* <div><WordsAvailableBreakdown /></div> */}
         </div>
       </div>
     </div>
