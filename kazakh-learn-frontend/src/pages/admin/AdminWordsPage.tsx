@@ -26,6 +26,7 @@ const WordTableRow = memo<{
   onManageImages: (word: KazakhWordSummary) => void;
   onManageSounds: (word: KazakhWordSummary) => void;
   getDifficultyColor: (level: number) => string;
+  onExampleSentences: (word: any) => void; // Add this line
   getTypeColor: (type: string) => string;
 }>(({ 
   word, 
@@ -35,6 +36,7 @@ const WordTableRow = memo<{
   onDelete, 
   onManageImages, 
   onManageSounds,
+  onExampleSentences,
   getDifficultyColor,
   getTypeColor 
 }) => {
@@ -58,6 +60,11 @@ const WordTableRow = memo<{
     onManageSounds(word);
   }, [onManageSounds, word]);
 
+  // Add this handler for example sentences
+  const handleExampleSentencesClick = useCallback(() => {
+    onExampleSentences(word);
+  }, [onExampleSentences, word]);
+
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
@@ -67,6 +74,22 @@ const WordTableRow = memo<{
           onChange={handleSelectChange}
           className="rounded border-gray-300"
         />
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex items-center space-x-2">
+          {/* Your existing action buttons */}
+          
+          {/* Add example sentences button */}
+          <button
+            onClick={handleExampleSentencesClick}
+            className="text-purple-600 hover:text-purple-900"
+            title="Manage Example Sentences"
+          >
+            dasdd
+          </button>
+          
+          {/* Other action buttons... */}
+        </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900">
