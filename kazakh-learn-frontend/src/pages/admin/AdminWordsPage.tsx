@@ -65,7 +65,11 @@ const WordTableRow = memo<{
 
   // Add this handler for example sentences
   const handleExampleSentencesClick = useCallback(() => {
+    console.log('🖱️ КНОПКА EXAMPLE SENTENCES НАЖАТА в WordTableRow');
+    console.log('📊 Word object:', word);
+    console.log('🔗 Calling onExampleSentences function...');
     onExampleSentences(word);
+    console.log('✅ onExampleSentences вызвана');
   }, [onExampleSentences, word]);
 
   return (
@@ -613,12 +617,27 @@ const AdminWordsPage: React.FC = () => {
   }, [filters]);
 
   const handleExampleSentencesOpen = (word: any) => {
+    console.log('🔥 КНОПКА НАЖАТА! handleExampleSentencesOpen вызвана');
+    console.log('📝 Word data:', word);
+    
+    console.log('🔍 СОСТОЯНИЕ ДО ИЗМЕНЕНИЯ:');
+    console.log('  showExampleSentencesModal:', showExampleSentencesModal);
+    console.log('  selectedWordForSentences:', selectedWordForSentences);
+    
     setSelectedWordForSentences({
       id: word.id,
       kazakh_word: word.kazakh_word,
       kazakh_cyrillic: word.kazakh_cyrillic
     });
     setShowExampleSentencesModal(true);
+    
+    console.log('✅ setState вызваны, проверяем через 100ms...');
+    
+    setTimeout(() => {
+      console.log('🔍 СОСТОЯНИЕ ПОСЛЕ ИЗМЕНЕНИЯ:');
+      console.log('  showExampleSentencesModal:', showExampleSentencesModal);
+      console.log('  selectedWordForSentences:', selectedWordForSentences);
+    }, 100);
   };
   
   const handleExampleSentencesClose = () => {
@@ -670,6 +689,26 @@ const AdminWordsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <div className="mb-4 p-4 bg-red-100 border border-red-300 rounded">
+      <h3 className="text-red-800 font-bold mb-2">🧪 ТЕСТИРОВАНИЕ Example Sentences</h3>
+      <button
+        onClick={() => {
+          console.log('🔥 ТЕСТОВАЯ КНОПКА НАЖАТА');
+          console.log('🎯 Вызываем handleExampleSentencesOpen...');
+          handleExampleSentencesOpen({
+            id: 1,
+            kazakh_word: 'тест',
+            kazakh_cyrillic: 'тест'
+          });
+        }}
+        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+      >
+        🔥 ТЕСТ Example Sentences Modal
+      </button>
+      <p className="text-red-700 text-sm mt-2">
+        Если эта кнопка открывает модальное окно, то проблема в кнопке в таблице.
+      </p>
+    </div>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -1041,6 +1080,17 @@ const AdminWordsPage: React.FC = () => {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSave={handleAddWordSave}
+      />
+      
+      <ExampleSentencesModal
+        isOpen={showExampleSentencesModal}
+        onClose={handleExampleSentencesClose}
+        wordId={selectedWordForSentences?.id || null}
+        wordInfo={selectedWordForSentences ? {
+          kazakh_word: selectedWordForSentences.kazakh_word,
+          kazakh_cyrillic: selectedWordForSentences.kazakh_cyrillic
+        } : null}
+        onSave={handleExampleSentencesSave}
       />
 
       {/* Delete Confirmation Modal */}

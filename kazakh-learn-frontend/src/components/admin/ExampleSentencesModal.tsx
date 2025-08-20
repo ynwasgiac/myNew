@@ -129,41 +129,84 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
     }
   };
 
-  const translateSentenceWithGPT = async (languageCode: string, languageName: string) => {
-    if (!newSentence.kazakh_sentence) {
-      toast.error('Please enter a Kazakh sentence first');
+  const translateSentenceWithGPT = async (kazakhSentence: string, targetLanguageCode: string) => {
+    console.log('🔄 Starting translation:', { kazakhSentence, targetLanguageCode });
+    
+    if (!kazakhSentence.trim()) {
+      toast.error('Kazakh sentence is required for translation');
       return;
     }
-
-    const translationKey = `new_${languageCode}`;
-    setTranslating(prev => ({ ...prev, [translationKey]: true }));
-
+  
+    const language = languages.find(lang => lang.language_code === targetLanguageCode);
+    const languageName = language?.language_name || targetLanguageCode.toUpperCase();
+  
+    const languageKey = `translating_${targetLanguageCode}`;
+    setTranslating(prev => ({ ...prev, [languageKey]: true }));
+  
     try {
+      console.log('🚀 Sending translation request...');
       const response = await api.post('/ai/translate-sentence', {
-        kazakh_sentence: newSentence.kazakh_sentence,
-        target_language_code: languageCode,
-        target_language_name: languageName,
-        context: newSentence.usage_context
+        kazakh_sentence: kazakhSentence.trim(),
+        target_language_code: targetLanguageCode,
+        target_language_name: languageName,  // ✅ Добавили это поле
+        context: newSentence.usage_context || undefined
       });
-
-      const translation = response.data;
-      setNewSentence(prev => ({
-        ...prev,
-        translations: {
-          ...prev.translations,
-          [languageCode]: translation.translated_sentence
-        }
-      }));
-
-      toast.success(`Translation to ${languageName} generated successfully`);
+  
+      console.log('✅ Translation successful:', response.data);
+      
+      if (response.data && response.data.translated_sentence) {
+        // Обновляем перевод в форме
+        setNewSentence(prev => ({
+          ...prev,
+          translations: {
+            ...prev.translations,
+            [targetLanguageCode]: response.data.translated_sentence
+          }
+        }));
+        
+        toast.success(`Translation to ${languageName} completed`);
+      } else {
+        throw new Error('Invalid response format from translation service');
+      }
     } catch (error: any) {
-      console.error('Error translating sentence:', error);
-      const errorMessage = error.response?.data?.detail || `Failed to translate to ${languageName}`;
+      console.error('❌ Translation error:', error);
+      
+      let errorMessage = 'Failed to translate sentence';
+      
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail;
+        if (Array.isArray(detail)) {
+          // Pydantic validation errors
+          const fieldErrors = detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
+          errorMessage = `Validation error: ${fieldErrors}`;
+        } else {
+          errorMessage = `Validation error: ${detail || 'Invalid request format'}`;
+        }
+      } else if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        switch (status) {
+          case 500:
+            errorMessage = 'AI translation service is temporarily unavailable. Please try again later.';
+            break;
+          case 400:
+            errorMessage = `Invalid request: ${data?.detail || 'Bad request'}`;
+            break;
+          case 403:
+            errorMessage = 'Access denied to translation service';
+            break;
+          default:
+            errorMessage = `Translation service error (${status})`;
+        }
+      }
+      
       toast.error(errorMessage);
     } finally {
-      setTranslating(prev => ({ ...prev, [translationKey]: false }));
+      setTranslating(prev => ({ ...prev, [languageKey]: false }));
     }
   };
+  
 
   const translateExistingSentence = async (sentenceId: number, languageCode: string, languageName: string) => {
     const sentence = sentences.find(s => s.id === sentenceId);
@@ -267,7 +310,7 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
   };
 
   const deleteSentence = async (sentenceId: number) => {
-    if (!confirm('Are you sure you want to delete this example sentence?')) {
+    if (!window.confirm('Are you sure you want to delete this example sentence?')) {
       return;
     }
 
@@ -295,6 +338,26 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
   };
 
   if (!isOpen) return null;
+  
+  const checkAIServiceStatus = async () => {
+    try {
+      const response = await api.get('/ai/status');
+      console.log('🤖 AI Service Status:', response.data);
+      
+      // ✅ ИСПРАВЛЕНИЕ: Используем правильные поля
+      if (!response.data.service_available) {
+        console.warn('⚠️ AI service not available');
+        toast.info('AI translation service is currently unavailable. You can still add translations manually.', {
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('❌ Failed to check AI service status:', error);
+      console.info('ℹ️ AI service status check failed, but manual translation is still available');
+      // AI сервис недоступен, но это не критично для основной функциональности
+    }
+  };
+  
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Manage Example Sentences" size="xl">
@@ -539,11 +602,13 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
                               />
                             </div>
                             <div className="flex flex-col justify-end">
-                              <button
-                                onClick={() => translateSentenceWithGPT(language.language_code, language.language_name)}
-                                disabled={isTranslating || !newSentence.kazakh_sentence}
-                                className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm whitespace-nowrap"
-                              >
+                            <button
+                                type="button"
+                                onClick={() => translateSentenceWithGPT(newSentence.kazakh_sentence, language.language_code)}
+                                disabled={!newSentence.kazakh_sentence.trim() || translating[`translating_${language.language_code}`]}
+                                className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={!newSentence.kazakh_sentence.trim() ? "Enter Kazakh sentence first" : "Translate with AI"}
+                            >
                                 {isTranslating ? (
                                   <>
                                     <LoadingSpinner size="sm"/>
