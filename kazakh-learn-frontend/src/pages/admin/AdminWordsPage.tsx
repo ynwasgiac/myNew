@@ -15,6 +15,9 @@ import {
 import { toast } from 'sonner';
 import AddWordModal from '../../components/admin/AddWordModal';
 import ExampleSentencesModal from '../../components/admin/ExampleSentencesModal';
+import { 
+  DocumentTextIcon  // Добавить этот импорт для иконки Example Sentences
+} from '@heroicons/react/24/outline';
 
 // Memoized table row component (unchanged)
 const WordTableRow = memo<{
@@ -25,8 +28,8 @@ const WordTableRow = memo<{
   onDelete: (id: number) => void;
   onManageImages: (word: KazakhWordSummary) => void;
   onManageSounds: (word: KazakhWordSummary) => void;
+  onExampleSentences: (word: any) => void; 
   getDifficultyColor: (level: number) => string;
-  onExampleSentences: (word: any) => void; // Add this line
   getTypeColor: (type: string) => string;
 }>(({ 
   word, 
@@ -74,22 +77,6 @@ const WordTableRow = memo<{
           onChange={handleSelectChange}
           className="rounded border-gray-300"
         />
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <div className="flex items-center space-x-2">
-          {/* Your existing action buttons */}
-          
-          {/* Add example sentences button */}
-          <button
-            onClick={handleExampleSentencesClick}
-            className="text-purple-600 hover:text-purple-900"
-            title="Manage Example Sentences"
-          >
-            dasdd
-          </button>
-          
-          {/* Other action buttons... */}
-        </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900">
@@ -140,6 +127,13 @@ const WordTableRow = memo<{
               <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" clipRule="evenodd" />
             </svg>
             Audio
+          </button>
+          <button
+            onClick={handleExampleSentencesClick}
+            className="text-orange-600 hover:text-orange-900"
+            title="Manage Example Sentences"
+          >
+            <DocumentTextIcon className="h-4 w-4" />
           </button>
         </div>
       </td>
