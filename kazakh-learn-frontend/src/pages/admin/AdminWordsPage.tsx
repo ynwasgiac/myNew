@@ -14,6 +14,7 @@ import {
 } from '../../services/adminWordsAPI';
 import { toast } from 'sonner';
 import AddWordModal from '../../components/admin/AddWordModal';
+import ExampleSentencesModal from '../../components/admin/ExampleSentencesModal';
 
 // Memoized table row component (unchanged)
 const WordTableRow = memo<{
@@ -186,6 +187,13 @@ const AdminWordsPage: React.FC = () => {
   const [showImagesModal, setShowImagesModal] = useState(false);
   const [showSoundsModal, setShowSoundsModal] = useState(false);
   const [selectedWordForMedia, setSelectedWordForMedia] = useState<KazakhWordSummary | null>(null);
+
+  const [showExampleSentencesModal, setShowExampleSentencesModal] = useState(false);
+  const [selectedWordForSentences, setSelectedWordForSentences] = useState<{
+    id: number;
+    kazakh_word: string;
+    kazakh_cyrillic?: string;
+  } | null>(null);
 
   // Server-side filters and sorting
   const [filters, setFilters] = useState({
@@ -587,6 +595,25 @@ const AdminWordsPage: React.FC = () => {
     }
   }, [filters]);
 
+  const handleExampleSentencesOpen = (word: any) => {
+    setSelectedWordForSentences({
+      id: word.id,
+      kazakh_word: word.kazakh_word,
+      kazakh_cyrillic: word.kazakh_cyrillic
+    });
+    setShowExampleSentencesModal(true);
+  };
+  
+  const handleExampleSentencesClose = () => {
+    setShowExampleSentencesModal(false);
+    setSelectedWordForSentences(null);
+  };
+  
+  const handleExampleSentencesSave = () => {
+    // Refresh the words list to update any counts
+    fetchWords(currentPage, true);
+  };
+
   // Get sort icon
   const getSortIcon = useCallback((field: string) => {
     if (sortBy !== field) return null;
@@ -861,6 +888,7 @@ const AdminWordsPage: React.FC = () => {
                     onDelete={handleDeleteWord}
                     onManageImages={handleManageImages}
                     onManageSounds={handleManageSounds}
+                    onExampleSentences={handleExampleSentencesOpen}
                     getDifficultyColor={getDifficultyColor}
                     getTypeColor={getTypeColor}
                   />
@@ -888,15 +916,21 @@ const AdminWordsPage: React.FC = () => {
               Next
             </button>
           </div>
+          
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Showing page <span className="font-medium">{currentPage}</span> with{' '}
-                <span className="font-medium">{words.length}</span> words of{' '}
-                <span className="font-medium">{totalWords}</span> total
-                {loading && <span className="text-blue-600 ml-2">Loading...</span>}
+                Showing <span className="font-medium">{((currentPage - 1) * pageSize) + 1}</span> to{' '}
+                <span className="font-medium">
+                  {Math.min(currentPage * pageSize, totalWords)}
+                </span>{' '}
+                of <span className="font-medium">{totalWords}</span> results
+                {(filters.search || filters.categoryId || filters.wordTypeId || filters.difficultyLevelId) && (
+                  <span className="text-blue-600 ml-1">(filtered)</span>
+                )}
               </p>
             </div>
+            
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button
