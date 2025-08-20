@@ -541,6 +541,41 @@ const startSessionMutation = useMutation({
     });
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Игнорируем если пользователь печатает в input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+  
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        
+        if (showAnswer) {
+          // Если показан ответ, активируем кнопку "Next Question"
+          handleNextQuestion();
+        } else if (userAnswer.trim()) {
+          // Если ответ не показан, но есть введенный текст, проверяем ответ
+          handleSubmitAnswer();
+        }
+      }
+      
+      // Дополнительно: Escape для пропуска вопроса
+      if (e.key === 'Escape' && !showAnswer) {
+        e.preventDefault();
+        handleSkip();
+      }
+    };
+  
+    // Добавляем обработчик события
+    window.addEventListener('keydown', handleKeyDown);
+  
+    // Очищаем обработчик при размонтировании компонента
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showAnswer, userAnswer, handleNextQuestion, handleSubmitAnswer, handleSkip]);
+
   // Get current question and progress
   const isLastQuestion = currentQuestionIndex === scenarioQuestions.length - 1;
   const progress = scenarioQuestions.length > 0 ? ((currentQuestionIndex + 1) / scenarioQuestions.length) * 100 : 0;
@@ -638,13 +673,19 @@ const startSessionMutation = useMutation({
             </div>
 
             <div className="flex gap-3">
-              <button
-                onClick={handleSubmitAnswer}
-                disabled={!userAnswer.trim()}
-                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                Check Answer
-              </button>
+            <button
+              onClick={handleSubmitAnswer}
+              disabled={!userAnswer.trim()}
+              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 group"
+              title="Press Enter to check answer"
+            >
+              <span>Check Answer</span>
+              {userAnswer.trim() && (
+                <span className="text-xs bg-blue-500 px-2 py-1 rounded border border-blue-400 opacity-75 group-hover:opacity-100 transition-opacity">
+                  Enter ⏎
+                </span>
+              )}
+            </button>
               
               {/* Hint button */}
               {hintHelper && !hintState?.isCompleted && (
@@ -690,10 +731,13 @@ const startSessionMutation = useMutation({
             {/* Next Button */}
             <button
               onClick={handleNextQuestion}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2 mx-auto"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 mx-auto group"
+              title="Press Enter to continue"
             >
-              <span>{isLastQuestion ? 'Finish Practice' : 'Next Question'}</span>
-              <ArrowRightIcon className="w-5 h-5" />
+              <span>{isLastQuestion ? 'Finish Session' : 'Next Question'}</span>
+              <span className="text-xs bg-blue-500 px-2 py-1 rounded border border-blue-400 opacity-75 group-hover:opacity-100 transition-opacity">
+                Enter ⏎
+              </span>
             </button>
           </div>
         )}
