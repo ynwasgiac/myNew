@@ -1,0 +1,61 @@
+2025-08-21 11:36:12,760 - INFO - Starting sentence generation...
+2025-08-21 11:36:12,760 - INFO - API: http://127.0.0.1:8000
+2025-08-21 11:36:12,760 - INFO - Max words: All
+2025-08-21 11:36:12,760 - INFO - Delay: 2.0s
+2025-08-21 11:36:12,783 - INFO - API Response type: <class 'dict'>
+2025-08-21 11:36:12,783 - INFO - Found words in 'words' key with 50 items
+2025-08-21 11:36:12,783 - INFO -   Word 1: жылқы (ID: 3)
+2025-08-21 11:36:12,783 - INFO -   Word 2: сиыр (ID: 4)
+2025-08-21 11:36:12,783 - INFO -   Word 3: ана (ID: 5)
+2025-08-21 11:36:12,783 - INFO -   Word 4: әке (ID: 6)
+2025-08-21 11:36:12,783 - INFO -   Word 5: бала (ID: 7)
+2025-08-21 11:36:12,783 - INFO -   Word 6: қызыл (ID: 8)
+2025-08-21 11:36:12,784 - INFO -   Word 7: көк (ID: 9)
+2025-08-21 11:36:12,784 - INFO -   Word 8: жасыл (ID: 10)
+2025-08-21 11:36:12,784 - INFO -   Word 9: ақ (ID: 11)
+2025-08-21 11:36:12,784 - INFO -   Word 10: бір (ID: 12)
+2025-08-21 11:36:12,784 - INFO -   ... and 40 more words
+2025-08-21 11:36:12,784 - INFO - Successfully processed 50 words
+2025-08-21 11:36:12,784 - INFO - Found 50 words, processing 50
+2025-08-21 11:36:12,784 - INFO - 
+==================================================
+2025-08-21 11:36:12,784 - INFO - Processing word: жылқы
+2025-08-21 11:36:12,784 - INFO - Word ID: 3
+2025-08-21 11:36:12,784 - INFO - ==================================================
+2025-08-21 11:36:17,370 - INFO - Generated sentence: Біздің жылқы алаңқайда жүр.
+2025-08-21 11:36:17,383 - INFO - Successfully created sentence with ID: 94
+2025-08-21 11:36:17,384 - INFO - Starting translation to Russian (ru)...
+2025-08-21 11:36:24,900 - INFO - Russian: Наши лошади гуляют на пастбище.
+2025-08-21 11:36:24,900 - INFO - Translation received: Наши лошади гуляют на пастбище.
+2025-08-21 11:36:24,917 - INFO - Successfully added ru translation
+2025-08-21 11:36:24,917 - INFO - ✅ Successfully saved Russian translation
+2025-08-21 11:36:24,917 - INFO - Starting translation to English (en)...
+2025-08-21 11:36:29,565 - INFO - English: Our horses are out in the pasture.
+2025-08-21 11:36:29,565 - INFO - Translation received: Our horses are out in the pasture.
+2025-08-21 11:36:29,581 - INFO - Successfully added en translation
+2025-08-21 11:36:29,582 - INFO - ✅ Successfully saved English translation
+2025-08-21 11:36:29,582 - INFO - Starting translation to Chinese Simplified (zh)...
+2025-08-21 11:36:36,466 - INFO - Chinese Simplified: 我们的马在场地上走着。
+2025-08-21 11:36:36,466 - INFO - Translation received: 我们的马在场地上走着。
+2025-08-21 11:36:36,479 - INFO - Successfully added zh translation
+2025-08-21 11:36:36,479 - INFO - ✅ Successfully saved Chinese Simplified translation
+2025-08-21 11:36:36,479 - INFO - SUCCESS: жылқы completed! (3/3 translations saved)
+2025-08-21 11:36:36,479 - INFO - Waiting 2.0 seconds...
+2025-08-21 11:36:38,490 - INFO - 
+==================================================
+2025-08-21 11:36:38,490 - INFO - Processing word: сиыр
+2025-08-21 11:36:38,490 - INFO - Word ID: 4
+2025-08-21 11:36:38,490 - INFO - ==================================================
+2025-08-21 11:36:42,632 - INFO - Generated sentence: Сиыр жайылып жүр.
+2025-08-21 11:36:42,646 - INFO - Successfully created sentence with ID: 95
+2025-08-21 11:36:42,646 - INFO - Starting translation to Russian (ru)...
+2025-08-21 11:36:47,201 - INFO - Russian: Корова пасется.
+2025-08-21 11:36:47,201 - INFO - Translation received: Корова пасется.
+2025-08-21 11:36:47,219 - INFO - Successfully added ru translation
+2025-08-21 11:36:47,219 - INFO - ✅ Successfully saved Russian translation
+2025-08-21 11:36:47,219 - INFO - Starting translation to English (en)...
+2025-08-21 11:36:51,125 - INFO - English: The cow is grazing.
+2025-08-21 11:36:51,125 - INFO - Translation received: The cow is grazing.
+2025-08-21 11:36:51,138 - INFO - Successfully added en translation
+2025-08-21 11:36:51,139 - INFO - ✅ Successfully saved English translation
+2025-08-21 11:36:51,139 - INFO - Starting translation to Chinese Simplified (zh)...

@@ -508,6 +508,155 @@ async def get_words_paginated(
         has_previous=has_previous
     )
 
+@app.get("/words/without-examples", response_model=PaginatedWordsResponse)
+async def get_words_without_examples(
+    response: Response,
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    page_size: int = Query(20, ge=1, le=50, description="Number of words per page (max 50)"),
+    category_id: Optional[int] = Query(None, description="Filter by category"),
+    word_type_id: Optional[int] = Query(None, description="Filter by word type"),
+    difficulty_level_id: Optional[int] = Query(None, description="Filter by difficulty level"),
+    search: Optional[str] = Query(None, min_length=2, description="Search in Kazakh word or translation"),
+    language_code: Optional[str] = Query(None, description="Language code for translations"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_with_refresh)
+):
+    """Get paginated list of Kazakh words that DON'T have any example sentences"""
+
+    # Handle automatic token refresh
+    TokenRefreshResponse.add_token_header(response, current_user)
+
+    # Use user's preferred language if not specified
+    if not language_code:
+        language_code = get_user_language_preference(current_user)
+
+    # Calculate offset
+    offset = (page - 1) * page_size
+
+    # Build base query for counting - only words WITHOUT example sentences
+    count_query = (
+        select(func.count(KazakhWord.id))
+        .select_from(KazakhWord)
+        .outerjoin(ExampleSentence)  # LEFT JOIN with example sentences
+        .where(ExampleSentence.id.is_(None))  # WHERE example sentence doesn't exist
+    )
+    
+    # Build main query - only words WITHOUT example sentences
+    main_query = (
+        select(KazakhWord)
+        .options(
+            joinedload(KazakhWord.word_type),
+            joinedload(KazakhWord.category),
+            joinedload(KazakhWord.difficulty_level),
+            selectinload(KazakhWord.translations).joinedload(Translation.language),
+            selectinload(KazakhWord.images)
+        )
+        .outerjoin(ExampleSentence)  # LEFT JOIN with example sentences
+        .where(ExampleSentence.id.is_(None))  # WHERE example sentence doesn't exist
+    )
+
+    # Apply filters to both queries
+    filters = []
+    
+    if category_id:
+        filters.append(KazakhWord.category_id == category_id)
+    
+    if word_type_id:
+        filters.append(KazakhWord.word_type_id == word_type_id)
+    
+    if difficulty_level_id:
+        filters.append(KazakhWord.difficulty_level_id == difficulty_level_id)
+
+    # Handle search functionality
+    if search:
+        search_term = f"%{search.lower()}%"
+        search_conditions = [
+            KazakhWord.kazakh_word.ilike(search_term),
+            KazakhWord.kazakh_cyrillic.ilike(search_term)
+        ]
+        
+        # Search in translations for the specified language
+        translation_subquery = (
+            select(Translation.kazakh_word_id)
+            .join(Language)
+            .where(
+                and_(
+                    Translation.translation.ilike(search_term),
+                    Language.language_code == language_code
+                )
+            )
+        )
+        search_conditions.append(KazakhWord.id.in_(translation_subquery))
+        
+        filters.append(or_(*search_conditions))
+
+    # Apply filters
+    if filters:
+        count_query = count_query.where(and_(*filters))
+        main_query = main_query.where(and_(*filters))
+
+    # Get total count
+    total_result = await db.execute(count_query)
+    total_count = total_result.scalar() or 0
+
+    # Apply pagination and ordering
+    main_query = main_query.offset(offset).limit(page_size).order_by(KazakhWord.id)
+
+    # Execute main query
+    result = await db.execute(main_query)
+    words = result.unique().scalars().all()
+
+    # Convert to summary format (same as original endpoint)
+    summaries = []
+    for word in words:
+        # Get primary translation for user's language
+        primary_translation = None
+        for translation in word.translations:
+            if translation.language.language_code == language_code:
+                primary_translation = translation.translation
+                break
+
+        # Get primary image
+        primary_image = None
+        if word.images:
+            # Find primary image or use first one
+            for img in word.images:
+                if img.is_primary:
+                    primary_image = img.image_url
+                    break
+            if not primary_image and word.images:
+                primary_image = word.images[0].image_url
+
+        summaries.append(KazakhWordSummary(
+            id=word.id,
+            kazakh_word=word.kazakh_word,
+            kazakh_cyrillic=word.kazakh_cyrillic,
+            word_type_name=word.word_type.type_name if word.word_type else "Unknown",
+            category_name=word.category.category_name if word.category else "Unknown",
+            difficulty_level=word.difficulty_level.level_number if word.difficulty_level else 1,
+            primary_translation=primary_translation,
+            primary_image=primary_image
+        ))
+
+    # Calculate pagination info
+    total_pages = (total_count + page_size - 1) // page_size
+    has_next = page < total_pages
+    has_previous = page > 1
+
+    return PaginatedWordsResponse(
+        words=summaries,
+        pagination={
+            "current_page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "start_index": offset + 1 if summaries else 0,
+            "end_index": offset + len(summaries),
+        },
+        total_count=total_count,
+        has_next=has_next,
+        has_previous=has_previous
+    )
+
 @app.get("/words/legacy/", response_model=List[KazakhWordSummary])
 async def get_words_legacy(
         response: Response,

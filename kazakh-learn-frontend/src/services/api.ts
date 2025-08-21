@@ -138,6 +138,30 @@ export const wordsAPI = {
   },
   // ... keep all your existing functions ...
 
+  // Новый метод для получения слов без example sentences (лучшая производительность)
+  async getWordsWithoutExamples(filters: WordFilters = {}): Promise<PaginatedWordsResponse> {
+    const params = new URLSearchParams();
+    
+    // Set defaults
+    const page = filters.page || 1;
+    const pageSize = filters.page_size || 20;
+    
+    params.append('page', page.toString());
+    params.append('page_size', pageSize.toString());
+    
+    // Add other filters
+    if (filters.search) params.append('search', filters.search);
+    if (filters.category_id) params.append('category_id', filters.category_id.toString());
+    if (filters.word_type_id) params.append('word_type_id', filters.word_type_id.toString());
+    if (filters.difficulty_level_id) params.append('difficulty_level_id', filters.difficulty_level_id.toString());
+    if (filters.language_code) params.append('language_code', filters.language_code);
+    
+    console.log('📡 Fetching words that are missing example sentences:', params.toString());
+    
+    const response = await api.get<PaginatedWordsResponse>(`/words/without-examples?${params}`);
+    return response.data;
+  },
+
   async getWords(filters: Omit<WordFilters, 'page' | 'page_size'> & { skip?: number; limit?: number } = {}): Promise<KazakhWordSummary[]> {
     console.warn('wordsAPI.getWords is deprecated. Use getWordsPaginated instead.');
     
