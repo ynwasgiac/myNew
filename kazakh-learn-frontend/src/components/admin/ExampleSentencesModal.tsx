@@ -146,10 +146,10 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
     try {
       console.log('🚀 Sending translation request...');
       const response = await api.post('/ai/translate-sentence', {
-        kazakh_sentence: kazakhSentence.trim(),
-        target_language_code: targetLanguageCode,
-        target_language_name: languageName,  // ✅ Добавили это поле
-        context: newSentence.usage_context || undefined
+        "context": newSentence.usage_context || "daily conversation",
+        "kazakh_sentence": kazakhSentence.trim(),
+        "target_language_code": targetLanguageCode,
+        "target_language_name": languageName
       });
   
       console.log('✅ Translation successful:', response.data);
@@ -167,7 +167,7 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
         toast.success(`Translation to ${languageName} completed`);
       } else {
         throw new Error('Invalid response format from translation service');
-      }
+      }      
     } catch (error: any) {
       console.error('❌ Translation error:', error);
       
@@ -211,27 +211,27 @@ const ExampleSentencesModal: React.FC<ExampleSentencesModalProps> = ({
   const translateExistingSentence = async (sentenceId: number, languageCode: string, languageName: string) => {
     const sentence = sentences.find(s => s.id === sentenceId);
     if (!sentence) return;
-
+  
     const translationKey = `existing_${sentenceId}_${languageCode}`;
     setTranslating(prev => ({ ...prev, [translationKey]: true }));
-
+  
     try {
       const response = await api.post('/ai/translate-sentence', {
-        kazakh_sentence: sentence.kazakh_sentence,
-        target_language_code: languageCode,
-        target_language_name: languageName,
-        context: sentence.usage_context
+        "context": sentence.usage_context || "daily conversation",
+        "kazakh_sentence": sentence.kazakh_sentence,
+        "target_language_code": languageCode,
+        "target_language_name": languageName
       });
-
+  
       const translation = response.data;
-
+  
       // Create the translation via API
       await api.post('/example-sentence-translations/', {
         example_sentence_id: sentenceId,
         language_code: languageCode,
         translated_sentence: translation.translated_sentence
       });
-
+  
       // Refresh the sentences to show the new translation
       await fetchData();
       toast.success(`Translation to ${languageName} added successfully`);

@@ -689,26 +689,6 @@ const AdminWordsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="mb-4 p-4 bg-red-100 border border-red-300 rounded">
-      <h3 className="text-red-800 font-bold mb-2">🧪 ТЕСТИРОВАНИЕ Example Sentences</h3>
-      <button
-        onClick={() => {
-          console.log('🔥 ТЕСТОВАЯ КНОПКА НАЖАТА');
-          console.log('🎯 Вызываем handleExampleSentencesOpen...');
-          handleExampleSentencesOpen({
-            id: 1,
-            kazakh_word: 'тест',
-            kazakh_cyrillic: 'тест'
-          });
-        }}
-        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-      >
-        🔥 ТЕСТ Example Sentences Modal
-      </button>
-      <p className="text-red-700 text-sm mt-2">
-        Если эта кнопка открывает модальное окно, то проблема в кнопке в таблице.
-      </p>
-    </div>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

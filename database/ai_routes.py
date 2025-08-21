@@ -27,6 +27,33 @@ logger = logging.getLogger(__name__)
 # Create router
 router = APIRouter(prefix="/ai", tags=["AI Services"])
 
+def clean_json_response(response_text: str) -> str:
+    """Clean JSON response from markdown formatting"""
+    if not response_text:
+        return "{}"
+
+    # Remove markdown JSON formatting
+    if response_text.strip().startswith('```json'):
+        # Find the content between ```json and ```
+        start_marker = '```json'
+        end_marker = '```'
+
+        start_idx = response_text.find(start_marker)
+        if start_idx != -1:
+            start_idx += len(start_marker)
+            end_idx = response_text.find(end_marker, start_idx)
+            if end_idx != -1:
+                response_text = response_text[start_idx:end_idx].strip()
+
+    # Remove other common markdown formatting
+    response_text = response_text.strip()
+    if response_text.startswith('```') and response_text.endswith('```'):
+        lines = response_text.split('\\n')
+        if len(lines) > 2:
+            response_text = '\\n'.join(lines[1:-1])
+
+    return response_text.strip()
+
 
 # ===== AI ENDPOINTS =====
 
@@ -81,7 +108,7 @@ Respond with valid JSON only."""
             )
 
         # Get available model
-        model = await translation_service._get_available_model()
+        model = translation_service.preferred_model
 
         # Make API call
         response = await translation_service.client.chat.completions.create(
@@ -102,10 +129,13 @@ Respond with valid JSON only."""
 
         # Parse response
         response_text = response.choices[0].message.content
+        cleaned_response = clean_json_response(response_text)
+
         try:
-            generated_data = json.loads(response_text)
-        except json.JSONDecodeError:
-            logger.error(f"Failed to parse AI response: {response_text}")
+            generated_data = json.loads(cleaned_response)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response after cleaning: {cleaned_response}")
+            logger.error(f"Original response: {response_text}")
             raise HTTPException(
                 status_code=500,
                 detail="Failed to generate sentence: Invalid AI response format"
@@ -137,6 +167,33 @@ async def translate_sentence_with_ai(
         current_user: User = Depends(get_current_admin)  # Only admins can translate
 ):
     """Translate a sentence using AI (admin only)"""
+
+    def clean_json_response(response_text: str) -> str:
+        """Clean JSON response from markdown formatting"""
+        if not response_text:
+            return "{}"
+        
+        # Remove markdown JSON formatting
+        if response_text.strip().startswith('```json'):
+            # Find the content between ```json and ```
+            start_marker = '```json'
+            end_marker = '```'
+            
+            start_idx = response_text.find(start_marker)
+            if start_idx != -1:
+                start_idx += len(start_marker)
+                end_idx = response_text.find(end_marker, start_idx)
+                if end_idx != -1:
+                    response_text = response_text[start_idx:end_idx].strip()
+        
+        # Remove other common markdown formatting
+        response_text = response_text.strip()
+        if response_text.startswith('```') and response_text.endswith('```'):
+            lines = response_text.split('\n')
+            if len(lines) > 2:
+                response_text = '\n'.join(lines[1:-1])
+        
+        return response_text.strip()
 
     try:
         logger.info(f"Translating sentence to {request.target_language_name}: {request.kazakh_sentence}")
@@ -184,8 +241,8 @@ Respond with valid JSON only."""
                 detail="AI service unavailable: OpenAI API key not configured"
             )
 
-        # Get available model
-        model = await translation_service._get_available_model()
+        # Use preferred model directly instead of missing method
+        model = translation_service.preferred_model
 
         # Make API call
         response = await translation_service.client.chat.completions.create(
@@ -204,12 +261,15 @@ Respond with valid JSON only."""
             max_tokens=200
         )
 
-        # Parse response
+        # Parse response with cleaning
         response_text = response.choices[0].message.content
+        cleaned_response = clean_json_response(response_text)
+
         try:
-            translation_data = json.loads(response_text)
-        except json.JSONDecodeError:
-            logger.error(f"Failed to parse AI translation response: {response_text}")
+            translation_data = json.loads(cleaned_response)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI translation response after cleaning: {cleaned_response}")
+            logger.error(f"Original response: {response_text}")
             raise HTTPException(
                 status_code=500,
                 detail="Failed to translate sentence: Invalid AI response format"
@@ -307,10 +367,20 @@ async def get_ai_service_status(
 
         if is_available:
             try:
-                test_successful = await translation_service.test_translation()
-                available_models = translation_service.json_models
-            except Exception as e:
-                logger.warning(f"AI service test failed: {e}")
+                # Простой тест OpenAI API
+                test_response = await translation_service.client.chat.completions.create(
+                    model=translation_service.preferred_model,
+                    messages=[
+                        {"role": "system", "content": "Test"},
+                        {"role": "user", "content": "Test"}
+                    ],
+                    max_tokens=10
+                )
+                test_successful = True
+            except:
+                test_successful = False
+
+            available_models = translation_service.json_models
 
         return AIServiceStatus(
             service_available=is_available,
