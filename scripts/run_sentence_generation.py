@@ -249,16 +249,16 @@ class SentenceGenerator:
 
             # Use direct language mapping
             language_id = self.language_mapping.get(lang_code)
-
             if not language_id:
                 logger.error(f"Language code '{lang_code}' not found in mapping")
                 logger.error(f"Available codes: {list(self.language_mapping.keys())}")
                 return False
 
-            # Create translation with both language_id AND language_code
+            # ✅ ВАЖНО: передаём и language_id, и language_code
             request_data = {
                 "example_sentence_id": sentence_id,
-                "language_code": lang_code,  # API требует и это поле
+                "language_id": language_id,          # <— ДОБАВЛЕНО
+                "language_code": lang_code,          # <— ОСТАВЛЯЕМ
                 "translated_sentence": translation
             }
 
