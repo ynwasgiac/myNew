@@ -22,9 +22,10 @@ from typing import List, Dict, Optional
 # Edit these values for your setup:
 
 API_URL = "http://127.0.0.1:8000"
-API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImYzYzZmOWRiLWVmZDEtNGEyYS04NzNiLTZkYmJmMzBkMzlmNiIsImV4cCI6MTc1NTc2MTU1MH0.Bz9QQKOajlvPAiEU_dwg-H_jOv9ugmsDkQ89DGvGqls"  # PUT YOUR ADMIN TOKEN HERE
+API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6IjE5ODA0Y2EzLWMwOTQtNDMwMy1iOGE5LWRiYWZmZWIwOTczNyIsImV4cCI6MTc1NTg0ODk2N30.weM8VqSgsrNcMjyDbnzc48cqbQT5o6ArkQXIPmHqzo0"
 MAX_WORDS = None  # None = all words, or set a number like 10
 DELAY_BETWEEN_WORDS = 2.0  # seconds
+DELAY_BETWEEN_TRANSLATIONS = 3.0  # seconds between translations
 VERBOSE = False
 
 # ===== END CONFIGURATION =====
@@ -36,7 +37,7 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-# Set up logging without emojis
+# Set up logging
 log_level = logging.DEBUG if VERBOSE else logging.INFO
 logging.basicConfig(
     level=log_level,
@@ -60,18 +61,6 @@ class SentenceGenerator:
             'successful': 0,
             'failed': 0,
             'start_time': datetime.now()
-        }
-
-        # Direct language mapping based on your database
-        self.language_mapping = {
-            'en': 1,  # English
-            'ru': 2,  # Русский
-            'zh': 7,  # 中文
-            'kk': 3,  # Қазақша
-            'es': 4,  # Español
-            'fr': 5,  # Français
-            'de': 6,  # Deutsch
-            'ar': 8  # العربية
         }
 
         # Target languages for translation
@@ -125,30 +114,13 @@ class SentenceGenerator:
             async with self.session.get('/words/without-examples', params=params) as response:
                 if response.status == 200:
                     data = await response.json()
-                    logger.info(f"API Response type: {type(data)}")
-
-                    # Extract words from response
                     words = []
                     if isinstance(data, dict) and 'words' in data:
                         words = data['words']
-                        logger.info(f"Found words in 'words' key with {len(words)} items")
                     elif isinstance(data, list):
                         words = data
-                        logger.info(f"Direct list with {len(words)} items")
-                    else:
-                        logger.warning(f"Unexpected response format: {type(data)}")
-                        return []
 
-                    # Log first few words for verification
-                    for i, word in enumerate(words[:10]):
-                        word_name = word.get('kazakh_word', 'Unknown')
-                        word_id = word.get('id', 'No ID')
-                        logger.info(f"  Word {i + 1}: {word_name} (ID: {word_id})")
-
-                    if len(words) > 10:
-                        logger.info(f"  ... and {len(words) - 10} more words")
-
-                    logger.info(f"Successfully processed {len(words)} words")
+                    logger.info(f"Found {len(words)} words")
                     return words
                 else:
                     error_text = await response.text()
@@ -156,8 +128,6 @@ class SentenceGenerator:
                     return []
         except Exception as e:
             logger.error(f"Error getting words: {e}")
-            import traceback
-            traceback.print_exc()
             return []
 
     async def generate_sentence(self, word):
@@ -176,7 +146,7 @@ class SentenceGenerator:
                 if response.status == 200:
                     sentence_data = await response.json()
                     generated_sentence = sentence_data.get('kazakh_sentence', '')
-                    logger.info(f"Generated sentence: {generated_sentence}")
+                    logger.info(f"Generated: {generated_sentence}")
                     return sentence_data
                 else:
                     error_text = await response.text()
@@ -193,7 +163,6 @@ class SentenceGenerator:
                 logger.warning("Cannot create sentence: word_id is None")
                 return None
 
-            # API требует kazakh_word_id
             request_data = {
                 "kazakh_word_id": word_id,
                 "kazakh_sentence": sentence_data.get('kazakh_sentence', ''),
@@ -206,7 +175,7 @@ class SentenceGenerator:
                 if response.status in [200, 201]:
                     result = await response.json()
                     sentence_id = result.get('id')
-                    logger.info(f"Successfully created sentence with ID: {sentence_id}")
+                    logger.info(f"Created sentence ID: {sentence_id}")
                     return result
                 else:
                     error_text = await response.text()
@@ -247,31 +216,31 @@ class SentenceGenerator:
                 logger.warning(f"Cannot add {lang_code} translation: sentence_id is None")
                 return False
 
-            # Use direct language mapping
-            language_id = self.language_mapping.get(lang_code)
-            if not language_id:
-                logger.error(f"Language code '{lang_code}' not found in mapping")
-                logger.error(f"Available codes: {list(self.language_mapping.keys())}")
-                return False
-
-            # ✅ ВАЖНО: передаём и language_id, и language_code
             request_data = {
                 "example_sentence_id": sentence_id,
-                "language_id": language_id,          # <— ДОБАВЛЕНО
-                "language_code": lang_code,          # <— ОСТАВЛЯЕМ
+                "language_code": lang_code,
                 "translated_sentence": translation
             }
 
             async with self.session.post('/example-sentence-translations/', json=request_data) as response:
                 if response.status in [200, 201]:
-                    logger.info(f"Successfully added {lang_code} translation")
+                    logger.info(f"✅ Added {lang_code} translation")
                     return True
+                elif response.status == 400:
+                    response_text = await response.text()
+                    if "already exists" in response_text.lower():
+                        logger.info(f"⚠️ {lang_code} translation already exists")
+                        return True
+                    else:
+                        logger.error(f"❌ {lang_code} failed: {response_text}")
+                        return False
                 else:
-                    error_text = await response.text()
-                    logger.error(f"Failed to add {lang_code} translation: {response.status} - {error_text}")
+                    response_text = await response.text()
+                    logger.error(f"❌ {lang_code} failed: {response.status} - {response_text}")
                     return False
+
         except Exception as e:
-            logger.error(f"Error adding translation: {e}")
+            logger.error(f"Error adding {lang_code} translation: {e}")
             return False
 
     async def process_word(self, word):
@@ -281,8 +250,7 @@ class SentenceGenerator:
             word_id = word.get('id')
 
             logger.info(f"\n{'=' * 50}")
-            logger.info(f"Processing word: {word_name}")
-            logger.info(f"Word ID: {word_id}")
+            logger.info(f"Processing word: {word_name} (ID: {word_id})")
             logger.info(f"{'=' * 50}")
 
             # Generate sentence
@@ -301,36 +269,37 @@ class SentenceGenerator:
 
             sentence_id = created_sentence.get('id')
 
-            # Translate to all target languages
+            # Wait before starting translations
+            await asyncio.sleep(1.0)
+
+            # Process each translation
             translations_added = 0
 
             for i, lang in enumerate(self.target_languages):
-                logger.info(
-                    f"Starting translation {i + 1}/{len(self.target_languages)} to {lang['name']} ({lang['code']})...")
+                logger.info(f"\nTranslation {i + 1}/{len(self.target_languages)}: {lang['name']}")
 
+                # Get translation
                 translation_data = await self.translate_sentence(
                     kazakh_sentence, lang['code'], lang['name']
                 )
 
                 if translation_data:
                     translated_text = translation_data.get('translated_sentence', '')
-                    logger.info(f"Translation received: {translated_text}")
 
-                    # Add small delay between translations to avoid conflicts
+                    # Wait before adding
                     if i > 0:
-                        await asyncio.sleep(0.5)
+                        await asyncio.sleep(DELAY_BETWEEN_TRANSLATIONS)
 
-                    # Add to database
+                    # Add translation
                     if await self.add_translation(sentence_id, lang['code'], translated_text):
                         translations_added += 1
-                        logger.info(f"✅ Successfully saved {lang['name']} translation")
                     else:
-                        logger.error(f"❌ Failed to save {lang['name']} translation to database")
+                        logger.error(f"Failed to add {lang['name']} translation")
                 else:
-                    logger.error(f"❌ Failed to get translation for {lang['name']}")
+                    logger.error(f"Failed to get {lang['name']} translation")
 
             logger.info(
-                f"SUCCESS: {word_name} completed! ({translations_added}/{len(self.target_languages)} translations saved)")
+                f"SUCCESS: {word_name} completed! ({translations_added}/{len(self.target_languages)} translations)")
             return True
 
         except Exception as e:
@@ -347,7 +316,7 @@ class SentenceGenerator:
                 return
 
             total_words = min(len(words), MAX_WORDS) if MAX_WORDS else len(words)
-            logger.info(f"Found {len(words)} words, processing {total_words}")
+            logger.info(f"Processing {total_words} words")
 
             for i, word in enumerate(words):
                 if MAX_WORDS and i >= MAX_WORDS:

@@ -1481,7 +1481,7 @@ async def create_example_sentence_translation(
     """Create a new example sentence translation (admin only)"""
     
     # Verify sentence exists
-    sentence = await ExampleSentenceCRUD.get_by_id(db, translation_data.example_sentence_id)
+    sentence = await ExampleSentenceCRUD.get_by_id_raw(db, translation_data.example_sentence_id)
     if not sentence:
         raise HTTPException(status_code=404, detail="Example sentence not found")
     
@@ -1494,18 +1494,32 @@ async def create_example_sentence_translation(
     existing_translation = await ExampleSentenceTranslationCRUD.get_by_sentence_and_language(
         db, translation_data.example_sentence_id, translation_data.language_code
     )
+    
     if existing_translation:
         raise HTTPException(
             status_code=400, 
-            detail="Translation already exists for this sentence and language"
+            detail=f"Translation already exists for this sentence and language. Translation ID: {existing_translation.id}"
         )
     
-    new_translation = await ExampleSentenceTranslationCRUD.create(
-        db,
-        example_sentence_id=translation_data.example_sentence_id,
-        language_id=language.id,
-        translated_sentence=translation_data.translated_sentence
-    )
+    # Создаем новый перевод
+    try:
+        new_translation = await ExampleSentenceTranslationCRUD.create(
+            db,
+            example_sentence_id=translation_data.example_sentence_id,
+            language_id=language.id,
+            translated_sentence=translation_data.translated_sentence
+        )
+    except Exception as e:
+        # Если произошла ошибка уникального constraint
+        if "unique_example_language" in str(e) or "duplicate key" in str(e).lower():
+            raise HTTPException(
+                status_code=400,
+                detail="Translation already exists for this sentence and language"
+            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
     
     return ExampleSentenceTranslationResponse(
         id=new_translation.id,
@@ -1513,7 +1527,6 @@ async def create_example_sentence_translation(
         language_code=translation_data.language_code,
         created_at=new_translation.created_at
     )
-
 
 @app.put("/example-sentence-translations/{translation_id}", response_model=ExampleSentenceTranslationResponse)
 async def update_example_sentence_translation(

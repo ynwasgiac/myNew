@@ -696,8 +696,6 @@ class WordImageCRUD:
         except Exception:
             await db.rollback()
             return False
-        
-# Add these methods to your ExampleSentenceCRUD class in crud.py
 
 class ExampleSentenceCRUD:
     @staticmethod
@@ -719,6 +717,18 @@ class ExampleSentenceCRUD:
         await db.commit()
         await db.refresh(db_sentence)
         return db_sentence
+    
+    @staticmethod
+    async def get_by_id_raw(
+            db: AsyncSession,
+            sentence_id: int
+    ) -> Optional[ExampleSentence]:
+        """Get example sentence by ID WITHOUT filtering translations"""
+        result = await db.execute(
+            select(ExampleSentence)
+            .where(ExampleSentence.id == sentence_id)
+        )
+        return result.scalar_one_or_none()
 
     @staticmethod
     async def get_by_id(
@@ -822,16 +832,28 @@ class ExampleSentenceTranslationCRUD:
             language_id: int,
             translated_sentence: str
     ) -> ExampleSentenceTranslation:
-        """Create a new example sentence translation"""
+        """Create a new example sentence translation with better error handling"""
+        
+        # Создаем новую запись
         db_translation = ExampleSentenceTranslation(
             example_sentence_id=example_sentence_id,
             language_id=language_id,
             translated_sentence=translated_sentence
         )
+        
         db.add(db_translation)
-        await db.commit()
-        await db.refresh(db_translation)
-        return db_translation
+        
+        try:
+            await db.commit()
+            await db.refresh(db_translation)
+            return db_translation
+        except Exception as e:
+            await db.rollback()
+            # Проверяем, является ли это ошибкой уникального constraint
+            error_msg = str(e).lower()
+            if any(keyword in error_msg for keyword in ['unique', 'duplicate', 'already exists']):
+                raise ValueError("Translation already exists for this sentence and language")
+            raise e
 
     @staticmethod
     async def get_by_sentence_and_language(
