@@ -22,7 +22,7 @@ from typing import List, Dict, Optional
 # Edit these values for your setup:
 
 API_URL = "http://127.0.0.1:8000"
-API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6IjE5ODA0Y2EzLWMwOTQtNDMwMy1iOGE5LWRiYWZmZWIwOTczNyIsImV4cCI6MTc1NTg0ODk2N30.weM8VqSgsrNcMjyDbnzc48cqbQT5o6ArkQXIPmHqzo0"
+API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImJjNTRlNzlkLWNjNzUtNDJkNC04NDIwLTk2ZmVmOGFmNWY4MiIsImV4cCI6MTc1NTg3MDYxM30.5FXQOH3cXzSRHUhVxzIka4mMYoGU0NsPUyuKb1pQ6h0"
 MAX_WORDS = None  # None = all words, or set a number like 10
 DELAY_BETWEEN_WORDS = 2.0  # seconds
 DELAY_BETWEEN_TRANSLATIONS = 3.0  # seconds between translations
@@ -43,8 +43,7 @@ logging.basicConfig(
     level=log_level,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(f'sentence_generation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log', encoding='utf-8')
+        logging.StreamHandler()
     ]
 )
 
