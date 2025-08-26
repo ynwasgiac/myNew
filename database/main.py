@@ -1,4 +1,7 @@
 # main.py
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends, HTTPException, Query, Response, Path
 from sqlalchemy import select, or_, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +12,7 @@ load_dotenv()
 
 from sqlalchemy.orm import selectinload, joinedload
 from starlette.middleware.cors import CORSMiddleware
+from services.scheduler import start_scheduler, stop_scheduler, run_manual_review_check
 
 # Import from our database package
 from database import get_db, init_database, WordImage, KazakhWord, ExampleSentence, ExampleSentenceTranslation, \
@@ -54,6 +58,35 @@ app = FastAPI(
     description="API for learning Kazakh language with multilingual support, authentication, progress tracking, and user language preferences",
     version="2.1.0"
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application startup and shutdown"""
+    # Startup
+    try:
+        # Initialize database
+        await init_database()
+        logger.info("✅ Database initialized successfully")
+
+        # Start the review scheduler
+        start_scheduler()
+        logger.info("✅ Review scheduler started successfully")
+
+        # Run initial check for overdue reviews
+        await run_manual_review_check()
+        logger.info("✅ Initial overdue review check completed")
+
+    except Exception as e:
+        logger.error(f"❌ Startup failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+    yield  # Application runs here
 
 # Add CORS middleware
 app.add_middleware(
