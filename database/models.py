@@ -300,3 +300,58 @@ class ExampleSentenceTranslation(Base):
         Index('idx_example_translations_language', 'language_id'),
     )
 
+
+class ModuleDocumentation(Base):
+    """Основная таблица документации модулей (язык по умолчанию - английский)"""
+    __tablename__ = "module_documentation"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False, unique=True, index=True)
+    description = Column(Text, nullable=False)  # Описание на английском (по умолчанию)
+    module_category = Column(String(50), nullable=True)
+    file_path = Column(String(200), nullable=True)
+    example_usage = Column(Text, nullable=True)  # Примеры на английском
+    parameters = Column(JSONB, nullable=True)
+
+    # Метаданные
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    # Связи
+    created_by = relationship("User", foreign_keys=[created_by_user_id])
+    translations = relationship("ModuleDocumentationTranslation", back_populates="module_doc",
+                                cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<ModuleDocumentation(name='{self.name}')>"
+
+
+class ModuleDocumentationTranslation(Base):
+    """Переводы документации модулей"""
+    __tablename__ = "module_documentation_translations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    module_documentation_id = Column(Integer, ForeignKey("module_documentation.id", ondelete="CASCADE"), nullable=False)
+    language_code = Column(String(5), nullable=False)  # 'ru', 'kk', 'en'
+
+    # Переводимые поля
+    description = Column(Text, nullable=False)
+    example_usage = Column(Text, nullable=True)
+
+    # Метаданные
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    translated_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    # Связи
+    module_doc = relationship("ModuleDocumentation", back_populates="translations")
+    language = relationship("Language", foreign_keys=[language_code],
+                            primaryjoin="ModuleDocumentationTranslation.language_code == Language.language_code")
+    translated_by = relationship("User", foreign_keys=[translated_by_user_id])
+
+    # Уникальность: один перевод на язык для модуля
+    __table_args__ = (
+        UniqueConstraint('module_documentation_id', 'language_code', name='unique_module_language'),
+        Index('idx_module_doc_language', 'module_documentation_id', 'language_code'),
+    )

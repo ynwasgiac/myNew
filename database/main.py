@@ -52,12 +52,6 @@ from admin_routes import admin_router
 from user_preferences_routes import router as user_preferences_router
 from ai_routes import router as ai_router
 
-# Create FastAPI app
-app = FastAPI(
-    title="Kazakh Language Learning API",
-    description="API for learning Kazakh language with multilingual support, authentication, progress tracking, and user language preferences",
-    version="2.1.0"
-)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -66,8 +60,10 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Handle application startup and shutdown"""
-    # Startup
+    """Handle application startup and shutdown with modern FastAPI syntax"""
+    # === STARTUP ===
+    logger.info("🚀 Starting Kazakh Language Learning API...")
+
     try:
         # Initialize database
         await init_database()
@@ -81,12 +77,34 @@ async def lifespan(app: FastAPI):
         await run_manual_review_check()
         logger.info("✅ Initial overdue review check completed")
 
+        logger.info("🎉 Application startup completed successfully!")
+
     except Exception as e:
         logger.error(f"❌ Startup failed: {e}")
         import traceback
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
+        # Don't crash, but log the error
 
-    yield  # Application runs here
+    yield  # === APPLICATION RUNS HERE ===
+
+    # === SHUTDOWN ===
+    logger.info("🔽 Shutting down application...")
+    try:
+        stop_scheduler()
+        logger.info("✅ Review scheduler stopped")
+    except Exception as e:
+        logger.error(f"❌ Shutdown error: {e}")
+
+    logger.info("👋 Application shutdown complete")
+
+# Create FastAPI app
+app = FastAPI(
+    title="Kazakh Language Learning API",
+    description="API for learning Kazakh language with multilingual support, authentication, progress tracking, and user language preferences",
+    version="2.1.0",
+    lifespan=lifespan
+)
+
 
 # Add CORS middleware
 app.add_middleware(
