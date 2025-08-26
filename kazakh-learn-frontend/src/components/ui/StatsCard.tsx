@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpIcon, ArrowDownIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import HelpTooltip from './HelpTooltip';
 
 interface StatsCardProps {
   title: string;
@@ -17,6 +18,8 @@ interface StatsCardProps {
   description?: string;
   loading?: boolean;
   className?: string;
+  helpEndpoint?: string; // Новый проп для кнопки справки
+  helpLang?: string; // Язык для справки (по умолчанию 'ru')
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -28,7 +31,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
   link,
   description,
   loading = false,
-  className = ''
+  className = '',
+  helpEndpoint,
+  helpLang = 'ru'
 }) => {
   const getChangeIcon = () => {
     if (!change) return null;
@@ -66,8 +71,16 @@ const StatsCard: React.FC<StatsCardProps> = ({
               <Icon className="h-6 w-6 text-white" />
             </div>
           )}
-          <div>
+          <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+            {helpEndpoint && (
+              <HelpTooltip 
+                endpoint={helpEndpoint}
+                lang={helpLang}
+                iconSize={14}
+                iconColor="#9ca3af"
+              />
+            )}
           </div>
         </div>
         {link && (

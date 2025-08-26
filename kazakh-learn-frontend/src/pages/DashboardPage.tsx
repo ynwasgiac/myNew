@@ -126,6 +126,7 @@ const DashboardPage: React.FC = () => {
           icon={ClockIcon}
           color="bg-orange-500"
           link="/app/practice?type=review"
+          helpEndpoint="/api/documentation/review_intervals/description"
         />
         <StatsCard
           title={t('stats.accuracyRate')}
@@ -178,7 +179,7 @@ const DashboardPage: React.FC = () => {
         </div>
         {/* Words to Review */}
         <div className="grid-cols-2">
-          <div><WordsToReview /></div>
+          {/* <div><WordsToReview /></div> */}
         </div>
         <div className="grid-cols-2">
           {/* Words Available Breakdown */}

@@ -51,6 +51,7 @@ from learning.learning_module_routes import router as learning_module_router
 from admin_routes import admin_router
 from user_preferences_routes import router as user_preferences_router
 from ai_routes import router as ai_router
+from documentation_routes import router as doc_router
 
 
 # Configure logging
@@ -134,6 +135,7 @@ app.include_router(learning_module_router)
 app.include_router(admin_router)
 app.include_router(user_preferences_router)
 app.include_router(ai_router)
+app.include_router(doc_router)
 
 
 # Initialize database on startup
