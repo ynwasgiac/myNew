@@ -119,20 +119,40 @@ class UserWordProgressCRUD:
             status: Optional[LearningStatus] = None,
             was_correct: Optional[bool] = None,
             difficulty_rating: Optional[DifficultyRating] = None,
-            user_notes: Optional[str] = None
+            user_notes: Optional[str] = None,
+            next_review_at: Optional[datetime] = None,
+            repetition_interval: Optional[int] = None
     ) -> Optional[UserWordProgress]:
-        """Update user's progress for a word"""
+        """
+        Update user's progress for a word
+        
+        Args:
+            db: Database session
+            user_id: ID of the user
+            word_id: ID of the word
+            status: New learning status (optional)
+            was_correct: Whether the answer was correct (optional)
+            difficulty_rating: User's difficulty rating (optional)
+            user_notes: User's personal notes (optional)
+            next_review_at: Next review date (optional)
+            repetition_interval: Repetition interval in days (optional)
+            
+        Returns:
+            Updated UserWordProgress object or None if not found
+        """
         progress = await UserWordProgressCRUD.get_user_word_progress(db, user_id, word_id)
         if not progress:
             return None
 
         update_data = {"updated_at": datetime.utcnow()}
 
+        # Handle explicit status change
         if status:
             update_data["status"] = status
             if status == LearningStatus.LEARNED and not progress.first_learned_at:
                 update_data["first_learned_at"] = datetime.utcnow()
 
+        # Handle answer correctness and update statistics
         if was_correct is not None:
             update_data["times_seen"] = progress.times_seen + 1
             update_data["last_practiced_at"] = datetime.utcnow()
@@ -142,18 +162,34 @@ class UserWordProgressCRUD:
             else:
                 update_data["times_incorrect"] = progress.times_incorrect + 1
 
+            # 🔥 NEW LOGIC: Automatic status change from REVIEW to LEARNED on correct answer
+            if was_correct and progress.status == LearningStatus.REVIEW and not status:
+                print(f"🎯 Automatically changing status from REVIEW to LEARNED for word {word_id}")
+                update_data["status"] = LearningStatus.LEARNED
+                if not progress.first_learned_at:
+                    update_data["first_learned_at"] = datetime.utcnow()
+                    print(f"   🎉 Setting first_learned_at for word {word_id}")
+
+            # Update spaced repetition parameters
+            spaced_rep_data = UserWordProgressCRUD._calculate_spaced_repetition(progress, was_correct)
+            update_data.update(spaced_rep_data)
+
+        # Handle difficulty rating
         if difficulty_rating:
             update_data["difficulty_rating"] = difficulty_rating
 
+        # Handle user notes
         if user_notes is not None:
             update_data["user_notes"] = user_notes
 
-        # Update spaced repetition if answered
-        if was_correct is not None:
-            update_data.update(
-                UserWordProgressCRUD._calculate_spaced_repetition(progress, was_correct)
-            )
+        # Handle custom review schedule (for manual review scheduling)
+        if next_review_at is not None:
+            update_data["next_review_at"] = next_review_at
+        
+        if repetition_interval is not None:
+            update_data["repetition_interval"] = repetition_interval
 
+        # Execute the update
         stmt = (
             update(UserWordProgress)
             .where(
@@ -163,28 +199,38 @@ class UserWordProgressCRUD:
                 )
             )
             .values(**update_data)
-            .returning(UserWordProgress)
         )
 
-        result = await db.execute(stmt)
+        await db.execute(stmt)
         await db.commit()
-        return result.scalar_one_or_none()
+
+        # Return updated progress
+        updated_progress = await UserWordProgressCRUD.get_user_word_progress(db, user_id, word_id)
+        return updated_progress
+
 
     @staticmethod
-    def _calculate_spaced_repetition(
-            progress: UserWordProgress,
-            was_correct: bool
-    ) -> Dict[str, Any]:
-        """Calculate next review date using spaced repetition algorithm"""
+    def _calculate_spaced_repetition(progress, was_correct: bool) -> Dict[str, Any]:
+        """
+        Calculate next review date using spaced repetition algorithm
+        
+        Args:
+            progress: Current UserWordProgress object
+            was_correct: Whether the answer was correct
+            
+        Returns:
+            Dictionary with spaced repetition parameters
+        """
         if was_correct:
-            # Increase interval
+            # Increase interval and ease factor for correct answers
             new_interval = max(1, int(progress.repetition_interval * progress.ease_factor))
             new_ease = min(2.8, progress.ease_factor + 0.1)
         else:
-            # Reset interval, decrease ease
+            # Reset interval and decrease ease factor for incorrect answers
             new_interval = 1
             new_ease = max(1.3, progress.ease_factor - 0.2)
 
+        # Calculate next review date
         next_review = datetime.utcnow() + timedelta(days=new_interval)
 
         return {
