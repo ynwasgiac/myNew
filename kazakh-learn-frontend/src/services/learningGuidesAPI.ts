@@ -1,8 +1,8 @@
-// src/services/learningGuidesAPI.ts
-import api from './api';  // ✅ Use the same global API instance
+// src/services/learningGuidesAPI.ts - ИСПРАВЛЕНО для работы с численными ID
+import api from './api';
 
 export interface LearningGuideAPI {
-  id: string;
+  id: number;  // ✅ ИСПРАВЛЕНО: изменено с string на number
   title: string;
   description: string;
   icon: string;
@@ -23,7 +23,7 @@ export interface LearningGuideAPI {
 
 export interface GuideStartResponse {
   message: string;
-  guide_id: string;
+  guide_id: number;  // ✅ ИСПРАВЛЕНО: изменено с string на number
   guide_title: string;
   words_found: number;
   words_added: number;
@@ -37,7 +37,7 @@ export interface GuideStartResponse {
 }
 
 export interface GuideProgressResponse {
-  guide_id: string;
+  guide_id: string;  // Остается string, так как возвращается как строка
   status: string;
   words_completed: number;
   total_words_added: number;
@@ -89,23 +89,23 @@ class LearningGuidesAPI {
     return response.data;
   }
 
-  async startGuide(guideId: string): Promise<GuideStartResponse> {
+  async startGuide(guideId: number): Promise<GuideStartResponse> {  // ✅ ИСПРАВЛЕНО
     const response = await api.post(`/learning/guides/${guideId}/start`);
     return response.data;
   }
 
-  async getGuideProgress(guideId: string): Promise<GuideProgressResponse> {
+  async getGuideProgress(guideId: number): Promise<GuideProgressResponse> {  // ✅ ИСПРАВЛЕНО
     const response = await api.get(`/learning/guides/${guideId}/progress`);
     return response.data;
   }
 
-  async getGuideWords(guideId: string, limit: number = 50): Promise<GuideWordsResponse> {
+  async getGuideWords(guideId: number, limit: number = 50): Promise<GuideWordsResponse> {  // ✅ ИСПРАВЛЕНО
     const params = new URLSearchParams({ limit: limit.toString() });
     const response = await api.get(`/learning/guides/${guideId}/words?${params}`);
     return response.data;
   }
 
-  async completeGuide(guideId: string): Promise<GuideProgressResponse> {
+  async completeGuide(guideId: number): Promise<GuideProgressResponse> {  // ✅ ИСПРАВЛЕНО
     const response = await api.post(`/learning/guides/${guideId}/complete`);
     return response.data;
   }
