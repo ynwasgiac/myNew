@@ -1,4 +1,5 @@
-// src/pages/learning/GuidedLearningPage.tsx
+// src/pages/learning/GuidedLearningPage.tsx - ИСПРАВЛЕНО для использования существующего learning-module
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +25,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../services/api';
+import { invalidateLearningModuleCaches } from '../../utils/learningCacheUtils';
 
 // Types
 interface Guide {
@@ -89,17 +91,30 @@ const GuidedLearningPage = () => {
   // Start guide mutation
   const startGuideMutation = useMutation({
     mutationFn: startGuide,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`${data.guide_title} started! Added ${data.words_added} new words.`);
-      queryClient.invalidateQueries({ queryKey: ['learning-guides'] });
-      queryClient.invalidateQueries({ queryKey: ['learning-words'] });
+      
+      // ✅ Устанавливаем флаг для принудительного обновления в LearningModulePage
+      sessionStorage.setItem('refreshLearningData', 'true');
+      
+      // ✅ Используем утилиту для инвалидации всех кэшей
+      try {
+        await invalidateLearningModuleCaches(queryClient);
+        console.log('✅ All learning caches invalidated successfully');
+        
+        navigate('/app/learning-module');
+      } catch (error) {
+        console.error('❌ Error invalidating caches:', error);
+        navigate('/app/learning-module');
+        toast('If you don\'t see new words, please refresh the page.');
+      }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to start guide');
     },
   });
 
-  // Handle start guide
+  // Handle start guide - добавляет слова в WANT_TO_LEARN и перенаправляет
   const handleStartGuide = async (guideId: number) => {
     if (!user) {
       toast.error('Please login to start learning');
@@ -109,9 +124,10 @@ const GuidedLearningPage = () => {
     startGuideMutation.mutate(guideId);
   };
 
-  // Handle view guide details
+  // Handle view guide details - для уже начатых гайдов
   const handleViewGuide = (guideId: number) => {
-    navigate(`/learning/guides/${guideId}`);
+    // Если гайд уже начат, сразу идем в learning-module для продолжения обучения
+    navigate('/app/learning-module');
   };
 
   // Filter guides
@@ -168,8 +184,29 @@ const GuidedLearningPage = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Learning Module Link */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between text-white">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">
+                {t('learning:module.title', 'Learning Module')}
+              </h2>
+              <p className="text-blue-100">
+                {t('learning:module.subtitle', 'Intensive module-based learning sessions')}
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/app/learning-module')}
+              className="flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+            >
+              <BookOpen className="h-5 w-5 mr-2" />
+              {t('learning:buttons.startSession', 'Start Learning Session')}
+            </button>
+          </div>
+        </div>
+
+        {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
@@ -284,7 +321,7 @@ const GuidedLearningPage = () => {
                           onClick={() => handleViewGuide(guide.id)}
                           className={`flex-1 bg-${guide.color}-500 hover:bg-${guide.color}-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200`}
                         >
-                          {t('guides:continue', 'Continue')}
+                          {t('guides:continue', 'Continue Learning')}
                         </button>
                         {guide.status === 'completed' && (
                           <div className="flex items-center justify-center px-3 py-2 bg-green-100 text-green-800 rounded-lg">

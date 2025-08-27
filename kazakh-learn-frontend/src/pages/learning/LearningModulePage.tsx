@@ -47,7 +47,6 @@ interface LearningStats {
 interface WordsAvailable {
   want_to_learn: number;
   learning: number;
-  review: number;
   total: number;
 }
 
@@ -101,7 +100,7 @@ const LearningModulePage: React.FC = () => {
     queryKey: ['words-available', selectedCategory, selectedDifficulty],
     queryFn: async (): Promise<WordsAvailable> => {
       try {
-        const [wantToLearn, learning, review] = await Promise.all([
+        const [wantToLearn, learning ] = await Promise.all([
           learningAPI.getProgress({
             status: LEARNING_STATUSES.WANT_TO_LEARN,
             category_id: selectedCategory,
@@ -113,27 +112,19 @@ const LearningModulePage: React.FC = () => {
             category_id: selectedCategory,
             difficulty_level_id: selectedDifficulty,
             limit: 100
-          }) as Promise<UserWordProgressWithWord[]>,
-          learningAPI.getProgress({
-            status: LEARNING_STATUSES.REVIEW,
-            category_id: selectedCategory,
-            difficulty_level_id: selectedDifficulty,
-            limit: 100
           }) as Promise<UserWordProgressWithWord[]>
         ]);
 
         return {
           want_to_learn: wantToLearn.length,
           learning: learning.length,
-          review: review.length,
-          total: wantToLearn.length + learning.length + review.length
+          total: wantToLearn.length + learning.length
         };
       } catch (error) {
         console.error('Failed to fetch available words:', error);
         return {
           want_to_learn: 0,
           learning: 0,
-          review: 0,
           total: 0
         };
       }

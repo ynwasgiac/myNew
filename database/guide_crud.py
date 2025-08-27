@@ -68,73 +68,146 @@ class LearningGuideCRUD:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def create_guide_with_translations(
+    async def get_guide_by_id(
+        db: AsyncSession,
+        guide_id: int,
+        language_code: str = 'en'
+    ) -> Optional[LearningGuide]:
+        """✅ ДОБАВЛЕНО: Get guide by ID with translations"""
+        query = (
+            select(LearningGuide)
+            .options(
+                selectinload(LearningGuide.translations).selectinload(GuideTranslation.language)
+            )
+            .where(
+                and_(
+                    LearningGuide.id == guide_id,
+                    LearningGuide.is_active == True
+                )
+            )
+        )
+        
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_guide_words(
+        db: AsyncSession,
+        guide_id: int,
+        limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """Get words for a specific guide with full word details"""
+        query = (
+            select(GuideWordMapping)
+            .options(
+                joinedload(GuideWordMapping.kazakh_word)
+                .joinedload(KazakhWord.category),
+                joinedload(GuideWordMapping.kazakh_word)
+                .joinedload(KazakhWord.difficulty_level),
+                joinedload(GuideWordMapping.kazakh_word)
+                .joinedload(KazakhWord.word_type),
+                joinedload(GuideWordMapping.kazakh_word)
+                .joinedload(KazakhWord.translations)
+                .joinedload(Translation.language)
+            )
+            .where(
+                and_(
+                    GuideWordMapping.guide_id == guide_id,
+                    GuideWordMapping.is_active == True
+                )
+            )
+            .order_by(
+                GuideWordMapping.order_in_guide.asc().nulls_last(),
+                GuideWordMapping.importance_score.desc()
+            )
+            .limit(limit)
+        )
+        
+        result = await db.execute(query)
+        mappings = result.scalars().unique().all()
+        
+        # Format response with word and guide info
+        words = []
+        for mapping in mappings:
+            words.append({
+                'word': mapping.kazakh_word,
+                'guide_info': {
+                    'importance_score': mapping.importance_score,
+                    'order_in_guide': mapping.order_in_guide,
+                    'mapping_id': mapping.id
+                }
+            })
+        
+        return words
+
+    @staticmethod
+    async def create_guide(
         db: AsyncSession,
         guide_data: Dict[str, Any],
-        translations: Optional[Dict[str, Dict[str, Any]]] = None
+        language_code: str = 'en'
     ) -> LearningGuide:
-        """Create a guide with translations"""
+        """Create a new learning guide"""
         guide = LearningGuide(
             guide_key=guide_data['guide_key'],
             title=guide_data['title'],
             description=guide_data.get('description'),
-            icon_name=guide_data.get('icon_name'),
-            color=guide_data.get('color'),
+            icon_name=guide_data.get('icon_name', 'BookOpen'),
+            color=guide_data.get('color', 'blue'),
             difficulty_level=guide_data['difficulty_level'],
+            target_word_count=guide_data['target_word_count'],
             estimated_minutes=guide_data.get('estimated_minutes'),
-            target_word_count=guide_data.get('target_word_count', 20),
-            keywords=guide_data.get('keywords', []),
             topics=guide_data.get('topics', []),
+            keywords=guide_data.get('keywords', []),
+            is_active=guide_data.get('is_active', True),
             sort_order=guide_data.get('sort_order', 0)
         )
         
         db.add(guide)
-        await db.flush()  # Get the guide ID
-        
-        # Add translations if provided
-        if translations:
-            for lang_code, translation_data in translations.items():
-                # Get language ID
-                lang_query = select(Language).where(Language.language_code == lang_code)
-                lang_result = await db.execute(lang_query)
-                language = lang_result.scalar_one_or_none()
-                
-                if language:
-                    translation = GuideTranslation(
-                        guide_id=guide.id,
-                        language_id=language.id,
-                        translated_title=translation_data['title'],
-                        translated_description=translation_data.get('description'),
-                        translated_topics=translation_data.get('topics', [])
-                    )
-                    db.add(translation)
-        
         await db.commit()
         await db.refresh(guide)
+        
         return guide
 
     @staticmethod
-    async def format_guide_for_user(
-        guide: LearningGuide,
-        language_code: str = 'en'
-    ) -> Dict[str, Any]:
-        """Format guide with translated content for user's language"""
-        translated_content = guide.get_translated_content(language_code)
+    async def update_guide(
+        db: AsyncSession,
+        guide_id: int,
+        update_data: Dict[str, Any]
+    ) -> Optional[LearningGuide]:
+        """Update a learning guide"""
+        query = select(LearningGuide).where(LearningGuide.id == guide_id)
+        result = await db.execute(query)
+        guide = result.scalar_one_or_none()
         
-        return {
-            'id': guide.guide_key,
-            'title': translated_content['title'],
-            'description': translated_content['description'],
-            'icon': guide.icon_name,
-            'color': guide.color,
-            'difficulty': guide.difficulty_level,
-            'estimated_time': f"{guide.estimated_minutes} мин" if guide.estimated_minutes else "30 мин",
-            'word_count': guide.target_word_count,
-            'topics': translated_content['topics'] or [],
-            'keywords': guide.keywords or []
-        }
+        if not guide:
+            return None
+        
+        for key, value in update_data.items():
+            if hasattr(guide, key):
+                setattr(guide, key, value)
+        
+        await db.commit()
+        await db.refresh(guide)
+        
+        return guide
 
-    # ... (rest of your existing CRUD methods remain the same) ...
+    @staticmethod
+    async def delete_guide(
+        db: AsyncSession,
+        guide_id: int
+    ) -> bool:
+        """Delete a learning guide"""
+        query = select(LearningGuide).where(LearningGuide.id == guide_id)
+        result = await db.execute(query)
+        guide = result.scalar_one_or_none()
+        
+        if not guide:
+            return False
+        
+        await db.delete(guide)
+        await db.commit()
+        
+        return True
 
 
 class GuideTranslationCRUD:
@@ -239,16 +312,60 @@ class UserGuideCRUD:
     """CRUD operations for user guide progress"""
 
     @staticmethod
+    async def get_guides_with_progress(
+        db: AsyncSession,
+        user_id: int,
+        difficulty: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Get all guides with user progress"""
+        # Get all active guides
+        guides_query = (
+            select(LearningGuide)
+            .where(LearningGuide.is_active == True)
+        )
+        
+        if difficulty:
+            guides_query = guides_query.where(LearningGuide.difficulty_level == difficulty)
+        
+        guides_query = guides_query.order_by(LearningGuide.sort_order, LearningGuide.id)
+        
+        result = await db.execute(guides_query)
+        guides = result.scalars().all()
+        
+        # Get user progress for each guide
+        guides_with_progress = []
+        for guide in guides:
+            progress = await UserGuideCRUD.get_user_guide_progress(db, user_id, guide.id)
+            
+            guides_with_progress.append({
+                'guide': guide,
+                'progress': progress,
+                'status': progress.status if progress else GuideStatus.NOT_STARTED,
+                'words_completed': progress.words_completed if progress else 0,
+                'total_words_added': progress.total_words_added if progress else 0,
+                'completion_percentage': (
+                    (progress.words_completed / progress.total_words_added * 100)
+                    if progress and progress.total_words_added > 0
+                    else 0
+                )
+            })
+        
+        return guides_with_progress
+
+    @staticmethod
     async def get_user_guide_progress(
         db: AsyncSession,
         user_id: int,
         guide_id: int
     ) -> Optional[UserGuideProgress]:
-        """Get user's progress for a specific guide"""
-        query = select(UserGuideProgress).where(
-            and_(
-                UserGuideProgress.user_id == user_id,
-                UserGuideProgress.guide_id == guide_id
+        """Get user progress for specific guide"""
+        query = (
+            select(UserGuideProgress)
+            .where(
+                and_(
+                    UserGuideProgress.user_id == user_id,
+                    UserGuideProgress.guide_id == guide_id
+                )
             )
         )
         
@@ -256,117 +373,83 @@ class UserGuideCRUD:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_user_all_guides_progress(
-        db: AsyncSession,
-        user_id: int
-    ) -> List[UserGuideProgress]:
-        """Get user's progress for all guides"""
-        query = (
-            select(UserGuideProgress)
-            .options(selectinload(UserGuideProgress.guide))
-            .where(UserGuideProgress.user_id == user_id)
-        )
-        
-        result = await db.execute(query)
-        return result.scalars().all()
-
-    @staticmethod
-    async def start_guide(
+    async def create_or_update_guide_progress(
         db: AsyncSession,
         user_id: int,
-        guide_id: int
+        guide_id: int,
+        status: GuideStatus = GuideStatus.IN_PROGRESS,
+        **kwargs
     ) -> UserGuideProgress:
-        """Start a guide for user"""
-        # Check if progress already exists
-        progress = await UserGuideCRUD.get_user_guide_progress(db, user_id, guide_id)
+        """Create or update user guide progress"""
+        # Check if progress exists
+        existing = await UserGuideCRUD.get_user_guide_progress(db, user_id, guide_id)
         
-        if progress:
-            # Update existing progress
-            progress.status = GuideStatus.IN_PROGRESS
-            progress.started_at = datetime.utcnow()
-            progress.last_accessed_at = datetime.utcnow()
+        if existing:
+            # Update existing
+            for key, value in kwargs.items():
+                if hasattr(existing, key):
+                    setattr(existing, key, value)
+            existing.status = status
+            existing.updated_at = datetime.utcnow()
+            existing.last_accessed_at = datetime.utcnow()
+            
+            await db.commit()
+            await db.refresh(existing)
+            return existing
         else:
-            # Create new progress
+            # Create new
             progress = UserGuideProgress(
                 user_id=user_id,
                 guide_id=guide_id,
-                status=GuideStatus.IN_PROGRESS,
-                started_at=datetime.utcnow(),
-                last_accessed_at=datetime.utcnow()
+                status=status,
+                last_accessed_at=datetime.utcnow(),
+                started_at=datetime.utcnow() if status != GuideStatus.NOT_STARTED else None,
+                **kwargs
             )
+            
             db.add(progress)
-        
-        await db.commit()
-        await db.refresh(progress)
-        return progress
+            await db.commit()
+            await db.refresh(progress)
+            return progress
 
     @staticmethod
     async def update_guide_progress(
         db: AsyncSession,
         user_id: int,
         guide_id: int,
-        words_completed: int,
-        total_words_added: int
-    ) -> UserGuideProgress:
-        """Update guide progress"""
+        words_completed: Optional[int] = None,
+        total_words_added: Optional[int] = None
+    ) -> Optional[UserGuideProgress]:
+        """Update guide progress counters"""
         progress = await UserGuideCRUD.get_user_guide_progress(db, user_id, guide_id)
         
         if not progress:
-            # Create if doesn't exist
-            progress = UserGuideProgress(
-                user_id=user_id,
-                guide_id=guide_id,
-                status=GuideStatus.IN_PROGRESS,
-                started_at=datetime.utcnow()
+            # Create new progress
+            progress = await UserGuideCRUD.create_or_update_guide_progress(
+                db, user_id, guide_id, GuideStatus.IN_PROGRESS,
+                words_completed=words_completed or 0,
+                total_words_added=total_words_added or 0
             )
-            db.add(progress)
-        
-        progress.words_completed = words_completed
-        progress.total_words_added = total_words_added
-        progress.last_accessed_at = datetime.utcnow()
-        
-        # Check if completed
-        if words_completed >= total_words_added and words_completed > 0:
-            progress.status = GuideStatus.COMPLETED
-            progress.completed_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(progress)
-        return progress
-
-    @staticmethod
-    async def get_guides_with_progress(
-        db: AsyncSession,
-        user_id: int,
-        difficulty: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Get all guides with user progress"""
-        # Get all guides
-        guides = await LearningGuideCRUD.get_all_guides(db, difficulty)
-        
-        # Get user progress for all guides
-        user_progress = await UserGuideCRUD.get_user_all_guides_progress(db, user_id)
-        progress_map = {p.guide_id: p for p in user_progress}
-        
-        # Combine guides with progress
-        result = []
-        for guide in guides:
-            progress = progress_map.get(guide.id)
+        else:
+            # Update existing
+            if words_completed is not None:
+                progress.words_completed = words_completed
+            if total_words_added is not None:
+                progress.total_words_added = total_words_added
             
-            result.append({
-                'guide': guide,
-                'progress': progress,
-                'status': progress.status if progress else GuideStatus.NOT_STARTED,
-                'words_completed': progress.words_completed if progress else 0,
-                'total_words_added': progress.total_words_added if progress else 0,
-                'completion_percentage': (
-                    (progress.words_completed / progress.total_words_added * 100) 
-                    if progress and progress.total_words_added > 0 
-                    else 0
-                )
-            })
+            progress.last_accessed_at = datetime.utcnow()
+            
+            # Check if completed
+            if (progress.total_words_added > 0 and 
+                progress.words_completed >= progress.total_words_added):
+                progress.status = GuideStatus.COMPLETED
+                if not progress.completed_at:
+                    progress.completed_at = datetime.utcnow()
+            
+            await db.commit()
+            await db.refresh(progress)
         
-        return result
+        return progress
 
 
 class GuideWordSearchCRUD:

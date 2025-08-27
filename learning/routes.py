@@ -48,7 +48,6 @@ from auth.token_refresh import get_current_user_with_refresh, TokenRefreshRespon
 import random
 from database.learning_models import LearningStatus, DifficultyRating, GuideStatus
 
-
 router = APIRouter(prefix="/learning", tags=["Learning Progress"])
 
 
@@ -236,7 +235,8 @@ async def get_word_status(
         times_seen=progress.times_seen,
         times_correct=progress.times_correct,
         times_incorrect=progress.times_incorrect,
-        difficulty_rating=DifficultyRatingEnum(progress.difficulty_rating.value) if progress.difficulty_rating else None,
+        difficulty_rating=DifficultyRatingEnum(
+            progress.difficulty_rating.value) if progress.difficulty_rating else None,
         user_notes=progress.user_notes,
         added_at=progress.added_at,
         first_learned_at=progress.first_learned_at,
@@ -248,6 +248,7 @@ async def get_word_status(
         updated_at=progress.updated_at,
         kazakh_word=word_dict
     )
+
 
 @router.get("/words/my-list", response_model=List[UserWordProgressWithWord])
 async def get_my_learning_words(
@@ -296,7 +297,7 @@ async def get_my_learning_words(
                 }
                 for img in progress.kazakh_word.images
             ]
-        
+
         # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ PRIMARY IMAGE
         primary_image = None
         if progress.kazakh_word.images:
@@ -416,31 +417,31 @@ async def start_practice_session(
         current_user: User = Depends(get_current_user)
 ):
     """Start a new practice session with ONLY learned words"""
-    
+
     try:
         print(f"🎯 Starting practice session for user: {current_user.username}")
         print(f"📊 Request params: word_count={request.word_count}, category_id={request.category_id}")
-        
+
         # Determine user's preferred language
         user_language_code = request.language_code
         if not user_language_code and current_user.main_language:
             user_language_code = current_user.main_language.language_code
         if not user_language_code:
             user_language_code = "en"
-            
+
         print(f"🌐 Using language: {user_language_code}")
-        
+
         # Create learning session
         session = await UserLearningSessionCRUD.create_session(
             db, current_user.id, request.session_type,
             request.category_id, request.difficulty_level_id
         )
         print(f"📝 Created session with ID: {session.id}")
-        
+
         # 🎯 KEY CHANGE: Get ONLY learned words using a direct query
         from sqlalchemy import select, and_
         from sqlalchemy.orm import selectinload
-        
+
         # Build query for ONLY learned words
         query = (
             select(UserWordProgress)
@@ -464,37 +465,37 @@ async def start_practice_session(
                 )
             )
         )
-        
+
         # Apply filters if provided
         if request.category_id:
             query = query.join(KazakhWord).where(KazakhWord.category_id == request.category_id)
-        
+
         if request.difficulty_level_id:
             query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == request.difficulty_level_id)
-        
+
         # Order by last practiced (least recently practiced first) and apply limit
         query = query.order_by(UserWordProgress.last_practiced_at.asc().nullsfirst())
-        
+
         # Execute query
         result = await db.execute(query)
         learned_progress_list = result.scalars().all()
-        
+
         print(f"📚 Found {len(learned_progress_list)} learned words in database")
-        
+
         if not learned_progress_list:
             print("❌ No learned words found")
             raise HTTPException(
                 status_code=404,
                 detail="No learned words available for practice. Please complete some learning modules first to unlock practice mode."
             )
-        
+
         # Convert to practice word format
         practice_words = []
         for progress in learned_progress_list:
             word = progress.kazakh_word
             if not word:
                 continue
-                
+
             # Get translation in user's preferred language
             translation = ""
             if hasattr(word, 'translations') and word.translations:
@@ -503,26 +504,26 @@ async def start_practice_session(
                     if hasattr(t, 'language') and t.language and t.language.language_code == user_language_code:
                         translation = t.translation
                         break
-                
+
                 # If no translation found in preferred language, use first available
                 if not translation and word.translations:
                     translation = word.translations[0].translation
-            
+
             # Get pronunciation
             pronunciation = None
             if hasattr(word, 'pronunciations') and word.pronunciations:
                 pronunciation = word.pronunciations[0].pronunciation
-            
+
             # Get image
             image_url = None
             if hasattr(word, 'images') and word.images:
                 image_url = word.images[0].image_url
-            
+
             # Get difficulty level
             difficulty_level = 1
             if hasattr(word, 'difficulty_level') and word.difficulty_level:
                 difficulty_level = word.difficulty_level.level_number
-            
+
             practice_word = PracticeWordItem(
                 id=word.id,
                 kazakh_word=word.kazakh_word,
@@ -532,35 +533,35 @@ async def start_practice_session(
                 image_url=image_url,
                 difficulty_level=difficulty_level
             )
-            
+
             practice_words.append(practice_word)
-        
+
         print(f"🔄 Converted {len(practice_words)} words to practice format")
-        
+
         # Shuffle for variety
         import random
         random.shuffle(practice_words)
-        
+
         # Apply word count limit if specified and less than available words
         if request.word_count and request.word_count < len(practice_words):
             practice_words = practice_words[:request.word_count]
             print(f"✂️ Limited to {request.word_count} words as requested")
-        
+
         print(f"✅ Final practice session: {len(practice_words)} learned words")
-        
+
         # Log each word for debugging
         for i, word in enumerate(practice_words[:5]):  # Show first 5
-            print(f"  {i+1}. {word.kazakh_word} -> {word.translation}")
+            print(f"  {i + 1}. {word.kazakh_word} -> {word.translation}")
         if len(practice_words) > 5:
             print(f"  ... and {len(practice_words) - 5} more words")
-        
+
         return PracticeSessionResponse(
             session_id=session.id,
             words=practice_words,
             session_type=request.session_type,
             total_words=len(practice_words)
         )
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
@@ -577,31 +578,31 @@ async def start_practice_session(
 # ALSO: Add a debug endpoint to check learned words directly
 @router.get("/debug/learned-words")
 async def debug_learned_words(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ):
     """Debug endpoint to check learned words"""
     try:
         # Get all user word progress
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
-        
+
         query = (
             select(UserWordProgress)
             .options(selectinload(UserWordProgress.kazakh_word))
             .where(UserWordProgress.user_id == current_user.id)
         )
-        
+
         result = await db.execute(query)
         all_progress = result.scalars().all()
-        
+
         # Group by status
         status_breakdown = {}
         for progress in all_progress:
             status = progress.status.value
             if status not in status_breakdown:
                 status_breakdown[status] = []
-            
+
             status_breakdown[status].append({
                 "id": progress.kazakh_word.id,
                 "word": progress.kazakh_word.kazakh_word,
@@ -610,7 +611,7 @@ async def debug_learned_words(
                 "times_correct": progress.times_correct,
                 "last_practiced": progress.last_practiced_at.isoformat() if progress.last_practiced_at else None
             })
-        
+
         return {
             "user_id": current_user.id,
             "total_words": len(all_progress),
@@ -618,7 +619,7 @@ async def debug_learned_words(
             "learned_count": len(status_breakdown.get('learned', [])),
             "learned_words": status_breakdown.get('learned', [])
         }
-        
+
     except Exception as e:
         print(f"Error in debug endpoint: {e}")
         return {"error": str(e)}
@@ -872,6 +873,7 @@ async def get_learning_streak(
 
     return streak
 
+
 # Fix for learning/routes.py - Update the submit_practice_answer endpoint
 
 @router.post("/practice/{session_id}/answer")
@@ -886,18 +888,18 @@ async def submit_practice_answer(
         current_user: User = Depends(get_current_user)
 ):
     """Submit an answer for a practice session"""
-    
+
     try:
         # Get the word to determine the correct answer in user's language
         word = await KazakhWordCRUD.get_by_id(db, word_id)
         if not word:
             raise HTTPException(status_code=404, detail="Word not found")
-        
+
         # Determine user's preferred language
         user_language_code = "en"  # Default to English
         if current_user.main_language:
             user_language_code = current_user.main_language.language_code
-        
+
         # Get the correct translation in user's language
         correct_translation = ""
         if hasattr(word, 'translations') and word.translations:
@@ -906,23 +908,23 @@ async def submit_practice_answer(
                 (t for t in word.translations if t.language.language_code == user_language_code),
                 None
             )
-            
+
             if user_lang_translation:
                 correct_translation = user_lang_translation.translation
             elif word.translations:
                 # Fallback to first available translation
                 correct_translation = word.translations[0].translation
-        
+
         # Use the backend-determined correct answer, not the frontend one
         backend_correct_answer = correct_translation
-        
+
         # Log for debugging
         print(f"🔍 Word: {word.kazakh_word}")
         print(f"👤 User language: {user_language_code}")
         print(f"✅ Correct answer: {backend_correct_answer}")
         print(f"👥 User answer: {user_answer}")
         print(f"📝 Was correct: {was_correct}")
-        
+
         # Add session detail with backend-determined correct answer
         await UserLearningSessionCRUD.add_session_detail(
             db, session_id, word_id, was_correct, "practice",
@@ -939,11 +941,11 @@ async def submit_practice_answer(
             await UserStreakCRUD.update_streak(db, current_user.id)
 
         return {
-            "message": "Answer recorded", 
+            "message": "Answer recorded",
             "was_correct": was_correct,
             "correct_answer": backend_correct_answer  # Return the correct answer in user's language
         }
-        
+
     except Exception as e:
         print(f"❌ Error in submit_practice_answer: {e}")
         import traceback
@@ -962,47 +964,47 @@ async def start_practice_session(
         current_user: User = Depends(get_current_user)
 ):
     """Start a new practice session with improved word selection and proper language handling"""
-    
+
     try:
         print(f"🎯 Starting practice session for user: {current_user.username}")
-        
+
         # Determine user's preferred language
         user_language_code = request.language_code  # Use request language if provided
         if not user_language_code and current_user.main_language:
             user_language_code = current_user.main_language.language_code
         if not user_language_code:
             user_language_code = "en"  # Default to English
-            
+
         print(f"🌐 Using language: {user_language_code}")
-        
+
         # Create learning session
         session = await UserLearningSessionCRUD.create_session(
             db, current_user.id, request.session_type,
             request.category_id, request.difficulty_level_id
         )
-        
+
         practice_words = []
         user_learning_words_count = 0
-        
+
         # Define learning statuses to include
         learning_statuses = [LearningStatus.WANT_TO_LEARN, LearningStatus.LEARNING]
-        
+
         if request.include_review:
             learning_statuses.append(LearningStatus.REVIEW)
-        
+
         # Get words from user's learning list
         for status in learning_statuses:
             try:
                 status_words = await UserWordProgressCRUD.get_user_learning_words(
-                    db, current_user.id, status, request.category_id, 
+                    db, current_user.id, status, request.category_id,
                     request.difficulty_level_id, request.word_count, 0
                 )
-                
+
                 for progress in status_words:
                     word = progress.kazakh_word
                     if not word:
                         continue
-                        
+
                     # Get translation in user's preferred language
                     translation = ""
                     if hasattr(word, 'translations') and word.translations:
@@ -1011,13 +1013,13 @@ async def start_practice_session(
                             (t for t in word.translations if t.language.language_code == user_language_code),
                             None
                         )
-                        
+
                         if user_lang_translation:
                             translation = user_lang_translation.translation
                         elif word.translations:
                             # Fallback to first available translation
                             translation = word.translations[0].translation
-                    
+
                     if not translation:
                         print(f"⚠️ No translation found for word {word.kazakh_word} in language {user_language_code}")
                         continue
@@ -1027,35 +1029,36 @@ async def start_practice_session(
                         kazakh_word=word.kazakh_word,
                         kazakh_cyrillic=getattr(word, 'kazakh_cyrillic', None),
                         translation=translation,  # This is now in the correct language
-                        difficulty_level=word.difficulty_level.level_number if hasattr(word, 'difficulty_level') and word.difficulty_level else 1,
+                        difficulty_level=word.difficulty_level.level_number if hasattr(word,
+                                                                                       'difficulty_level') and word.difficulty_level else 1,
                         times_seen=progress.times_seen,
                         last_practiced=progress.last_practiced_at,
                         is_review=status == LearningStatus.REVIEW,
                         learning_status="learning"
                     )
-                    
+
                     practice_words.append(practice_word)
                     user_learning_words_count += 1
-                    
+
                 print(f"✅ Loaded {len(status_words)} words with status {status.value}")
-                    
+
             except Exception as e:
                 print(f"❌ Error loading words with status {status.value}: {e}")
                 continue
-        
+
         print(f"📊 Total from learning list: {user_learning_words_count} words")
-        
+
         # If we need more words, add random words
         if len(practice_words) < request.word_count:
             remaining_count = request.word_count - len(practice_words)
             print(f"🎲 Adding {remaining_count} random words")
-            
+
             try:
                 # Get random words that user hasn't added to learning list
                 random_words = await KazakhWordCRUD.get_random_words_not_in_user_list(
                     db, current_user.id, remaining_count, request.category_id, request.difficulty_level_id
                 )
-                
+
                 for word in random_words:
                     # Get translation in user's preferred language
                     translation = ""
@@ -1064,12 +1067,12 @@ async def start_practice_session(
                             (t for t in word.translations if t.language.language_code == user_language_code),
                             None
                         )
-                        
+
                         if user_lang_translation:
                             translation = user_lang_translation.translation
                         elif word.translations:
                             translation = word.translations[0].translation
-                    
+
                     if not translation:
                         continue  # Skip words without translation
 
@@ -1078,20 +1081,21 @@ async def start_practice_session(
                         kazakh_word=word.kazakh_word,
                         kazakh_cyrillic=getattr(word, 'kazakh_cyrillic', None),
                         translation=translation,  # This is now in the correct language
-                        difficulty_level=word.difficulty_level.level_number if hasattr(word, 'difficulty_level') and word.difficulty_level else 1,
+                        difficulty_level=word.difficulty_level.level_number if hasattr(word,
+                                                                                       'difficulty_level') and word.difficulty_level else 1,
                         times_seen=0,
                         last_practiced=None,
                         is_review=False,
                         learning_status="random"
                     )
-                    
+
                     practice_words.append(practice_word)
-                    
+
                 print(f"✅ Added {len(random_words)} random words")
-                
+
             except Exception as e:
                 print(f"❌ Error adding random words: {e}")
-        
+
         # Check if we have any words
         if not practice_words:
             raise HTTPException(
@@ -1102,19 +1106,19 @@ async def start_practice_session(
         # Smart shuffling: prioritize learning words, then add random ones
         learning_words = [pw for pw in practice_words if pw.learning_status == "learning"]
         random_words = [pw for pw in practice_words if pw.learning_status == "random"]
-        
+
         # Shuffle each group separately
         import random
         random.shuffle(learning_words)
         random.shuffle(random_words)
-        
+
         # Combine: 70% learning words at the beginning, then insert random ones
         final_words = []
         learning_priority_count = min(len(learning_words), int(len(practice_words) * 0.7))
-        
+
         # Add priority learning words
         final_words.extend(learning_words[:learning_priority_count])
-        
+
         # Add remaining words with shuffling
         remaining_learning = learning_words[learning_priority_count:]
         all_remaining = remaining_learning + random_words
@@ -1130,7 +1134,7 @@ async def start_practice_session(
             session_type=request.session_type,
             total_words=len(final_words)
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1141,7 +1145,8 @@ async def start_practice_session(
             status_code=500,
             detail=f"Failed to start practice session: {str(e)}"
         )
-    
+
+
 @router.get("/words/learned", response_model=List[UserWordProgressWithWord])
 async def get_learned_words(
         status: Optional[LearningStatusEnum] = Query(None),
@@ -1158,7 +1163,7 @@ async def get_learned_words(
     """
     # Фильтруем только изученные и освоенные слова
     allowed_statuses = [LearningStatus.LEARNED, LearningStatus.MASTERED]
-    
+
     # Если передан конкретный статус, проверяем что он в разрешенных
     model_status = None
     if status:
@@ -1169,7 +1174,7 @@ async def get_learned_words(
         model_status = status_mapping.get(status)
         if not model_status:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail="Only 'learned' and 'mastered' statuses are allowed"
             )
 
@@ -1186,10 +1191,10 @@ async def get_learned_words(
     # Применяем фильтры
     if model_status:
         query = query.where(UserWordProgress.status == model_status)
-    
+
     if category_id:
         query = query.join(KazakhWord).where(KazakhWord.category_id == category_id)
-    
+
     if favorites_only:
         query = query.where(
             or_(
@@ -1197,7 +1202,7 @@ async def get_learned_words(
                 UserWordProgress.user_notes.contains('favorite')
             )
         )
-    
+
     if search:
         search_term = f"%{search.lower()}%"
         query = query.join(KazakhWord).where(
@@ -1209,7 +1214,7 @@ async def get_learned_words(
 
     # Пагинация
     query = query.offset(offset).limit(limit)
-    
+
     result = await db.execute(query)
     progress_list = result.scalars().all()
 
@@ -1229,7 +1234,7 @@ async def get_learned_words(
                 }
                 for img in progress.kazakh_word.images
             ]
-        
+
         # ✅ ДОБАВЬТЕ ИЗВЛЕЧЕНИЕ PRIMARY IMAGE
         primary_image = None
         if progress.kazakh_word.images:
@@ -1284,6 +1289,7 @@ async def get_learned_words(
 
     return results
 
+
 @router.post("/words/{word_id}/favorite", response_model=UserWordProgressResponse)
 async def toggle_word_favorite(
         word_id: int,
@@ -1298,7 +1304,7 @@ async def toggle_word_favorite(
     progress = await UserWordProgressCRUD.get_user_word_progress(
         db, current_user.id, word_id
     )
-    
+
     if not progress:
         raise HTTPException(status_code=404, detail="Word not found in learning list")
 
@@ -1316,7 +1322,7 @@ async def toggle_word_favorite(
                 progress.user_notes = progress.user_notes.replace("favorite", "").strip()
 
     progress.updated_at = datetime.utcnow()
-    
+
     try:
         await db.commit()
         await db.refresh(progress)
@@ -1350,7 +1356,7 @@ async def get_learning_guides(
             progress = item['progress']
             
             formatted_guides.append({
-                'id': guide.guide_key,
+                'id': guide.id,  # ✅ ИСПРАВЛЕНО: используем guide.id (число), а не guide.guide_key
                 'title': guide.title,
                 'description': guide.description,
                 'icon': guide.icon_name,
@@ -1378,56 +1384,40 @@ async def get_learning_guides(
 
 @router.post("/guides/{guide_id}/start")
 async def start_learning_guide(
-        guide_id: str,
+        guide_id: int,  # ✅ ИСПРАВЛЕНО: принимаем int вместо str
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """
-    Начать изучение путеводителя - получить слова из базы данных
-    """
+    """Начать изучение путеводителя"""
     try:
-        # Get guide from database
-        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        # Get guide by ID (не по guide_key)
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)  # ✅ ИСПРАВЛЕНО
         if not guide:
             raise HTTPException(status_code=404, detail="Guide not found")
         
-        # Start guide progress
-        progress = await UserGuideCRUD.start_guide(db, current_user.id, guide.id)
+        if not guide.is_active:
+            raise HTTPException(status_code=400, detail="Guide is not active")
         
-        # Method 1: Get pre-mapped words for this guide
-        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        # Check if already started
+        progress = await UserGuideCRUD.get_user_guide_progress(
+            db, current_user.id, guide.id
+        )
         
-        # Method 2: If no pre-mapped words, search by keywords
-        if not guide_words and guide.keywords:
-            print(f"No pre-mapped words found, searching by keywords: {guide.keywords}")
-            found_words = await GuideWordSearchCRUD.search_words_by_keywords(
-                db, guide.keywords, limit=guide.target_word_count
-            )
-            
-            # Optionally add these words to guide mapping for future use
-            if found_words:
-                word_ids = [w.id for w in found_words]
-                await LearningGuideCRUD.add_words_to_guide(db, guide.id, word_ids)
-                
-                # Get the mapped words
-                guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        if progress and progress.status != GuideStatus.NOT_STARTED:
+            return {
+                "message": f"Guide '{guide.title}' already started",
+                "guide_id": guide_id,
+                "guide_title": guide.title,
+                "status": progress.status.value
+            }
         
-        # Method 3: If still no words, search by topics
-        if not guide_words and guide.topics:
-            print(f"No keywords found, searching by topics: {guide.topics}")
-            found_words = await GuideWordSearchCRUD.get_words_by_topics(
-                db, guide.topics, limit=guide.target_word_count
-            )
-            
-            if found_words:
-                word_ids = [w.id for w in found_words]
-                await LearningGuideCRUD.add_words_to_guide(db, guide.id, word_ids)
-                guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
+        # Get guide words
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, 1000)
         
         if not guide_words:
             raise HTTPException(
-                status_code=404, 
-                detail="No words found for this guide. Please contact administrator."
+                status_code=400, 
+                detail="Guide has no words assigned. Please contact administrator."
             )
         
         # Add words to user's learning list
@@ -1488,7 +1478,7 @@ async def start_learning_guide(
 
 @router.get("/guides/{guide_id}/words")
 async def get_guide_words(
-        guide_id: str,
+        guide_id: int,  # ✅ ИСПРАВЛЕНО: используем int
         limit: int = Query(50, ge=1, le=100),
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -1497,54 +1487,57 @@ async def get_guide_words(
     Получить слова для конкретного путеводителя
     """
     try:
-        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)  # ✅ ИСПРАВЛЕНО
         if not guide:
             raise HTTPException(status_code=404, detail="Guide not found")
         
         guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, limit)
         
-        # Format words for response
+        # Format response with word details including user progress
         formatted_words = []
         for word_item in guide_words:
             word = word_item['word']
-            mapping = word_item['mapping']
+            guide_info = word_item['guide_info']
             
-            # Get user's progress for this word
+            # Get user progress for this word
             user_progress = await UserWordProgressCRUD.get_user_word_progress(
                 db, current_user.id, word.id
             )
             
+            # Get translations
+            translations = []
+            for translation in word.translations:
+                translations.append({
+                    "language": translation.language.language_code,
+                    "translation": translation.translation
+                })
+            
             formatted_words.append({
-                'word': {
-                    'id': word.id,
-                    'kazakh_word': word.kazakh_word,
-                    'kazakh_cyrillic': word.kazakh_cyrillic,
-                    'category': word.category.name if word.category else None,
-                    'difficulty': word.difficulty_level.name if word.difficulty_level else None,
-                    'translations': [
-                        {
-                            'language': t.language.language_code,
-                            'translation': t.translation
-                        } for t in word.translations
-                    ]
+                "word": {
+                    "id": word.id,
+                    "kazakh_word": word.kazakh_word,
+                    "kazakh_cyrillic": word.kazakh_cyrillic,
+                    "category": word.category.category_name if word.category else None,
+                    "difficulty": word.difficulty_level.level_name if word.difficulty_level else None,
+                    "translations": translations
                 },
-                'guide_info': {
-                    'importance_score': mapping.importance_score,
-                    'order_in_guide': mapping.order_in_guide
+                "guide_info": {
+                    "importance_score": guide_info.get('importance_score', 1.0),
+                    "order_in_guide": guide_info.get('order_in_guide', 0)
                 },
-                'user_progress': {
-                    'status': user_progress.status.value if user_progress else None,
-                    'is_in_learning_list': user_progress is not None,
-                    'correct_count': user_progress.correct_count if user_progress else 0,
-                    'total_attempts': user_progress.total_attempts if user_progress else 0
+                "user_progress": {
+                    "status": user_progress.status.value if user_progress else None,
+                    "is_in_learning_list": user_progress is not None,
+                    "correct_count": user_progress.times_correct if user_progress else 0,
+                    "total_attempts": user_progress.times_seen if user_progress else 0
                 }
             })
         
         return {
-            'guide_id': guide_id,
-            'guide_title': guide.title,
-            'words': formatted_words,
-            'total_words': len(formatted_words)
+            "guide_id": str(guide_id),
+            "guide_title": guide.title,
+            "words": formatted_words,
+            "total_words": len(formatted_words)
         }
         
     except HTTPException:
@@ -1567,12 +1560,12 @@ async def complete_guide(
         guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
         if not guide:
             raise HTTPException(status_code=404, detail="Guide not found")
-        
+
         # Get current progress
         progress = await UserGuideCRUD.get_user_guide_progress(db, current_user.id, guide.id)
         if not progress:
             raise HTTPException(status_code=404, detail="Guide not started")
-        
+
         # Count completed words (words with LEARNED status)
         completed_words_query = select(func.count(UserWordProgress.id)).where(
             and_(
@@ -1580,26 +1573,26 @@ async def complete_guide(
                 UserWordProgress.status == LearningStatus.LEARNED
             )
         )
-        
+
         # Get guide words to check completion
         guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id)
         guide_word_ids = [w['word'].id for w in guide_words]
-        
+
         if guide_word_ids:
             completed_words_query = completed_words_query.where(
                 UserWordProgress.kazakh_word_id.in_(guide_word_ids)
             )
-        
+
         completed_count_result = await db.execute(completed_words_query)
         completed_count = completed_count_result.scalar()
-        
+
         # Update progress
         updated_progress = await UserGuideCRUD.update_guide_progress(
             db, current_user.id, guide.id,
             words_completed=completed_count,
             total_words_added=progress.total_words_added
         )
-        
+
         return {
             'message': f"Guide '{guide.title}' progress updated",
             'guide_id': guide_id,
@@ -1607,12 +1600,12 @@ async def complete_guide(
             'words_completed': completed_count,
             'total_words': progress.total_words_added,
             'completion_percentage': (
-                (completed_count / progress.total_words_added * 100) 
-                if progress.total_words_added > 0 
+                (completed_count / progress.total_words_added * 100)
+                if progress.total_words_added > 0
                 else 0
             )
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1622,23 +1615,25 @@ async def complete_guide(
 
 @router.get("/guides/{guide_id}/progress")
 async def get_guide_progress(
-        guide_id: str,
+        guide_id: int,  # ✅ ИСПРАВЛЕНО: используем int
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """
-    Получить прогресс по конкретному путеводителю
-    """
+    """Получить прогресс пользователя по путеводителю"""
     try:
-        guide = await LearningGuideCRUD.get_guide_by_key(db, guide_id)
+        # Get guide by ID
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)  # ✅ ИСПРАВЛЕНО
         if not guide:
             raise HTTPException(status_code=404, detail="Guide not found")
         
-        progress = await UserGuideCRUD.get_user_guide_progress(db, current_user.id, guide.id)
+        # Get user progress
+        progress = await UserGuideCRUD.get_user_guide_progress(
+            db, current_user.id, guide.id
+        )
         
         if not progress:
             return {
-                'guide_id': guide_id,
+                'guide_id': str(guide_id),
                 'status': 'not_started',
                 'words_completed': 0,
                 'total_words_added': 0,
@@ -1649,7 +1644,7 @@ async def get_guide_progress(
             }
         
         return {
-            'guide_id': guide_id,
+            'guide_id': str(guide_id),
             'status': progress.status.value,
             'words_completed': progress.words_completed,
             'total_words_added': progress.total_words_added,
@@ -1668,7 +1663,8 @@ async def get_guide_progress(
     except Exception as e:
         print(f"Error getting guide progress: {e}")
         raise HTTPException(status_code=500, detail="Failed to get guide progress")
-    
+
+
 @router.get("/words", response_model=List[UserWordProgressWithWord])
 async def get_learning_words(
         response: Response,
@@ -1725,7 +1721,8 @@ async def get_learning_words(
             times_seen=progress.times_seen,
             times_correct=progress.times_correct,
             times_incorrect=progress.times_incorrect,
-            difficulty_rating=DifficultyRatingEnum(progress.difficulty_rating.value) if progress.difficulty_rating else None,
+            difficulty_rating=DifficultyRatingEnum(
+                progress.difficulty_rating.value) if progress.difficulty_rating else None,
             user_notes=progress.user_notes,
             added_at=progress.added_at,
             first_learned_at=progress.first_learned_at,
@@ -1738,38 +1735,39 @@ async def get_learning_words(
             kazakh_word=word_dict
         ))
 
-    return result    
+    return result
+
 
 @router.post("/words/{word_id}/review")
 async def trigger_word_review(
-    word_id: int,
-    review_type: str = Query("immediate", description="immediate or scheduled"),
-    days_from_now: int = Query(7, description="Days from now for scheduled review"),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        word_id: int,
+        review_type: str = Query("immediate", description="immediate or scheduled"),
+        days_from_now: int = Query(7, description="Days from now for scheduled review"),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ):
     """Trigger immediate or scheduled review for a word"""
-    
+
     # Verify word exists and user has progress with it
     progress = await UserWordProgressCRUD.get_user_word_progress(
         db, current_user.id, word_id
     )
-    
+
     if not progress:
         raise HTTPException(
-            status_code=404, 
+            status_code=404,
             detail="Word not found in your learning list"
         )
-    
+
     # Only allow review for learned/mastered words
     if progress.status not in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
         raise HTTPException(
             status_code=400,
             detail="Only learned or mastered words can be scheduled for review"
         )
-    
+
     now = datetime.utcnow()
-    
+
     if review_type == "immediate":
         # Set for immediate review
         next_review_at = now
@@ -1778,7 +1776,7 @@ async def trigger_word_review(
         # Schedule for future
         next_review_at = now + timedelta(days=days_from_now)
         repetition_interval = days_from_now
-    
+
     # Update the word progress
     await UserWordProgressCRUD.update_word_progress(
         db, current_user.id, word_id,
@@ -1787,7 +1785,7 @@ async def trigger_word_review(
         repetition_interval=repetition_interval,
         updated_at=now
     )
-    
+
     return {
         "message": f"Word scheduled for {review_type} review",
         "word_id": word_id,
@@ -1798,13 +1796,13 @@ async def trigger_word_review(
 
 @router.get("/review/statistics")
 async def get_review_stats(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ):
     """Get review statistics for current user"""
     now = datetime.utcnow()
     today_end = now.replace(hour=23, minute=59, second=59)
-    
+
     # Words due for review now
     due_now_stmt = (
         select(func.count(UserWordProgress.id))
@@ -1816,7 +1814,7 @@ async def get_review_stats(
             )
         )
     )
-    
+
     # Words due today
     due_today_stmt = (
         select(func.count(UserWordProgress.id))
@@ -1829,7 +1827,7 @@ async def get_review_stats(
             )
         )
     )
-    
+
     # Overdue words (learned/mastered words past their review date)
     overdue_stmt = (
         select(func.count(UserWordProgress.id))
@@ -1841,11 +1839,11 @@ async def get_review_stats(
             )
         )
     )
-    
+
     due_now_result = await db.execute(due_now_stmt)
     due_today_result = await db.execute(due_today_stmt)
     overdue_result = await db.execute(overdue_stmt)
-    
+
     return {
         "due_now": due_now_result.scalar() or 0,
         "due_today": due_today_result.scalar() or 0,
@@ -1855,25 +1853,25 @@ async def get_review_stats(
 
 @router.post("/review/batch-trigger")
 async def batch_trigger_reviews(
-    word_ids: List[int],
-    review_type: str = "immediate",
-    days_from_now: int = 7,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        word_ids: List[int],
+        review_type: str = "immediate",
+        days_from_now: int = 7,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ):
     """Trigger review for multiple words"""
     results = []
     successful_count = 0
-    
+
     now = datetime.utcnow()
-    
+
     for word_id in word_ids:
         try:
             # Get word progress
             progress = await UserWordProgressCRUD.get_user_word_progress(
                 db, current_user.id, word_id
             )
-            
+
             if not progress:
                 results.append({
                     "word_id": word_id,
@@ -1881,7 +1879,7 @@ async def batch_trigger_reviews(
                     "error": "Word not found in learning list"
                 })
                 continue
-            
+
             if progress.status not in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
                 results.append({
                     "word_id": word_id,
@@ -1889,7 +1887,7 @@ async def batch_trigger_reviews(
                     "error": "Word is not learned or mastered"
                 })
                 continue
-            
+
             # Set review schedule
             if review_type == "immediate":
                 next_review_at = now
@@ -1897,7 +1895,7 @@ async def batch_trigger_reviews(
             else:
                 next_review_at = now + timedelta(days=days_from_now)
                 repetition_interval = days_from_now
-            
+
             # Update the word
             await UserWordProgressCRUD.update_word_progress(
                 db, current_user.id, word_id,
@@ -1906,23 +1904,299 @@ async def batch_trigger_reviews(
                 repetition_interval=repetition_interval,
                 updated_at=now
             )
-            
+
             results.append({
                 "word_id": word_id,
                 "success": True
             })
             successful_count += 1
-            
+
         except Exception as e:
             results.append({
                 "word_id": word_id,
                 "success": False,
                 "error": str(e)
             })
-    
+
     return {
         "message": f"Processed {len(word_ids)} words, {successful_count} successful",
         "results": results,
         "successful_count": successful_count,
         "total_count": len(word_ids)
     }
+
+@router.post("/guides/{guide_id}/start")
+async def start_learning_guide(
+        guide_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Начать изучение путеводителя - добавляет слова в WANT_TO_LEARN статус
+    Интегрируется с существующим learning-module функционалом
+    """
+    try:
+        # Get guide by ID
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        if not guide.is_active:
+            raise HTTPException(status_code=400, detail="Guide is not active")
+        
+        # Check if already started
+        progress = await UserGuideCRUD.get_user_guide_progress(
+            db, current_user.id, guide.id
+        )
+        
+        if progress and progress.status != GuideStatus.NOT_STARTED:
+            return {
+                "message": f"Guide '{guide.title}' already started",
+                "guide_id": guide_id,
+                "guide_title": guide.title,
+                "status": progress.status.value,
+                "words_added": progress.total_words_added,
+                "words_already_in_list": 0
+            }
+        
+        # Get guide words
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, 1000)
+        
+        if not guide_words:
+            raise HTTPException(
+                status_code=400, 
+                detail="Guide has no words assigned. Please contact administrator."
+            )
+        
+        # ✅ КЛЮЧЕВАЯ ЛОГИКА: Добавляем слова в WANT_TO_LEARN статус
+        added_count = 0
+        already_added = 0
+        
+        for word_item in guide_words:
+            word = word_item['word']
+            
+            try:
+                # Check if word already in user's learning list
+                existing = await UserWordProgressCRUD.get_user_word_progress(
+                    db, current_user.id, word.id
+                )
+                
+                if not existing:
+                    # ✅ Добавляем в WANT_TO_LEARN - это интегрируется с learning-module
+                    await UserWordProgressCRUD.add_word_to_learning_list(
+                        db, current_user.id, word.id, LearningStatus.WANT_TO_LEARN
+                    )
+                    added_count += 1
+                    print(f"✅ Added word to learning list: {word.kazakh_word} -> WANT_TO_LEARN")
+                else:
+                    already_added += 1
+                    print(f"⚠️  Word already in learning list: {word.kazakh_word} -> {existing.status.value}")
+                    
+            except Exception as e:
+                print(f"❌ Warning: Could not add word {word.id}: {e}")
+        
+        # Update guide progress
+        total_words = len(guide_words)
+        await UserGuideCRUD.create_or_update_guide_progress(
+            db, current_user.id, guide.id, 
+            status=GuideStatus.IN_PROGRESS,
+            words_completed=0, 
+            total_words_added=total_words
+        )
+        
+        print(f"🎯 Guide '{guide.title}' started:")
+        print(f"   📝 Total words: {total_words}")
+        print(f"   ✅ Added to learning list: {added_count}")
+        print(f"   ⚠️  Already in list: {already_added}")
+        
+        return {
+            "message": f"Guide '{guide.title}' started successfully! Words added to your learning list.",
+            "guide_id": guide_id,
+            "guide_title": guide.title,
+            "words_found": total_words,
+            "words_added": added_count,
+            "words_already_in_list": already_added,
+            "next_step": "Go to Learning Module to start practicing these words",
+            "progress": {
+                "status": "in_progress",
+                "words_completed": 0,
+                "total_words_added": total_words,
+                "completion_percentage": 0
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error starting guide: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to start guide: {str(e)}")
+
+
+# ✅ ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: Получение слов из Guide для learning-module
+@router.get("/guides/{guide_id}/words/for-learning")
+async def get_guide_words_for_learning(
+        guide_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Получить слова из Guide для использования в learning-module
+    Возвращает слова в том же формате, что ожидает learning-module
+    """
+    try:
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Get words from guide
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, limit=1000)
+        
+        # Get user's language preference
+        user_language_code = current_user.main_language.language_code if current_user.main_language else 'en'
+        
+        # Format words for learning module
+        formatted_words = []
+        for word_item in guide_words:
+            word = word_item['word']
+            
+            # Get user's progress for this word
+            progress = await UserWordProgressCRUD.get_user_word_progress(
+                db, current_user.id, word.id
+            )
+            
+            # Skip if word is already learned/mastered
+            if progress and progress.status in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
+                continue
+            
+            # Get primary translation
+            primary_translation = None
+            if word.translations:
+                # Find translation in user's language
+                for translation in word.translations:
+                    if translation.language.language_code == user_language_code:
+                        primary_translation = translation.translation
+                        break
+                # Fallback to first available translation
+                if not primary_translation:
+                    primary_translation = word.translations[0].translation
+            
+            # Get primary image
+            primary_image = None
+            if word.images:
+                for image in word.images:
+                    if image.is_primary:
+                        primary_image = image.image_url
+                        break
+                if not primary_image and word.images:
+                    primary_image = word.images[0].image_url
+            
+            formatted_words.append({
+                "id": word.id,
+                "kazakh_word": word.kazakh_word,
+                "kazakh_cyrillic": word.kazakh_cyrillic,
+                "translation": primary_translation or "No translation",
+                "image_url": primary_image,
+                "category_name": word.category.category_name if word.category else "Unknown",
+                "difficulty_level": word.difficulty_level.level_value if word.difficulty_level else 1,
+                "status": progress.status.value if progress else "not_started",
+                "times_seen": progress.times_seen if progress else 0,
+                "times_correct": progress.times_correct if progress else 0,
+                "guide_info": {
+                    "guide_id": guide.id,
+                    "guide_title": guide.title,
+                    "importance_score": word_item['guide_info']['importance_score'],
+                    "order_in_guide": word_item['guide_info']['order_in_guide']
+                }
+            })
+        
+        return {
+            "guide_id": guide_id,
+            "guide_title": guide.title,
+            "words": formatted_words,
+            "total_words": len(formatted_words),
+            "learning_words_count": len([w for w in formatted_words if w["status"] in ["want_to_learn", "learning", "review"]])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error getting guide words for learning: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to get guide words")
+
+
+# ✅ ЭНДПОИНТ: Обновление прогресса Guide на основе learning-module активности
+@router.post("/guides/{guide_id}/sync-progress")
+async def sync_guide_progress_from_learning_module(
+        guide_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Синхронизировать прогресс Guide на основе текущего статуса слов в learning-module
+    Вызывается автоматически после завершения батчей в learning-module
+    """
+    try:
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        # Get all guide words
+        guide_words = await LearningGuideCRUD.get_guide_words(db, guide.id, limit=1000)
+        
+        total_words = len(guide_words)
+        completed_words = 0
+        
+        # Count completed words (LEARNED + MASTERED)
+        for word_item in guide_words:
+            word = word_item['word']
+            progress = await UserWordProgressCRUD.get_user_word_progress(
+                db, current_user.id, word.id
+            )
+            
+            if progress and progress.status in [LearningStatus.LEARNED, LearningStatus.MASTERED]:
+                completed_words += 1
+        
+        completion_percentage = round(completed_words / total_words * 100) if total_words > 0 else 0
+        
+        # Determine guide status
+        if completion_percentage >= 100:
+            guide_status = GuideStatus.COMPLETED
+        elif completion_percentage > 0:
+            guide_status = GuideStatus.IN_PROGRESS
+        else:
+            guide_status = GuideStatus.NOT_STARTED
+        
+        # Update guide progress
+        await UserGuideCRUD.create_or_update_guide_progress(
+            db, current_user.id, guide.id,
+            status=guide_status,
+            words_completed=completed_words,
+            total_words_added=total_words,
+            completed_at=datetime.utcnow() if guide_status == GuideStatus.COMPLETED else None
+        )
+        
+        print(f"🔄 Synced guide progress: {guide.title}")
+        print(f"   📊 Completed: {completed_words}/{total_words} ({completion_percentage}%)")
+        print(f"   📈 Status: {guide_status.value}")
+        
+        return {
+            "message": "Guide progress synced successfully",
+            "guide_id": guide_id,
+            "guide_title": guide.title,
+            "total_words": total_words,
+            "completed_words": completed_words,
+            "completion_percentage": completion_percentage,
+            "status": guide_status.value
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error syncing guide progress: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to sync guide progress")

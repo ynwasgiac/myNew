@@ -22,7 +22,7 @@ from typing import List, Dict, Optional
 # Edit these values for your setup:
 
 API_URL = "http://127.0.0.1:8000"
-API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImJjNTRlNzlkLWNjNzUtNDJkNC04NDIwLTk2ZmVmOGFmNWY4MiIsImV4cCI6MTc1NTg3MDYxM30.5FXQOH3cXzSRHUhVxzIka4mMYoGU0NsPUyuKb1pQ6h0"
+API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImUxMDMxNjY0LWU5YmEtNDk2Ni1hZmQ4LWU3MWU3MWZjNjJiYSIsImV4cCI6MTc1NjIwNjExMX0.6RiecbDzw85i8NGWxqq4ZfK471mYDMHKlWkxl4q6oxg"
 MAX_WORDS = None  # None = all words, or set a number like 10
 DELAY_BETWEEN_WORDS = 2.0  # seconds
 DELAY_BETWEEN_TRANSLATIONS = 3.0  # seconds between translations
