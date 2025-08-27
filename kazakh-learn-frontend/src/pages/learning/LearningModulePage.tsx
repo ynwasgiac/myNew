@@ -35,6 +35,7 @@ import LearningTips from '../../components/learning/LearningTips';
 import DailyProgress from '../../components/learning/DailyProgress';
 import QuickActionCards from '../../components/learning/QuickActionCards';
 import MotivationalQuote from '../../components/learning/MotivationalQuote';
+import ReviewWordsButton from '../../components/learning/ReviewWordsButton';
 
 interface LearningStats {
   total_words_learning: number;
@@ -433,6 +434,7 @@ const LearningModulePage: React.FC = () => {
             <LearningTips />
             {/* Daily Progress */}
             <DailyProgress />
+            <ReviewWordsButton currentUser={user} />
           </div>
         </div>
       </div>

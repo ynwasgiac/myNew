@@ -1365,3 +1365,111 @@ async def debug_word_statuses(
             status_code=500,
             detail=f"Debug endpoint failed: {str(e)}"
         )
+    
+@router.post("/batch/review-words/start")
+async def start_review_words_batch(
+    limit: int = Query(9, ge=3, le=15, description="Number of review words to start with"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Start learning module session with review words
+    Gets words with REVIEW status and adds them to learning module
+    """
+    try:
+        # Get user's language
+        user_language_code = current_user.main_language.language_code if current_user.main_language else 'en'
+        
+        # Get words with REVIEW status
+        review_words_query = (
+            select(UserWordProgress)
+            .options(
+                selectinload(UserWordProgress.kazakh_word)
+                .selectinload(KazakhWord.translations)
+                .selectinload(Translation.language)
+            )
+            .where(
+                and_(
+                    UserWordProgress.user_id == current_user.id,
+                    UserWordProgress.status == LearningStatus.REVIEW
+                )
+            )
+            .order_by(UserWordProgress.next_review_at.asc())
+            .limit(limit)
+        )
+        
+        result = await db.execute(review_words_query)
+        review_words = result.scalars().all()
+        
+        if not review_words:
+            raise HTTPException(
+                status_code=404,
+                detail="No words available for review"
+            )
+        
+        # Extract word IDs
+        word_ids = [word.kazakh_word_id for word in review_words]
+        
+        # Set words to LEARNING status for the module (only if currently REVIEW)
+        update_stmt = (
+            update(UserWordProgress)
+            .where(
+                and_(
+                    UserWordProgress.user_id == current_user.id,
+                    UserWordProgress.kazakh_word_id.in_(word_ids),
+                    UserWordProgress.status == LearningStatus.REVIEW
+                )
+            )
+            .values(
+                status=LearningStatus.LEARNING,
+                updated_at=datetime.utcnow()
+            )
+        )
+        
+        result = await db.execute(update_stmt)
+        updated_count = result.rowcount
+        await db.commit()
+        
+        # Format response with word details
+        words_data = []
+        for word_progress in review_words:
+            word = word_progress.kazakh_word
+            # Get translation in user's language
+            translation = ""
+            if word.translations:
+                user_translation = next(
+                    (t for t in word.translations if t.language.language_code == user_language_code),
+                    word.translations[0]  # fallback to first translation
+                )
+                translation = user_translation.translation
+            
+            words_data.append({
+                "id": word.id,
+                "kazakh_word": word.kazakh_word,
+                "translation": translation,
+                "status": "learning",  # Updated status
+                "times_seen": word_progress.times_seen,
+                "times_correct": word_progress.times_correct
+            })
+        
+        return {
+            "success": True,
+            "message": f"Started review session with {updated_count} words",
+            "words": words_data,
+            "total_words": len(words_data),
+            "batch_info": {
+                "batch_number": 1,
+                "words_per_batch": 3,
+                "total_batches": (len(words_data) + 2) // 3  # Round up division
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        print(f"❌ Error starting review words batch: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to start review session: {str(e)}"
+        )
