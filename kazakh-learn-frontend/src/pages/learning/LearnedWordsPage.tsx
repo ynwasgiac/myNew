@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Trophy, Search, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown, Filter } from 'lucide-react';
+import { Trophy, Search, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import { learningAPI } from '../../services/learningAPI';
@@ -33,6 +33,10 @@ const LearnedWordsPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'status' | 'times_correct' | 'times_incorrect' | 'last_practiced' | 'kazakh_word'>('status');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // Multiple selection state
+  const [selectedWords, setSelectedWords] = useState<number[]>([]);
+  const [bulkAction, setBulkAction] = useState<string>('');
 
   // Mutation for updating word status
   const updateStatusMutation = useMutation({
@@ -47,8 +51,64 @@ const LearnedWordsPage: React.FC = () => {
     }
   });
 
+  // Bulk update mutation
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ wordIds, status }: { wordIds: number[]; status: string }) => {
+      const results = await Promise.allSettled(
+        wordIds.map(wordId => learningAPI.updateWordProgress(wordId, { status: status as any }))
+      );
+      
+      const successful = results.filter(result => result.status === 'fulfilled').length;
+      const failed = results.length - successful;
+      
+      return { successful, failed, total: results.length };
+    },
+    onSuccess: ({ successful, failed }) => {
+      if (successful > 0) {
+        toast.success(`${successful} words updated successfully`);
+        queryClient.invalidateQueries({ queryKey: ['learned-words'] });
+        setSelectedWords([]);
+        setBulkAction('');
+      }
+      if (failed > 0) {
+        toast.error(`${failed} words failed to update`);
+      }
+    },
+    onError: () => {
+      toast.error('Failed to update words');
+    }
+  });
+
   const handleStatusChange = (wordId: number, newStatus: string) => {
     updateStatusMutation.mutate({ wordId, status: newStatus });
+  };
+
+  const handleWordSelection = (wordId: number) => {
+    setSelectedWords(prev => 
+      prev.includes(wordId) 
+        ? prev.filter(id => id !== wordId)
+        : [...prev, wordId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    const currentPageWordIds = filteredAndSortedWords.map((word: LearnedWord) => word.id);
+    const allSelected = currentPageWordIds.every((id: number) => selectedWords.includes(id));
+    
+    if (allSelected) {
+      setSelectedWords(prev => prev.filter(id => !currentPageWordIds.includes(id)));
+    } else {
+      setSelectedWords(prev => Array.from(new Set([...prev, ...currentPageWordIds])));
+    }
+  };
+
+  const handleBulkAction = () => {
+    if (selectedWords.length === 0 || !bulkAction) return;
+    
+    bulkUpdateMutation.mutate({ 
+      wordIds: selectedWords, 
+      status: bulkAction 
+    });
   };
 
   // Get user's preferred language or default to English
@@ -196,6 +256,40 @@ const LearnedWordsPage: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* Bulk Actions */}
+        {selectedWords.length > 0 && (
+          <div className="flex items-center space-x-3 bg-blue-50 px-4 py-2 rounded-lg border">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedWords.length} selected
+            </span>
+            <select
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value)}
+              className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select action</option>
+              <option value="want_to_learn">Want to Learn</option>
+              <option value="learning">Learning</option>
+              <option value="learned">Learned</option>
+              <option value="mastered">Mastered</option>
+              <option value="review">Review</option>
+            </select>
+            <button
+              onClick={handleBulkAction}
+              disabled={!bulkAction || bulkUpdateMutation.isPending}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              Apply
+            </button>
+            <button
+              onClick={() => setSelectedWords([])}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Search Bar and Filter Controls */}
@@ -265,6 +359,14 @@ const LearnedWordsPage: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left">
+                <input
+                  type="checkbox"
+                  checked={filteredAndSortedWords.length > 0 && filteredAndSortedWords.every((word: LearnedWord) => selectedWords.includes(word.id))}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </th>
               {showKazakhWord && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
@@ -324,6 +426,7 @@ const LearnedWordsPage: React.FC = () => {
               <tr>
                 <td 
                   colSpan={
+                    1 + // checkbox column
                     (showKazakhWord ? 1 : 0) + 
                     (showTranslation ? 1 : 0) + 
                     4
@@ -338,7 +441,18 @@ const LearnedWordsPage: React.FC = () => {
               </tr>
             ) : (
               filteredAndSortedWords.map((word: LearnedWord) => (
-                <tr key={word.id} className="hover:bg-gray-50">
+                <tr 
+                  key={word.id} 
+                  className={`hover:bg-gray-50 ${selectedWords.includes(word.id) ? 'bg-blue-50' : ''}`}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedWords.includes(word.id)}
+                      onChange={() => handleWordSelection(word.id)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </td>
                   {showKazakhWord && (
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-medium text-gray-900">

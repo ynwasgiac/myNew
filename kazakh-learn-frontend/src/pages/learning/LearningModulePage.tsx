@@ -406,14 +406,14 @@ const LearningModulePage: React.FC = () => {
                 </div>
               )}
 
-              {wordsAvailable && wordsAvailable.total >= 1 ? (
+              {wordsAvailable && wordsAvailable.review >= 1 ? (
                 <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
                   <p>Вниммание! Слов для повторения: {wordsAvailable?.review}. Вы можете повторить их через практику или начать сессию обучения </p>
                 </div>
               ) : null}
 
               {/* Quick Action Cards */}
-              {wordsAvailable && wordsAvailable.total >= 1 ? (
+              {wordsAvailable && wordsAvailable.review >= 1 ? (
                 <QuickActionCards review='?type=review' />
               ) : <QuickActionCards review='' />}
               
