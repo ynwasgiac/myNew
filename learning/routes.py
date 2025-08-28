@@ -410,169 +410,169 @@ async def get_words_due_for_review(
 
 # Replace your practice start route in learning/routes.py with this fixed version:
 
-@router.post("/practice/start", response_model=PracticeSessionResponse)
-async def start_practice_session(
-        request: PracticeSessionRequest,
-        db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
-):
-    """Start a new practice session with ONLY learned words"""
+# @router.post("/practice/start", response_model=PracticeSessionResponse)
+# async def start_practice_session(
+#         request: PracticeSessionRequest,
+#         db: AsyncSession = Depends(get_db),
+#         current_user: User = Depends(get_current_user)
+# ):
+#     """Start a new practice session with ONLY learned words"""
 
-    try:
-        print(f"🎯 Starting practice session for user: {current_user.username}")
-        print(f"📊 Request params: word_count={request.word_count}, category_id={request.category_id}")
+#     try:
+#         print(f"🎯 Starting practice session for user: {current_user.username}")
+#         print(f"📊 Request params: word_count={request.word_count}, category_id={request.category_id}")
 
-        # Determine user's preferred language
-        user_language_code = request.language_code
-        if not user_language_code and current_user.main_language:
-            user_language_code = current_user.main_language.language_code
-        if not user_language_code:
-            user_language_code = "en"
+#         # Determine user's preferred language
+#         user_language_code = request.language_code
+#         if not user_language_code and current_user.main_language:
+#             user_language_code = current_user.main_language.language_code
+#         if not user_language_code:
+#             user_language_code = "en"
 
-        print(f"🌐 Using language: {user_language_code}")
+#         print(f"🌐 Using language: {user_language_code}")
 
-        # Create learning session
-        session = await UserLearningSessionCRUD.create_session(
-            db, current_user.id, request.session_type,
-            request.category_id, request.difficulty_level_id
-        )
-        print(f"📝 Created session with ID: {session.id}")
+#         # Create learning session
+#         session = await UserLearningSessionCRUD.create_session(
+#             db, current_user.id, request.session_type,
+#             request.category_id, request.difficulty_level_id
+#         )
+#         print(f"📝 Created session with ID: {session.id}")
 
-        # 🎯 KEY CHANGE: Get ONLY learned words using a direct query
-        from sqlalchemy import select, and_
-        from sqlalchemy.orm import selectinload
+#         # 🎯 KEY CHANGE: Get ONLY learned words using a direct query
+#         from sqlalchemy import select, and_
+#         from sqlalchemy.orm import selectinload
 
-        # Build query for ONLY learned words
-        query = (
-            select(UserWordProgress)
-            .options(
-                selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.translations)
-                .selectinload(Translation.language),
-                selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.category),
-                selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.difficulty_level),
-                selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.pronunciations),
-                selectinload(UserWordProgress.kazakh_word)
-                .selectinload(KazakhWord.images)
-            )
-            .where(
-                and_(
-                    UserWordProgress.user_id == current_user.id,
-                    UserWordProgress.status == LearningStatus.LEARNED  # ONLY learned words
-                )
-            )
-        )
+#         # Build query for ONLY learned words
+#         query = (
+#             select(UserWordProgress)
+#             .options(
+#                 selectinload(UserWordProgress.kazakh_word)
+#                 .selectinload(KazakhWord.translations)
+#                 .selectinload(Translation.language),
+#                 selectinload(UserWordProgress.kazakh_word)
+#                 .selectinload(KazakhWord.category),
+#                 selectinload(UserWordProgress.kazakh_word)
+#                 .selectinload(KazakhWord.difficulty_level),
+#                 selectinload(UserWordProgress.kazakh_word)
+#                 .selectinload(KazakhWord.pronunciations),
+#                 selectinload(UserWordProgress.kazakh_word)
+#                 .selectinload(KazakhWord.images)
+#             )
+#             .where(
+#                 and_(
+#                     UserWordProgress.user_id == current_user.id,
+#                     UserWordProgress.status == LearningStatus.LEARNED  # ONLY learned words
+#                 )
+#             )
+#         )
 
-        # Apply filters if provided
-        if request.category_id:
-            query = query.join(KazakhWord).where(KazakhWord.category_id == request.category_id)
+#         # Apply filters if provided
+#         if request.category_id:
+#             query = query.join(KazakhWord).where(KazakhWord.category_id == request.category_id)
 
-        if request.difficulty_level_id:
-            query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == request.difficulty_level_id)
+#         if request.difficulty_level_id:
+#             query = query.join(KazakhWord).where(KazakhWord.difficulty_level_id == request.difficulty_level_id)
 
-        # Order by last practiced (least recently practiced first) and apply limit
-        query = query.order_by(UserWordProgress.last_practiced_at.asc().nullsfirst())
+#         # Order by last practiced (least recently practiced first) and apply limit
+#         query = query.order_by(UserWordProgress.last_practiced_at.asc().nullsfirst())
 
-        # Execute query
-        result = await db.execute(query)
-        learned_progress_list = result.scalars().all()
+#         # Execute query
+#         result = await db.execute(query)
+#         learned_progress_list = result.scalars().all()
 
-        print(f"📚 Found {len(learned_progress_list)} learned words in database")
+#         print(f"📚 Found {len(learned_progress_list)} learned words in database")
 
-        if not learned_progress_list:
-            print("❌ No learned words found")
-            raise HTTPException(
-                status_code=404,
-                detail="No learned words available for practice. Please complete some learning modules first to unlock practice mode."
-            )
+#         if not learned_progress_list:
+#             print("❌ No learned words found")
+#             raise HTTPException(
+#                 status_code=404,
+#                 detail="No learned words available for practice. Please complete some learning modules first to unlock practice mode."
+#             )
 
-        # Convert to practice word format
-        practice_words = []
-        for progress in learned_progress_list:
-            word = progress.kazakh_word
-            if not word:
-                continue
+#         # Convert to practice word format
+#         practice_words = []
+#         for progress in learned_progress_list:
+#             word = progress.kazakh_word
+#             if not word:
+#                 continue
 
-            # Get translation in user's preferred language
-            translation = ""
-            if hasattr(word, 'translations') and word.translations:
-                # First try to find translation in user's language
-                for t in word.translations:
-                    if hasattr(t, 'language') and t.language and t.language.language_code == user_language_code:
-                        translation = t.translation
-                        break
+#             # Get translation in user's preferred language
+#             translation = ""
+#             if hasattr(word, 'translations') and word.translations:
+#                 # First try to find translation in user's language
+#                 for t in word.translations:
+#                     if hasattr(t, 'language') and t.language and t.language.language_code == user_language_code:
+#                         translation = t.translation
+#                         break
 
-                # If no translation found in preferred language, use first available
-                if not translation and word.translations:
-                    translation = word.translations[0].translation
+#                 # If no translation found in preferred language, use first available
+#                 if not translation and word.translations:
+#                     translation = word.translations[0].translation
 
-            # Get pronunciation
-            pronunciation = None
-            if hasattr(word, 'pronunciations') and word.pronunciations:
-                pronunciation = word.pronunciations[0].pronunciation
+#             # Get pronunciation
+#             pronunciation = None
+#             if hasattr(word, 'pronunciations') and word.pronunciations:
+#                 pronunciation = word.pronunciations[0].pronunciation
 
-            # Get image
-            image_url = None
-            if hasattr(word, 'images') and word.images:
-                image_url = word.images[0].image_url
+#             # Get image
+#             image_url = None
+#             if hasattr(word, 'images') and word.images:
+#                 image_url = word.images[0].image_url
 
-            # Get difficulty level
-            difficulty_level = 1
-            if hasattr(word, 'difficulty_level') and word.difficulty_level:
-                difficulty_level = word.difficulty_level.level_number
+#             # Get difficulty level
+#             difficulty_level = 1
+#             if hasattr(word, 'difficulty_level') and word.difficulty_level:
+#                 difficulty_level = word.difficulty_level.level_number
 
-            practice_word = PracticeWordItem(
-                id=word.id,
-                kazakh_word=word.kazakh_word,
-                kazakh_cyrillic=word.kazakh_cyrillic,
-                translation=translation,
-                pronunciation=pronunciation,
-                image_url=image_url,
-                difficulty_level=difficulty_level
-            )
+#             practice_word = PracticeWordItem(
+#                 id=word.id,
+#                 kazakh_word=word.kazakh_word,
+#                 kazakh_cyrillic=word.kazakh_cyrillic,
+#                 translation=translation,
+#                 pronunciation=pronunciation,
+#                 image_url=image_url,
+#                 difficulty_level=difficulty_level
+#             )
 
-            practice_words.append(practice_word)
+#             practice_words.append(practice_word)
 
-        print(f"🔄 Converted {len(practice_words)} words to practice format")
+#         print(f"🔄 Converted {len(practice_words)} words to practice format")
 
-        # Shuffle for variety
-        import random
-        random.shuffle(practice_words)
+#         # Shuffle for variety
+#         import random
+#         random.shuffle(practice_words)
 
-        # Apply word count limit if specified and less than available words
-        if request.word_count and request.word_count < len(practice_words):
-            practice_words = practice_words[:request.word_count]
-            print(f"✂️ Limited to {request.word_count} words as requested")
+#         # Apply word count limit if specified and less than available words
+#         if request.word_count and request.word_count < len(practice_words):
+#             practice_words = practice_words[:request.word_count]
+#             print(f"✂️ Limited to {request.word_count} words as requested")
 
-        print(f"✅ Final practice session: {len(practice_words)} learned words")
+#         print(f"✅ Final practice session: {len(practice_words)} learned words")
 
-        # Log each word for debugging
-        for i, word in enumerate(practice_words[:5]):  # Show first 5
-            print(f"  {i + 1}. {word.kazakh_word} -> {word.translation}")
-        if len(practice_words) > 5:
-            print(f"  ... and {len(practice_words) - 5} more words")
+#         # Log each word for debugging
+#         for i, word in enumerate(practice_words[:5]):  # Show first 5
+#             print(f"  {i + 1}. {word.kazakh_word} -> {word.translation}")
+#         if len(practice_words) > 5:
+#             print(f"  ... and {len(practice_words) - 5} more words")
 
-        return PracticeSessionResponse(
-            session_id=session.id,
-            words=practice_words,
-            session_type=request.session_type,
-            total_words=len(practice_words)
-        )
+#         return PracticeSessionResponse(
+#             session_id=session.id,
+#             words=practice_words,
+#             session_type=request.session_type,
+#             total_words=len(practice_words)
+#         )
 
-    except HTTPException:
-        # Re-raise HTTP exceptions
-        raise
-    except Exception as e:
-        print(f"❌ Error in start_practice_session: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to start practice session: {str(e)}"
-        )
+#     except HTTPException:
+#         # Re-raise HTTP exceptions
+#         raise
+#     except Exception as e:
+#         print(f"❌ Error in start_practice_session: {e}")
+#         import traceback
+#         traceback.print_exc()
+#         raise HTTPException(
+#             status_code=500,
+#             detail=f"Failed to start practice session: {str(e)}"
+#         )
 
 
 # ALSO: Add a debug endpoint to check learned words directly
@@ -958,22 +958,23 @@ async def submit_practice_answer(
 
 # Alternative approach: Fix the practice session creation to use proper language
 @router.post("/practice/start-session", response_model=PracticeSessionResponse)
-async def start_practice_session(
+async def start_practice_session_alt(
         request: PracticeSessionRequest,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Start a new practice session with improved word selection and proper language handling"""
+    """Start a new practice session - LEARNED words by default, REVIEW words if session_type=review"""
 
     try:
         print(f"🎯 Starting practice session for user: {current_user.username}")
+        print(f"📊 Request params: word_count={request.word_count}, session_type={request.session_type}, category_id={request.category_id}")
 
         # Determine user's preferred language
-        user_language_code = request.language_code  # Use request language if provided
+        user_language_code = request.language_code
         if not user_language_code and current_user.main_language:
             user_language_code = current_user.main_language.language_code
         if not user_language_code:
-            user_language_code = "en"  # Default to English
+            user_language_code = "en"
 
         print(f"🌐 Using language: {user_language_code}")
 
@@ -984,82 +985,37 @@ async def start_practice_session(
         )
 
         practice_words = []
-        user_learning_words_count = 0
 
-        # Define learning statuses to include
-        learning_statuses = [LearningStatus.WANT_TO_LEARN, LearningStatus.LEARNING]
+        # ===== ОПРЕДЕЛЯЕМ СТАТУСЫ В ЗАВИСИМОСТИ ОТ ТИПА СЕССИИ =====
+        if request.session_type == "review":
+            # Для review сессий - только слова со статусом REVIEW
+            practice_statuses = [LearningStatus.REVIEW]
+            print(f"📚 Review session - using only REVIEW status words")
+        else:
+            # Для обычной практики - только выученные слова (LEARNED)
+            practice_statuses = [LearningStatus.LEARNED]
+            print(f"📚 Practice session - using only LEARNED status words")
 
-        if request.include_review:
-            learning_statuses.append(LearningStatus.REVIEW)
+        print(f"📚 Getting words with statuses: {[status.value for status in practice_statuses]}")
 
-        # Get words from user's learning list
-        for status in learning_statuses:
+        # Загружаем слова для указанных статусов
+        user_words_count = 0
+        for status in practice_statuses:
             try:
                 status_words = await UserWordProgressCRUD.get_user_learning_words(
                     db, current_user.id, status, request.category_id,
-                    request.difficulty_level_id, request.word_count, 0
+                    request.difficulty_level_id
                 )
+                
+                print(f"✅ Status {status.value}: {len(status_words)} words")
+                user_words_count += len(status_words)
 
                 for progress in status_words:
-                    word = progress.kazakh_word
+                    # Get the actual word with translations
+                    word = await KazakhWordCRUD.get_by_id_full(db, progress.kazakh_word_id, user_language_code)
                     if not word:
                         continue
 
-                    # Get translation in user's preferred language
-                    translation = ""
-                    if hasattr(word, 'translations') and word.translations:
-                        # First try to find translation in user's language
-                        user_lang_translation = next(
-                            (t for t in word.translations if t.language.language_code == user_language_code),
-                            None
-                        )
-
-                        if user_lang_translation:
-                            translation = user_lang_translation.translation
-                        elif word.translations:
-                            # Fallback to first available translation
-                            translation = word.translations[0].translation
-
-                    if not translation:
-                        print(f"⚠️ No translation found for word {word.kazakh_word} in language {user_language_code}")
-                        continue
-
-                    practice_word = PracticeWordItem(
-                        id=word.id,
-                        kazakh_word=word.kazakh_word,
-                        kazakh_cyrillic=getattr(word, 'kazakh_cyrillic', None),
-                        translation=translation,  # This is now in the correct language
-                        difficulty_level=word.difficulty_level.level_number if hasattr(word,
-                                                                                       'difficulty_level') and word.difficulty_level else 1,
-                        times_seen=progress.times_seen,
-                        last_practiced=progress.last_practiced_at,
-                        is_review=status == LearningStatus.REVIEW,
-                        learning_status="learning"
-                    )
-
-                    practice_words.append(practice_word)
-                    user_learning_words_count += 1
-
-                print(f"✅ Loaded {len(status_words)} words with status {status.value}")
-
-            except Exception as e:
-                print(f"❌ Error loading words with status {status.value}: {e}")
-                continue
-
-        print(f"📊 Total from learning list: {user_learning_words_count} words")
-
-        # If we need more words, add random words
-        if len(practice_words) < request.word_count:
-            remaining_count = request.word_count - len(practice_words)
-            print(f"🎲 Adding {remaining_count} random words")
-
-            try:
-                # Get random words that user hasn't added to learning list
-                random_words = await KazakhWordCRUD.get_random_words_not_in_user_list(
-                    db, current_user.id, remaining_count, request.category_id, request.difficulty_level_id
-                )
-
-                for word in random_words:
                     # Get translation in user's preferred language
                     translation = ""
                     if hasattr(word, 'translations') and word.translations:
@@ -1080,53 +1036,47 @@ async def start_practice_session(
                         id=word.id,
                         kazakh_word=word.kazakh_word,
                         kazakh_cyrillic=getattr(word, 'kazakh_cyrillic', None),
-                        translation=translation,  # This is now in the correct language
-                        difficulty_level=word.difficulty_level.level_number if hasattr(word,
-                                                                                       'difficulty_level') and word.difficulty_level else 1,
-                        times_seen=0,
-                        last_practiced=None,
+                        translation=translation,
+                        difficulty_level=word.difficulty_level.level_number if hasattr(word, 'difficulty_level') and word.difficulty_level else 1,
+                        times_seen=progress.times_seen,
+                        last_practiced=progress.last_practiced_at,
                         is_review=False,
-                        learning_status="random"
+                        learning_status=status.value  # Сохраняем исходный статус
                     )
 
                     practice_words.append(practice_word)
 
-                print(f"✅ Added {len(random_words)} random words")
-
             except Exception as e:
-                print(f"❌ Error adding random words: {e}")
+                print(f"❌ Error loading words with status {status.value}: {e}")
 
-        # Check if we have any words
+        print(f"📊 Total user words loaded: {user_words_count}")
+
+        # Проверяем, есть ли слова для практики
         if not practice_words:
-            raise HTTPException(
-                status_code=404,
-                detail="No words available for practice. Please add words to your learning list."
-            )
+            # Разные сообщения для разных типов сессий
+            if request.session_type == "review":
+                raise HTTPException(
+                    status_code=404,
+                    detail="No words available for review. Words will appear here when they need review based on spaced repetition."
+                )
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No learned words available for practice. Please complete some learning first to unlock practice mode."
+                )
 
-        # Smart shuffling: prioritize learning words, then add random ones
-        learning_words = [pw for pw in practice_words if pw.learning_status == "learning"]
-        random_words = [pw for pw in practice_words if pw.learning_status == "random"]
-
-        # Shuffle each group separately
+        # Перемешиваем слова случайным образом
         import random
-        random.shuffle(learning_words)
-        random.shuffle(random_words)
+        random.shuffle(practice_words)
 
-        # Combine: 70% learning words at the beginning, then insert random ones
-        final_words = []
-        learning_priority_count = min(len(learning_words), int(len(practice_words) * 0.7))
+        # Ограничиваем количество слов запрошенным числом
+        final_words = practice_words[:request.word_count]
 
-        # Add priority learning words
-        final_words.extend(learning_words[:learning_priority_count])
-
-        # Add remaining words with shuffling
-        remaining_learning = learning_words[learning_priority_count:]
-        all_remaining = remaining_learning + random_words
-        random.shuffle(all_remaining)
-        final_words.extend(all_remaining)
-
-        print(f"🎯 Final composition: {user_learning_words_count} from learning list + {len(random_words)} random")
-        print(f"📝 Priority: {learning_priority_count} learning words at the beginning")
+        print(f"🎯 Final session composition:")
+        print(f"   - Session type: {request.session_type}")
+        print(f"   - Status used: {practice_statuses[0].value}")
+        print(f"   - Words selected: {len(final_words)}")
+        print(f"   - Words available: {len(practice_words)}")
 
         return PracticeSessionResponse(
             session_id=session.id,

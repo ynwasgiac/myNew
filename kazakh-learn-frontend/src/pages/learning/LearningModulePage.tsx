@@ -35,7 +35,6 @@ import LearningTips from '../../components/learning/LearningTips';
 import DailyProgress from '../../components/learning/DailyProgress';
 import QuickActionCards from '../../components/learning/QuickActionCards';
 import MotivationalQuote from '../../components/learning/MotivationalQuote';
-import ReviewWordsButton from '../../components/learning/ReviewWordsButton';
 
 interface LearningStats {
   total_words_learning: number;
@@ -48,6 +47,7 @@ interface LearningStats {
 interface WordsAvailable {
   want_to_learn: number;
   learning: number;
+  review: number;
   total: number;
 }
 
@@ -101,7 +101,7 @@ const LearningModulePage: React.FC = () => {
     queryKey: ['words-available', selectedCategory, selectedDifficulty],
     queryFn: async (): Promise<WordsAvailable> => {
       try {
-        const [wantToLearn, learning ] = await Promise.all([
+        const [wantToLearn, learning, review] = await Promise.all([
           learningAPI.getProgress({
             status: LEARNING_STATUSES.WANT_TO_LEARN,
             category_id: selectedCategory,
@@ -113,19 +113,27 @@ const LearningModulePage: React.FC = () => {
             category_id: selectedCategory,
             difficulty_level_id: selectedDifficulty,
             limit: 100
+          }) as Promise<UserWordProgressWithWord[]>,
+          learningAPI.getProgress({
+            status: LEARNING_STATUSES.REVIEW,
+            category_id: selectedCategory,
+            difficulty_level_id: selectedDifficulty,
+            limit: 100
           }) as Promise<UserWordProgressWithWord[]>
         ]);
 
         return {
           want_to_learn: wantToLearn.length,
           learning: learning.length,
-          total: wantToLearn.length + learning.length
+          review: review.length,
+          total: wantToLearn.length + learning.length + review.length
         };
       } catch (error) {
         console.error('Failed to fetch available words:', error);
         return {
           want_to_learn: 0,
           learning: 0,
+          review: 0,
           total: 0
         };
       }
@@ -160,30 +168,6 @@ const LearningModulePage: React.FC = () => {
       }
     },
     enabled: !!user,
-  });
-  
-
-  // Fetch categories for filter
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      try {
-        // This would fetch categories from your API
-        return [
-          { id: 1, name: 'Basic Vocabulary' },
-          { id: 2, name: 'Family' },
-          { id: 3, name: 'Food & Drinks' },
-          { id: 4, name: 'Animals' },
-          { id: 5, name: 'Colors' },
-          { id: 6, name: 'Numbers' },
-          { id: 7, name: 'Time & Weather' },
-          { id: 8, name: 'Travel' }
-        ];
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-        return [];
-      }
-    }
   });
 
   // Mutation to add random words
@@ -368,7 +352,9 @@ const LearningModulePage: React.FC = () => {
                     {!wordsAvailable || wordsAvailable.total === 0 
                       ? t('mainAction.noWordsMessage')
                       : t('mainAction.needMoreMessage', {
-                          count: wordsAvailable?.total || 0
+                          count: wordsAvailable?.total || 0,
+                          new_count: wordsAvailable?.want_to_learn + wordsAvailable?.learning || 0,
+                          rev_count: wordsAvailable?.review || 0
                         })
                     }
                   </p>
@@ -420,8 +406,18 @@ const LearningModulePage: React.FC = () => {
                 </div>
               )}
 
+              {wordsAvailable && wordsAvailable.total >= 1 ? (
+                <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+                  <p>Вниммание! Слов для повторения: {wordsAvailable?.review}. Вы можете повторить их через практику или начать сессию обучения </p>
+                </div>
+              ) : null}
+
               {/* Quick Action Cards */}
-              <QuickActionCards />
+              {wordsAvailable && wordsAvailable.total >= 1 ? (
+                <QuickActionCards review='?type=review' />
+              ) : <QuickActionCards review='' />}
+              
+              
           </div>
 
           {/* Center Column: Main Action */}
@@ -434,7 +430,6 @@ const LearningModulePage: React.FC = () => {
             <LearningTips />
             {/* Daily Progress */}
             <DailyProgress />
-            <ReviewWordsButton currentUser={user} />
           </div>
         </div>
       </div>
