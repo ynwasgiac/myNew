@@ -255,7 +255,7 @@ const QuizPage: React.FC = () => {
       setQuestions(data.questions);
       setStartTime(Date.now());
       
-      toast.success(`Quiz started with ${data.questions.length} learned words!`);
+      toast.success(t('toasts.quizStarted', { count: data.questions.length }));
     },
     onError: (error) => {
       console.error('❌ Quiz generation error:', error);
@@ -397,7 +397,7 @@ const QuizPage: React.FC = () => {
 
   // Loading state
   if (generateQuizMutation.isPending || stats === undefined) {
-    return <LoadingSpinner fullScreen text="Generating quiz from your learned words..." />;
+    return <LoadingSpinner fullScreen text={t('loading.generating')} />;
   }
 
   // Error state - specifically for no learned words
@@ -405,26 +405,21 @@ const QuizPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">🧠</div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          No Learned Words Available for Quiz
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Quiz mode is only available for words you have already learned. 
-          Complete some learning modules first to unlock quiz sessions!
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('errors.noLearnedWordsTitle')}</h2>
+        <p className="text-gray-600 mb-6">{t('errors.noLearnedWordsDesc')}</p>
         <div className="flex justify-center gap-4">
           <button
             onClick={() => navigate('/app/learning')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             <BookOpenIcon className="w-5 h-5 inline mr-2" />
-            Start Learning
+            {t('buttons.startLearning')}
           </button>
           <button
             onClick={() => navigate('/app/words')}
             className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            Browse Words
+            {t('buttons.browseWords')}
           </button>
         </div>
       </div>
@@ -443,35 +438,33 @@ const QuizPage: React.FC = () => {
           <div className="text-6xl mb-4">
             {score >= 80 ? '🏆' : score >= 60 ? '👏' : '📚'}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Quiz Complete!
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('results.completeTitle')}</h1>
           <p className="text-xl text-gray-600">
-            You scored {correctAnswers} out of {results.length} ({score}%)
+            {t('results.scoreLine', { correct: correctAnswers, total: results.length, score })}
           </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Quiz Results</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('results.title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">{correctAnswers}</div>
-              <div className="text-sm text-gray-600">Correct Answers</div>
+              <div className="text-sm text-gray-600">{t('results.cards.correctAnswers')}</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">{score}%</div>
-              <div className="text-sm text-gray-600">Score</div>
+              <div className="text-sm text-gray-600">{t('results.cards.score')}</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">
                 {Math.round(totalTime / 1000)}s
               </div>
-              <div className="text-sm text-gray-600">Total Time</div>
+              <div className="text-sm text-gray-600">{t('results.cards.totalTime')}</div>
             </div>
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-semibold">Question Review:</h3>
+            <h3 className="font-semibold">{t('results.questionReview')}</h3>
             {results.map((result, index) => {
               const question = questions[index];
               return (
@@ -504,14 +497,14 @@ const QuizPage: React.FC = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
           >
             <ArrowRightIcon className="w-5 h-5 mr-2" />
-            Retake Quiz
+            {t('buttons.retakeQuiz')}
           </button>
           <button
             onClick={handleFinishQuiz}
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
           >
             <TrophyIcon className="w-5 h-5 mr-2" />
-            View Progress
+            {t('buttons.viewProgress')}
           </button>
         </div>
       </div>
@@ -520,7 +513,7 @@ const QuizPage: React.FC = () => {
 
   // Quiz in progress
   if (!currentQuestion) {
-    return <LoadingSpinner fullScreen text="Loading quiz question..." />;
+    return <LoadingSpinner fullScreen text={t('loading.question')} />;
   }
 
   return (
@@ -532,18 +525,18 @@ const QuizPage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-blue-600">
                 <BookOpenIcon className="w-5 h-5" />
-                <span className="font-medium">Quiz Session</span>
+                <span className="font-medium">{t('header.session')}</span>
               </div>
               <span className="text-gray-400">•</span>
               <span className="text-sm text-gray-600">
-                Question {currentQuestionIndex + 1} of {questions.length}
+                {t('header.questionOf', { current: currentQuestionIndex + 1, total: questions.length })}
               </span>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
                 <ClockIcon className="w-4 h-4 inline mr-1" />
-                Quiz in Progress
+                {t('header.inProgress')}
               </div>
             </div>
           </div>
@@ -563,11 +556,9 @@ const QuizPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              What does "{currentQuestion.word}" mean?
+              {t('questions.whatMeans', { word: currentQuestion.word })}
             </h2>
-            <p className="text-gray-600">
-              Choose the correct translation
-            </p>
+            <p className="text-gray-600">{t('questions.chooseTranslation')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -593,7 +584,7 @@ const QuizPage: React.FC = () => {
           {selectedAnswer !== null && (
             <div className="text-center mt-6">
               <div className="text-lg font-medium text-blue-600">
-                Answer selected! Moving to next question...
+                {t('feedback.answerSelected')}
               </div>
             </div>
           )}
@@ -606,7 +597,7 @@ const QuizPage: React.FC = () => {
                 disabled={selectedAnswer === null}
                 className="bg-gray-300 text-gray-500 cursor-not-allowed px-8 py-3 rounded-lg font-semibold"
               >
-                Select an answer to continue
+                {t('buttons.selectToContinue')}
               </button>
             </div>
           )}
@@ -614,19 +605,19 @@ const QuizPage: React.FC = () => {
 
         {/* Session Progress */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('progress.session')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {results.filter(r => r.isCorrect).length}
               </div>
-              <div className="text-sm text-gray-600">Correct</div>
+              <div className="text-sm text-gray-600">{t('progress.correct')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
                 {results.filter(r => !r.isCorrect).length}
               </div>
-              <div className="text-sm text-gray-600">Incorrect</div>
+              <div className="text-sm text-gray-600">{t('progress.incorrect')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
@@ -635,13 +626,13 @@ const QuizPage: React.FC = () => {
                   : 0
                 }%
               </div>
-              <div className="text-sm text-gray-600">Accuracy</div>
+              <div className="text-sm text-gray-600">{t('progress.accuracy')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
                 {questions.length}
               </div>
-              <div className="text-sm text-gray-600">Total Questions</div>
+              <div className="text-sm text-gray-600">{t('progress.total')}</div>
             </div>
           </div>
         </div>

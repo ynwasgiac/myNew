@@ -18,7 +18,8 @@ import {
   Clock,
   CheckCircle,
   Plus,
-  Search
+  Search,
+  TrendingUp
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -72,6 +73,39 @@ const startGuide = async (guideId: number) => {
   return response.data;
 };
 
+// Progress indicator component
+const ProgressIndicator: React.FC<{ guide: Guide }> = ({ guide }) => {
+  const { progress } = guide;
+  
+  if (guide.status === 'not_started' || progress.total_words_added === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-gray-600">Прогресс изучения</span>
+        <span className="font-medium text-gray-900">
+          {progress.words_completed}/{progress.total_words_added} слов
+        </span>
+      </div>
+      
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+          style={{ width: `${Math.min(progress.completion_percentage, 100)}%` }}
+        />
+      </div>
+      
+      <div className="flex items-center text-xs text-gray-500">
+        <TrendingUp className="h-3 w-3 mr-1" />
+        <span>{Math.round(progress.completion_percentage)}% завершено</span>
+      </div>
+    </div>
+  );
+};
+
 const GuidedLearningPage = () => {
   const { t } = useTranslation(['guides', 'learning']);
   const { user } = useAuth();
@@ -81,11 +115,29 @@ const GuidedLearningPage = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch guides from database
+  // Fetch guides from database with progress sync
   const { data: guides = [], isLoading, error } = useQuery({
     queryKey: ['learning-guides', selectedDifficulty],
-    queryFn: fetchGuides,
+    queryFn: async () => {
+      // First fetch guides
+      const guidesData = await fetchGuides();
+      
+      // Sync progress for guides that are in progress
+      for (const guide of guidesData) {
+        if (guide.status === 'in_progress' && guide.progress.total_words_added > 0) {
+          try {
+            await api.post(`/learning/guides/${guide.id}/sync-progress`);
+          } catch (error) {
+            console.error(`Failed to sync progress for guide ${guide.id}:`, error);
+          }
+        }
+      }
+      
+      // Re-fetch guides with updated progress
+      return await fetchGuides();
+    },
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   // Start guide mutation
@@ -171,70 +223,52 @@ const GuidedLearningPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="relative max-w-7xl mx-auto py-16 px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {t('guides:title', 'Learning Guides')}
+            <Map className="h-16 w-16 text-white mx-auto mb-6" />
+            <h1 className="text-4xl font-bold mb-4">
+              {t('guides:header.title', 'Learning Guides')}
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {t('guides:subtitle', 'Start your Kazakh learning journey with structured guides')}
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              {t('guides:header.subtitle', 'Structured learning paths to help you master Kazakh vocabulary effectively')}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Learning Module Link */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between text-white">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">
-                {t('learning:module.title', 'Learning Module')}
-              </h2>
-              <p className="text-blue-100">
-                {t('learning:module.subtitle', 'Intensive module-based learning sessions')}
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/app/learning-module')}
-              className="flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-            >
-              <BookOpen className="h-5 w-5 mr-2" />
-              {t('learning:buttons.startSession', 'Start Learning Session')}
-            </button>
-          </div>
-        </div>
-
+      <div className="max-w-7xl mx-auto py-8 px-6">
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="text"
-                  placeholder={t('guides:search', 'Search guides...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t('guides:search.placeholder', 'Search guides...')}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
 
             {/* Difficulty Filter */}
-            <div className="sm:w-48">
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">{t('guides:difficulty.all', 'All Levels')}</option>
-                <option value="beginner">{t('guides:difficulty.beginner', 'Beginner')}</option>
-                <option value="intermediate">{t('guides:difficulty.intermediate', 'Intermediate')}</option>
-                <option value="advanced">{t('guides:difficulty.advanced', 'Advanced')}</option>
-              </select>
+            <div className="flex space-x-2">
+              {['all', 'beginner', 'intermediate', 'advanced'].map((difficulty) => (
+                <button
+                  key={difficulty}
+                  onClick={() => setSelectedDifficulty(difficulty)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedDifficulty === difficulty
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {t(`guides:difficulty.${difficulty}`, difficulty.charAt(0).toUpperCase() + difficulty.slice(1))}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -242,116 +276,125 @@ const GuidedLearningPage = () => {
         {/* Guides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGuides.map((guide: Guide) => {
-            const IconComponent = iconMap[guide.icon as keyof typeof iconMap] || BookOpen;
+            const IconComponent = iconMap[guide.icon] || BookOpen;
             
             return (
               <div
                 key={guide.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
               >
                 {/* Header */}
-                <div className={`bg-${guide.color}-500 px-6 py-4`}>
+                <div className={`p-6 ${guide.color} text-white`}>
                   <div className="flex items-center justify-between">
-                    <IconComponent className="h-8 w-8 text-white" />
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${guide.color}-600 text-white`}>
-                      {String(t(`guides:difficulty.${guide.difficulty}`, guide.difficulty))}
+                    <IconComponent className="h-8 w-8" />
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      guide.difficulty === 'beginner' ? 'bg-green-100 text-green-800' :
+                      guide.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {t(`guides:difficulty.${guide.difficulty}`, guide.difficulty)}
                     </span>
                   </div>
+                  <h3 className="text-xl font-bold mt-4 mb-2">{guide.title}</h3>
+                  <p className="text-sm text-white/90">{guide.description}</p>
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {guide.title}
-                  </h3>
-                  
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {guide.description}
-                  </p>
-
                   {/* Stats */}
-                  <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
+                  <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      {guide.estimated_time}
+                      <span>{guide.estimated_time}</span>
                     </div>
                     <div className="flex items-center">
                       <BookOpen className="h-4 w-4 mr-1" />
-                      {guide.word_count} {t('guides:words', 'words')}
+                      <span>{guide.word_count} words</span>
                     </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  {guide.status !== 'not_started' && (
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">
-                          {t('guides:progress', 'Progress')}
-                        </span>
-                        <span className="text-gray-900 font-medium">
-                          {guide.progress.completion_percentage.toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`bg-${guide.color}-500 h-2 rounded-full transition-all duration-300`}
-                          style={{ width: `${guide.progress.completion_percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    {guide.status === 'not_started' ? (
-                      <button
-                        onClick={() => handleStartGuide(guide.id)}
-                        disabled={startGuideMutation.isPending}
-                        className={`flex-1 bg-${guide.color}-500 hover:bg-${guide.color}-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center disabled:opacity-50`}
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        {startGuideMutation.isPending ? 
-                          t('guides:starting', 'Starting...') : 
-                          t('guides:start', 'Start Guide')
-                        }
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleViewGuide(guide.id)}
-                          className={`flex-1 bg-${guide.color}-500 hover:bg-${guide.color}-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200`}
-                        >
-                          {t('guides:continue', 'Continue Learning')}
-                        </button>
-                        {guide.status === 'completed' && (
-                          <div className="flex items-center justify-center px-3 py-2 bg-green-100 text-green-800 rounded-lg">
-                            <CheckCircle className="h-4 w-4" />
-                          </div>
-                        )}
-                      </>
-                    )}
                   </div>
 
                   {/* Topics */}
                   {guide.topics.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mb-4">
                       <div className="flex flex-wrap gap-1">
-                        {guide.topics.slice(0, 3).map((topic: string, index: number) => (
+                        {guide.topics.slice(0, 3).map((topic, index) => (
                           <span
                             key={index}
-                            className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-${guide.color}-100 text-${guide.color}-800`}
+                            className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md"
                           >
                             {topic}
                           </span>
                         ))}
                         {guide.topics.length > 3 && (
-                          <span className="text-xs text-gray-500">
-                            +{guide.topics.length - 3} {t('guides:more', 'more')}
+                          <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md">
+                            +{guide.topics.length - 3}
                           </span>
                         )}
                       </div>
                     </div>
                   )}
+
+                  {/* Progress Indicator */}
+                  {guide.status !== 'not_started' && guide.progress.total_words_added > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Прогресс изучения</span>
+                        <span className="font-medium text-gray-900">
+                          {guide.progress.words_completed}/{guide.progress.total_words_added} слов
+                        </span>
+                      </div>
+                      
+                      {/* Progress bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(guide.progress.completion_percentage, 100)}%` }}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span>{Math.round(guide.progress.completion_percentage)}% завершено</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Button */}
+                  <div className="mt-6">
+                    {guide.status === 'not_started' ? (
+                      <button
+                        onClick={() => handleStartGuide(guide.id)}
+                        disabled={startGuideMutation.isPending}
+                        className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-colors ${
+                          startGuideMutation.isPending
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
+                      >
+                        {startGuideMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            {t('guides:actions.starting', 'Starting...')}
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            {t('guides:actions.start', 'Start Learning')}
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleViewGuide(guide.id)}
+                        className="w-full flex items-center justify-center px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {guide.status === 'completed' 
+                          ? t('guides:actions.completed', 'Completed') 
+                          : t('guides:actions.continue', 'Continue Learning')
+                        }
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -362,7 +405,7 @@ const GuidedLearningPage = () => {
         {filteredGuides.length === 0 && (
           <div className="text-center py-12">
             <Map className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {t('guides:empty.title', 'No guides found')}
             </h3>
             <p className="text-gray-600">

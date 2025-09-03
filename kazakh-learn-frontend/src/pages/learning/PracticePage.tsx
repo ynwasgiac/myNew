@@ -12,10 +12,10 @@ import {
   LightBulbIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { learningAPI } from '../../services/learningAPI';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTranslation } from '../../hooks/useTranslation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../services/api';
 import { LetterHintHelper, LetterHintState } from '../../utils/letterHintHelper';
@@ -40,7 +40,7 @@ interface ScenarioQuestion {
 const PracticePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation('practice');
+  const { t } = useTranslation(['learning', 'common']);
   const [searchParams] = useSearchParams();
   
   // Session state
@@ -89,75 +89,157 @@ const PracticePage: React.FC = () => {
   console.log('🎯 Practice method from settings:', practiceMethod);
 
   // Start session mutation - using getLearnedWords
-  // В src/pages/learning/PracticePage.tsx - ИСПРАВЛЕНИЕ TypeScript ошибок
+  const startSessionMutation = useMutation({
+    mutationFn: async () => {
+      console.log('🔍 Starting practice with practiceType:', practiceType);
+      console.log('Category filter:', categoryId);
+      console.log('Word count from settings:', wordCount);
+      
+      try {
+        const userLanguage = user?.main_language?.language_code || 'en';
 
-const startSessionMutation = useMutation({
-  mutationFn: async () => {
-    console.log('🔍 Starting practice with practiceType:', practiceType);
-    console.log('Category filter:', categoryId);
-    console.log('Word count from settings:', wordCount);
-    
-    try {
-      const userLanguage = user?.main_language?.language_code || 'en';
-
-      // ✅ ТОЛЬКО ДЛЯ type=review используем новую логику
-      if (practiceType === 'review') {
-        console.log('📚 Fetching words for REVIEW...');
-        
-        const reviewWords = await learningAPI.getWordsForReview(wordCount, userLanguage);
-        console.log('📊 Review words response:', reviewWords);
-        
-        if (reviewWords.length === 0) {
-          throw new Error('No words are due for review right now. Check back later or learn more words!');
-        }
-        
-        // Create scenario questions for review words
-        const questions: ScenarioQuestion[] = reviewWords
-          .slice(0, wordCount)
-          .map(wordData => {
-            // Данные от /due-for-review имеют структуру: { kazakh_word: { translations: [...] } }
-            const kazakhWord = (wordData as any).kazakh_word;
-            
-            if (!kazakhWord) {
-              console.log('⚠️ No kazakh_word data found');
-              return null;
-            }
-            
-            // Ищем перевод на нужном языке
-            let translation = '';
-            if (kazakhWord.translations && Array.isArray(kazakhWord.translations)) {
-              // Ищем перевод на языке пользователя (ru)
-              const userLangTranslation = kazakhWord.translations.find(
-                (t: any) => t.language_code === userLanguage
-              );
+        // ТОЛЬКО ДЛЯ type=review используем новую логику
+        if (practiceType === 'review') {
+          console.log('📚 Fetching words for REVIEW...');
+          
+          const reviewWords = await learningAPI.getWordsForReview(wordCount, userLanguage);
+          console.log('📊 Review words response:', reviewWords);
+          
+          if (reviewWords.length === 0) {
+            throw new Error(t('practice.errors.noWordsAvailable'));
+          }
+          
+          // Create scenario questions for review words
+          const questions: ScenarioQuestion[] = reviewWords
+            .slice(0, wordCount)
+            .map(wordData => {
+              // Данные от /due-for-review имеют структуру: { kazakh_word: { translations: [...] } }
+              const kazakhWord = (wordData as any).kazakh_word;
               
-              if (userLangTranslation) {
-                translation = userLangTranslation.translation;
-              } else {
-                // Fallback: ищем английский перевод
-                const enTranslation = kazakhWord.translations.find(
-                  (t: any) => t.language_code === 'en'
+              if (!kazakhWord) {
+                console.log('⚠️ No kazakh_word data found');
+                return null;
+              }
+              
+              // Ищем перевод на нужном языке
+              let translation = '';
+              if (kazakhWord.translations && Array.isArray(kazakhWord.translations)) {
+                // Ищем перевод на языке пользователя (ru)
+                const userLangTranslation = kazakhWord.translations.find(
+                  (t: any) => t.language_code === userLanguage
                 );
-                if (enTranslation) {
-                  translation = enTranslation.translation;
-                } else if (kazakhWord.translations.length > 0) {
-                  // Последний fallback: используем первый доступный перевод
-                  translation = kazakhWord.translations[0].translation;
+                
+                if (userLangTranslation) {
+                  translation = userLangTranslation.translation;
+                } else {
+                  // Fallback: ищем английский перевод
+                  const enTranslation = kazakhWord.translations.find(
+                    (t: any) => t.language_code === 'en'
+                  );
+                  if (enTranslation) {
+                    translation = enTranslation.translation;
+                  } else if (kazakhWord.translations.length > 0) {
+                    // Последний fallback: используем первый доступный перевод
+                    translation = kazakhWord.translations[0].translation;
+                  }
                 }
               }
-            }
 
+              const word = {
+                id: kazakhWord.id,
+                kazakh_word: kazakhWord.kazakh_word,
+                kazakh_cyrillic: kazakhWord.kazakh_cyrillic,
+                translation: translation
+              };
+
+              console.log('🔍 Processing review word:', word.kazakh_word, '→', word.translation, `(${userLanguage})`);
+
+              if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
+                console.log('⚠️ Skipping word - no valid translation');
+                return null;
+              }
+
+              const method = practiceMethod;
+              
+              if (method === 'kaz_to_translation') {
+                return {
+                  word,
+                  question: t('practice.questions.whatMeans', { word: word.kazakh_word }),
+                  correctAnswer: word.translation,
+                  method: 'kaz_to_translation'
+                };
+              } else {
+                return {
+                  word,
+                  question: t('practice.questions.howToSay', { translation: word.translation }),
+                  correctAnswer: word.kazakh_word,
+                  method: 'translation_to_kaz'
+                };
+              }
+            })
+            .filter(q => q !== null) as ScenarioQuestion[];
+
+          if (questions.length === 0) {
+            throw new Error('No words with valid translations found for review');
+          }
+
+          console.log('✅ Review session ready with', questions.length, 'questions');
+          
+          // Create practice session
+          const sessionData = await learningAPI.startPracticeSession({
+            session_type: 'review',
+            word_count: wordCount,
+            category_id: categoryId,
+            language_code: userLanguage
+          });
+
+          setSessionId(sessionData.session_id);
+          setScenarioQuestions(questions);
+          setQuestionStartTime(Date.now());
+
+          return { session: sessionData, questions };
+        }
+
+        // ДЛЯ ОБЫЧНОЙ ПРАКТИКИ - ТОЧНО ОРИГИНАЛЬНАЯ ЛОГИКА
+        console.log('📚 Fetching learned words...');
+        
+        const learnedWordsResponse = await learningAPI.getLearnedWords({
+          category_id: categoryId,
+          limit: 100, // Get all learned words
+          include_mastered: false,
+          language_code: userLanguage
+        });
+        
+        console.log('📊 Learned words response:', learnedWordsResponse);
+        console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
+        
+        if (learnedWordsResponse.length === 0) {
+          throw new Error(t('practice.errors.noWordsAvailable'));
+        }
+
+        // Shuffle for variety and limit to requested word count
+        const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
+        
+        console.log(`🎲 Shuffled ${shuffledWords.length} words`);
+        
+        // Take up to wordCount words
+        const selectedWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
+        console.log(`✂️ Selected ${selectedWords.length} words for practice`);
+
+        // Create scenario questions from words
+        const questions: ScenarioQuestion[] = selectedWords
+          .map(wordData => {
+            // ИСПРАВЛЕНИЕ: правильная обработка структуры данных из getLearnedWords
             const word = {
-              id: kazakhWord.id,
-              kazakh_word: kazakhWord.kazakh_word,
-              kazakh_cyrillic: kazakhWord.kazakh_cyrillic,
-              translation: translation
+              id: (wordData as any).id,
+              kazakh_word: (wordData as any).kazakh_word,
+              kazakh_cyrillic: (wordData as any).kazakh_cyrillic,
+              translation: (wordData as any).translation
             };
 
-            console.log('🔍 Processing review word:', word.kazakh_word, '→', word.translation, `(${userLanguage})`);
-
+            // Skip words without valid translation or kazakh word
             if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
-              console.log('⚠️ Skipping word - no valid translation');
+              console.log(`⚠️ Skipping word ${word.id}: invalid translation or kazakh word`);
               return null;
             }
 
@@ -166,14 +248,14 @@ const startSessionMutation = useMutation({
             if (method === 'kaz_to_translation') {
               return {
                 word,
-                question: `What does "${word.kazakh_word}" mean?`,
+                question: t('practice.questions.whatMeans', { word: word.kazakh_word }),
                 correctAnswer: word.translation,
                 method: 'kaz_to_translation'
               };
             } else {
               return {
                 word,
-                question: `How do you say "${word.translation}" in Kazakh?`,
+                question: t('practice.questions.howToSay', { translation: word.translation }),
                 correctAnswer: word.kazakh_word,
                 method: 'translation_to_kaz'
               };
@@ -181,128 +263,44 @@ const startSessionMutation = useMutation({
           })
           .filter(q => q !== null) as ScenarioQuestion[];
 
+        console.log('✨ Generated scenario questions:', questions);
+        console.log('📊 Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
+
         if (questions.length === 0) {
-          throw new Error('No words with valid translations found for review');
+          throw new Error('No valid words with translations found for practice. Please check if learned words have proper translations.');
         }
 
-        console.log('✅ Review session ready with', questions.length, 'questions');
-        
         // Create practice session
         const sessionData = await learningAPI.startPracticeSession({
-          session_type: 'review',
+          session_type: 'combined_scenarios',
           word_count: wordCount,
           category_id: categoryId,
           language_code: userLanguage
         });
+
+        console.log('✅ Practice session created:', sessionData);
 
         setSessionId(sessionData.session_id);
         setScenarioQuestions(questions);
         setQuestionStartTime(Date.now());
 
         return { session: sessionData, questions };
+
+      } catch (error) {
+        console.error('❌ Error starting practice session:', error);
+        throw error;
       }
-
-      // ✅ ДЛЯ ОБЫЧНОЙ ПРАКТИКИ - ТОЧНО ОРИГИНАЛЬНАЯ ЛОГИКА
-      console.log('📚 Fetching learned words...');
-      
-      const learnedWordsResponse = await learningAPI.getLearnedWords({
-        category_id: categoryId,
-        limit: 100, // Get all learned words
-        include_mastered: false,
-        language_code: userLanguage
-      });
-      
-      console.log('📊 Learned words response:', learnedWordsResponse);
-      console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
-      
-      if (learnedWordsResponse.length === 0) {
-        throw new Error('No learned words available for practice. Please complete some learning modules first to unlock practice mode.');
-      }
-
-      // Shuffle for variety and limit to requested word count
-      const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
-      
-      console.log(`🎲 Shuffled ${shuffledWords.length} words`);
-      
-      // Take up to wordCount words
-      const selectedWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
-      console.log(`✂️ Selected ${selectedWords.length} words for practice`);
-
-      // Create scenario questions from words
-      const questions: ScenarioQuestion[] = selectedWords
-        .map(wordData => {
-          // ✅ ИСПРАВЛЕНИЕ: правильная обработка структуры данных из getLearnedWords
-          const word = {
-            id: (wordData as any).id,
-            kazakh_word: (wordData as any).kazakh_word,
-            kazakh_cyrillic: (wordData as any).kazakh_cyrillic,
-            translation: (wordData as any).translation
-          };
-
-          // Skip words without valid translation or kazakh word
-          if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
-            console.log(`⚠️ Skipping word ${word.id}: invalid translation or kazakh word`);
-            return null;
-          }
-
-          const method = practiceMethod;
-          
-          if (method === 'kaz_to_translation') {
-            return {
-              word,
-              question: `What does "${word.kazakh_word}" mean?`,
-              correctAnswer: word.translation,
-              method: 'kaz_to_translation'
-            };
-          } else {
-            return {
-              word,
-              question: `How do you say "${word.translation}" in Kazakh?`,
-              correctAnswer: word.kazakh_word,
-              method: 'translation_to_kaz'
-            };
-          }
-        })
-        .filter(q => q !== null) as ScenarioQuestion[];
-
-      console.log('✨ Generated scenario questions:', questions);
-      console.log('📊 Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
-
-      if (questions.length === 0) {
-        throw new Error('No valid words with translations found for practice. Please check if learned words have proper translations.');
-      }
-
-      // Create practice session
-      const sessionData = await learningAPI.startPracticeSession({
-        session_type: 'combined_scenarios',
-        word_count: wordCount,
-        category_id: categoryId,
-        language_code: userLanguage
-      });
-
-      console.log('✅ Practice session created:', sessionData);
-
-      setSessionId(sessionData.session_id);
-      setScenarioQuestions(questions);
-      setQuestionStartTime(Date.now());
-
-      return { session: sessionData, questions };
-
-    } catch (error) {
-      console.error('❌ Error starting practice session:', error);
-      throw error;
+    },
+    onError: (error: any) => {
+      console.error('Failed to start practice session:', error);
+      toast.error(error.message || t('practice.errors.sessionFailed'));
+    },
+    onSuccess: (data) => {
+      console.log('✅ Session started successfully:', data);
+      const message = practiceType === 'review' ? t('practice.messages.reviewStarted') : t('practice.status.starting');
+      toast.success(message);
     }
-  },
-  onError: (error: any) => {
-    console.error('Failed to start practice session:', error);
-    toast.error(error.message || 'Failed to start practice session');
-  },
-  onSuccess: (data) => {
-    console.log('✅ Session started successfully:', data);
-    const message = practiceType === 'review' ? 'Review session started!' : 'Practice session started!';
-    toast.success(message);
-  }
-});
+  });
 
   // Submit answer mutation
   const submitAnswerMutation = useMutation({
@@ -354,12 +352,12 @@ const startSessionMutation = useMutation({
   // Get hint function
   const handleGetHint = () => {
     if (!hintHelper) return;
-  
+
     setIsHintMode(true);
     const newState = hintHelper.getNextHint(userAnswer);
     setHintState(newState);
     setUserAnswer(newState.hintedPart);
-  
+
     setTimeout(() => {
       const input = document.querySelector('input[type="text"]') as HTMLInputElement | null;
       if (input) {
@@ -378,7 +376,7 @@ const startSessionMutation = useMutation({
       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex items-center gap-2 mb-2">
           <LightBulbIcon className="w-4 h-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700">Hint</span>
+          <span className="text-sm font-medium text-blue-700">{t('practice.session.hint')}</span>
         </div>
         <div className="font-mono text-lg tracking-wider">
           {hintState.hintedPart.split('').map((char: string, index: number) => (
@@ -398,7 +396,10 @@ const startSessionMutation = useMutation({
           ))}
         </div>
         <div className="text-xs text-blue-600 mt-1">
-          {hintState.hintedPart.length} of {hintState.target.length} letters revealed
+          {t('practice.hints.lettersRevealed', {
+            revealed: hintState.hintedPart.length,
+            total: hintState.target.length
+          })}
         </div>
       </div>
     );
@@ -547,7 +548,7 @@ const startSessionMutation = useMutation({
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
-  
+
       if (e.key === 'Enter') {
         e.preventDefault();
         
@@ -566,10 +567,10 @@ const startSessionMutation = useMutation({
         handleSkip();
       }
     };
-  
+
     // Добавляем обработчик события
     window.addEventListener('keydown', handleKeyDown);
-  
+
     // Очищаем обработчик при размонтировании компонента
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -582,7 +583,7 @@ const startSessionMutation = useMutation({
 
   // Loading state
   if (startSessionMutation.isPending || stats === undefined || userPreferences === undefined) {
-    return <LoadingSpinner fullScreen text="Starting translation practice..." />;
+    return <LoadingSpinner fullScreen text={t('practice.status.loading')} />;
   }
 
   // Error state - specifically for no learned words
@@ -591,17 +592,16 @@ const startSessionMutation = useMutation({
       <div className="text-center py-12">
         <div className="text-6xl mb-4">📚</div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          No Learned Words Available
+          {t('practice.status.noWords')}
         </h2>
         <p className="text-gray-600 mb-6">
-          Translation practice is only available for words you have already learned.
-          Complete some learning modules first to unlock this practice mode.
+          {t('practice.errors.noWordsAvailable')}
         </p>
         <button
           onClick={() => navigate('/app/learning')}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Go to Learning Modules
+          {t('practice.navigation.goToLearning')}
         </button>
       </div>
     );
@@ -613,16 +613,19 @@ const startSessionMutation = useMutation({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <BookOpenIcon className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Translation Practice</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('practice.title')}</h1>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            Progress: {currentQuestionIndex + 1} / {scenarioQuestions.length}
+            {t('practice.session.question', { 
+              current: currentQuestionIndex + 1, 
+              total: scenarioQuestions.length 
+            })}
           </div>
           {sessionResults.length > 0 && (
             <div className="text-sm text-gray-600">
-              Accuracy: {Math.round((sessionResults.filter(r => r.correct).length / sessionResults.length) * 100)}%
+              {t('practice.session.score')}: {Math.round((sessionResults.filter(r => r.correct).length / sessionResults.length) * 100)}%
             </div>
           )}
         </div>
@@ -640,7 +643,10 @@ const startSessionMutation = useMutation({
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6">
         <div className="text-center mb-6">
           <h2 className="text-lg font-medium text-gray-600 mb-2">
-            {practiceMethod === 'kaz_to_translation' ? 'Translate to English:' : 'Translate to Kazakh:'}
+            {practiceMethod === 'kaz_to_translation' 
+              ? t('practice.session.translateToEnglish', 'Translate to English:')
+              : t('practice.session.translateToKazakh', 'Translate to Kazakh:')
+            }
           </h2>
           <div className="text-3xl font-bold text-gray-900 mb-4">
             {currentQuestion.question}
@@ -662,7 +668,7 @@ const startSessionMutation = useMutation({
                     handleSubmitAnswer();
                   }
                 }}
-                placeholder="Type your answer..."
+                placeholder={t('practice.session.type')}
                 className="w-full p-4 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
                 style={{
@@ -673,26 +679,26 @@ const startSessionMutation = useMutation({
             </div>
 
             <div className="flex gap-3">
-            <button
-              onClick={handleSubmitAnswer}
-              disabled={!userAnswer.trim()}
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 group"
-              title="Press Enter to check answer"
-            >
-              <span>Check Answer</span>
-              {userAnswer.trim() && (
-                <span className="text-xs bg-blue-500 px-2 py-1 rounded border border-blue-400 opacity-75 group-hover:opacity-100 transition-opacity">
-                  Enter ⏎
-                </span>
-              )}
-            </button>
+              <button
+                onClick={handleSubmitAnswer}
+                disabled={!userAnswer.trim()}
+                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 group"
+                title="Press Enter to check answer"
+              >
+                <span>{t('practice.session.checkAnswer')}</span>
+                {userAnswer.trim() && (
+                  <span className="text-xs bg-blue-500 px-2 py-1 rounded border border-blue-400 opacity-75 group-hover:opacity-100 transition-opacity">
+                    {t('practice.hints.enterKey')}
+                  </span>
+                )}
+              </button>
               
               {/* Hint button */}
               {hintHelper && !hintState?.isCompleted && (
                 <button
                   onClick={handleGetHint}
                   className="bg-yellow-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors"
-                  title="Get a hint"
+                  title={t('practice.session.showHint')}
                 >
                   <LightBulbIcon className="w-5 h-5" />
                 </button>
@@ -702,7 +708,7 @@ const startSessionMutation = useMutation({
                 onClick={handleSkip}
                 className="bg-gray-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-600 transition-colors"
               >
-                Skip
+                {t('practice.session.skip')}
               </button>
             </div>
           </div>
@@ -712,18 +718,21 @@ const startSessionMutation = useMutation({
             <div className={`text-3xl font-bold ${
               sessionResults[currentQuestionIndex]?.correct ? 'text-green-600' : 'text-red-600'
             }`}>
-              {sessionResults[currentQuestionIndex]?.correct ? '✅ Correct!' : '❌ Incorrect'}
+              {sessionResults[currentQuestionIndex]?.correct 
+                ? `✅ ${t('practice.status.correct')}`
+                : `❌ ${t('practice.status.incorrect')}`
+              }
             </div>
 
             {/* Correct Answer Display */}
             <div className="bg-gray-50 rounded-lg p-6">
               <p className="text-lg mb-2">
-                <strong>"{currentQuestion.word.kazakh_word}"</strong> means{' '}
+                <strong>"{currentQuestion.word.kazakh_word}"</strong> {t('practice.session.means', 'means')}{' '}
                 <strong className="text-blue-600">"{currentQuestion.correctAnswer}"</strong>
               </p>
               {!sessionResults[currentQuestionIndex]?.correct && (
                 <p className="text-gray-600">
-                  Your answer: <span className="font-medium">"{userAnswer}"</span>
+                  {t('practice.session.yourAnswer')}: <span className="font-medium">"{userAnswer}"</span>
                 </p>
               )}
             </div>
@@ -734,9 +743,14 @@ const startSessionMutation = useMutation({
               className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 mx-auto group"
               title="Press Enter to continue"
             >
-              <span>{isLastQuestion ? 'Finish Session' : 'Next Question'}</span>
+              <span>
+                {isLastQuestion 
+                  ? t('practice.results.completed')
+                  : t('practice.session.nextQuestion')
+                }
+              </span>
               <span className="text-xs bg-blue-500 px-2 py-1 rounded border border-blue-400 opacity-75 group-hover:opacity-100 transition-opacity">
-                Enter ⏎
+                {t('practice.hints.enterKey')}
               </span>
             </button>
           </div>
@@ -745,19 +759,19 @@ const startSessionMutation = useMutation({
 
       {/* Session Stats */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Progress</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('practice.session.progress')}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
               {sessionResults.filter(r => r.correct).length}
             </div>
-            <div className="text-sm text-gray-600">Correct</div>
+            <div className="text-sm text-gray-600">{t('practice.stats.correct', 'Correct')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">
               {sessionResults.filter(r => !r.correct).length}
             </div>
-            <div className="text-sm text-gray-600">Incorrect</div>
+            <div className="text-sm text-gray-600">{t('practice.stats.incorrect', 'Incorrect')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
@@ -766,13 +780,13 @@ const startSessionMutation = useMutation({
                 : 0
               }%
             </div>
-            <div className="text-sm text-gray-600">Accuracy</div>
+            <div className="text-sm text-gray-600">{t('practice.stats.accuracy', 'Accuracy')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">
               {scenarioQuestions.length}
             </div>
-            <div className="text-sm text-gray-600">Total Questions</div>
+            <div className="text-sm text-gray-600">{t('practice.stats.totalQuestions', 'Total Questions')}</div>
           </div>
         </div>
 
@@ -780,26 +794,29 @@ const startSessionMutation = useMutation({
         <div className="mt-6 pt-6 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-gray-700">Practice Mode:</span>
+              <span className="text-sm font-medium text-gray-700">{t('practice.session.practiceMode', 'Practice Mode:')}</span>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 practiceMethod === 'kaz_to_translation' 
                   ? 'bg-blue-100 text-blue-800' 
                   : 'bg-purple-100 text-purple-800'
               }`}>
-                {practiceMethod === 'kaz_to_translation' ? '🇰🇿 → 🌍 Recognition' : '🌍 → 🇰🇿 Production'}
+                {practiceMethod === 'kaz_to_translation' 
+                  ? t('practice.methods.recognition')
+                  : t('practice.methods.production')
+                }
               </span>
             </div>
             <button
               onClick={() => navigate('/app/settings')}
               className="text-xs text-blue-500 hover:text-blue-600 underline"
             >
-              Change Method
+              {t('practice.navigation.changeMethod')}
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-2">
             {practiceMethod === 'kaz_to_translation' 
-              ? "Recognition mode: See Kazakh words, type meanings. Good for building vocabulary." 
-              : "Production mode: See meanings, type Kazakh words. More challenging, builds active skills."
+              ? t('practice.methods.recognitionDescription')
+              : t('practice.methods.productionDescription')
             }
           </p>
 
@@ -807,8 +824,8 @@ const startSessionMutation = useMutation({
           <div className="mt-3 p-2 bg-yellow-50 rounded border-l-2 border-yellow-300">
             <div className="flex items-center space-x-1 text-xs">
               <LightBulbIcon className="w-3 h-3 text-yellow-600" />
-              <span className="text-yellow-800 font-medium">Letter Hints:</span>
-              <span className="text-yellow-700">Click the hint button to reveal letters one by one.</span>
+              <span className="text-yellow-800 font-medium">{t('practice.hints.title')}</span>
+              <span className="text-yellow-700">{t('practice.hints.description')}</span>
             </div>
           </div>
         </div>

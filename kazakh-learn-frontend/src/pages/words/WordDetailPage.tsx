@@ -205,7 +205,7 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({
 
         <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
           <span>|</span>
-          <span>Sequential Navigation</span>
+          <span>{t('navigation.sequential')}</span>
           <span>(ID: {wordId})</span>
         </div>
       </div>
@@ -222,10 +222,10 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({
                   ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
                   : 'text-gray-300 cursor-not-allowed'
               }`}
-              title={navigationInfo.hasPrevious 
-                ? `Previous: ${navigationInfo.previousWord?.kazakh_word} (ID: ${navigationInfo.previousWordId})`
-                : 'No previous word'
-              }
+              title={
+                navigationInfo.hasPrevious ? t('navigation.prevTooltip', {
+                                      word: navigationInfo.previousWord?.kazakh_word,
+                                      id: navigationInfo.previousWordId}): t('navigation.noPrevious')}
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
@@ -242,10 +242,7 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({
                   ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer'
                   : 'text-gray-300 cursor-not-allowed'
               }`}
-              title={navigationInfo.nextWord 
-                ? `Next: ${navigationInfo.nextWord.kazakh_word} (ID: ${navigationInfo.nextWordId})`
-                : `Try ID: ${navigationInfo.nextWordId}`
-              }
+              title={navigationInfo.nextWord? t('navigation.nextTooltip', {word: navigationInfo.nextWord.kazakh_word, id: navigationInfo.nextWordId}): t('navigation.tryId', { id: navigationInfo.nextWordId })}
             >
               {navigationInfo.isLoadingNext ? (
                 <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
@@ -285,6 +282,7 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
   navigateToPrevious,
   navigateToNext
 }) => {
+  const { t } = useTranslation('wordDetail');
   if (!navigationInfo || (!navigationInfo.hasPrevious && navigationInfo.isLoadingNext)) {
     return null;
   }
@@ -314,10 +312,10 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
             <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100">
               <div className="flex items-center space-x-2 text-sm text-gray-400 mb-1">
                 <ChevronLeftIcon className="h-4 w-4" />
-                <span>No Previous Word</span>
+                <span>{t('navigation.noPrevious')}</span>
               </div>
               <div className="text-gray-400">
-                First word or word not found
+                {t('navigation.firstOrMissing')}
               </div>
             </div>
           )}
@@ -353,7 +351,7 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
             >
               <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
                 <span>
-                  {navigationInfo.isLoadingNext ? 'Loading...' : `Try ID: ${navigationInfo.nextWordId}`}
+                  {navigationInfo.isLoadingNext ? t('common.loading') : t('navigation.tryId', { id: navigationInfo.nextWordId })}
                 </span>
                 {navigationInfo.isLoadingNext ? (
                   <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
@@ -362,7 +360,7 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
                 )}
               </div>
               <div className="text-gray-400">
-                {navigationInfo.isLoadingNext ? 'Checking if word exists...' : 'Click to try next ID'}
+                {navigationInfo.isLoadingNext ? t('navigation.checking') : t('navigation.clickToTry')}
               </div>
             </button>
           )}
@@ -706,7 +704,7 @@ const WordDetailPage: React.FC = () => {
 
         {/* ✅ Sequential Keyboard Hint */}
         <div className="text-center text-xs text-gray-500">
-          Use ← → arrow keys to navigate by word ID 
+          {t('hints.arrows')} 
         </div>
 
         {/* ✅ Enhanced Error Message */}
@@ -784,9 +782,9 @@ const WordDetailPage: React.FC = () => {
 
       {/* Sequential Keyboard Hint */}
       <div className="text-center text-xs text-gray-500">
-        Use ← → arrow keys to navigate by word ID • Current: {wordId} • 
-        Previous: {navigationContext?.previousWordId || 'None'} • 
-        Next: {navigationContext?.nextWordId || 'None'}
+        {t('hints.arrows')} • {t('hints.current', { id: wordId })} • 
+        {t('hints.previous', { id: navigationContext?.previousWordId ?? t('common.none') })} • 
+        {t('hints.next', { id: navigationContext?.nextWordId ?? t('common.none') })}
       </div>
 
       {/* Main Word Card */}
@@ -866,10 +864,10 @@ const WordDetailPage: React.FC = () => {
               <button
                 onClick={handlePlayAudio}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
-                title="Play pronunciation"
+                title={t('overview.playPronunciation')}
               >
                 <SpeakerWaveIcon className="h-5 w-5" />
-                <span>Play Audio</span>
+                <span>{t('overview.playAudio')}</span>
               </button>
             )}
 

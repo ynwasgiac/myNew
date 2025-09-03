@@ -1,0 +1,105 @@
+{
+  "loading": {
+    "generating": "正在根据已学单词生成测试...",
+    "starting": "正在启动测试会话...",
+    "question": "正在加载测试问题..."
+  },
+  "errors": {
+    "noLearnedWords": "没有可用于测试的已学单词",
+    "noLearnedWordsDescription": "测试模式仅对已学单词开放。请先完成一些学习模块以解锁测试模式！",
+    "needMoreWords": "创建测试至少需要 2 个已学单词。请先学习更多单词。",
+    "generationFailed": "生成测试失败",
+    "submissionFailed": "提交测试结果失败",
+    "noLearnedWordsTitle": "没有已学单词用于测试",
+    "noLearnedWordsDesc": "测试仅对已学单词开放。请完成几个学习模块以解锁测试模式。",
+    "generateFailed": "生成测试失败"
+  },
+  "progress": {
+    "question": "问题 {{current}} / {{total}}",
+    "score": "成绩: {{correct}} / {{total}}",
+    "session": "会话进度",
+    "correct": "正确",
+    "incorrect": "错误",
+    "accuracy": "准确率",
+    "total": "总题数"
+  },
+  "question": {
+    "prompt": "这个词是什么意思？",
+    "selectAnswer": "选择答案"
+  },
+  "actions": {
+    "nextQuestion": "下一题",
+    "finishQuiz": "完成测试",
+    "retakeQuiz": "重新测试",
+    "continueLearning": "继续学习",
+    "startLearningModule": "开始学习模块",
+    "backToLearning": "返回学习",
+    "viewProgress": "查看进度"
+  },
+  "results": {
+    "title": "测试完成！",
+    "yourScore": "你的成绩: {{score}}%",
+    "description": "以下是你的结果：",
+    "correct": "正确",
+    "incorrect": "错误",
+    "total": "总计",
+    "reviewTitle": "问题回顾",
+    "yourAnswer": "你的答案",
+    "correctAnswer": "正确答案",
+    "timeSpent": "{{seconds}}秒",
+    "completeTitle": "测试完成！",
+    "scoreLine": "正确答案: {{correct}} / {{total}} ({{score}}%)",
+    "questionReview": "问题解析：",
+    "cards": {
+      "correctAnswers": "正确答案数",
+      "score": "成绩",
+      "totalTime": "总时间"
+    }
+  },
+  "stats": {
+    "title": "测试进度",
+    "current": "当前",
+    "questionsAnswered": "已答问题数"
+  },
+  "messages": {
+    "quizStarted": "测试开始，共 {{count}} 个已学单词！",
+    "quizCompleted": "测试成功完成！",
+    "quizSubmitted": "测试结果已提交"
+  },
+  "debug": {
+    "title": "测试调试信息",
+    "url": "链接",
+    "questionCount": "问题数量",
+    "categoryId": "类别 ID",
+    "quizQuestions": "测试问题",
+    "totalWords": "统计中的总单词数",
+    "learnedWords": "已学单词",
+    "allCategories": "所有类别"
+  },
+  "headers": {
+    "learnedWordsQuiz": "已学单词测试",
+    "testingVocabulary": "词汇测试"
+  },
+  "buttons": {
+    "startLearning": "开始学习",
+    "browseWords": "浏览单词",
+    "retakeQuiz": "重新测试",
+    "viewProgress": "查看进度",
+    "selectToContinue": "选择答案以继续"
+  },
+  "header": {
+    "session": "测试会话",
+    "questionOf": "问题 {{current}} / {{total}}",
+    "inProgress": "测试进行中"
+  },
+  "questions": {
+    "whatMeans": "«{{word}}»是什么意思？",
+    "chooseTranslation": "选择正确的翻译"
+  },
+  "toasts": {
+    "quizStarted": "测试已开始：共 {{count}} 个单词！"
+  },
+  "feedback": {
+    "answerSelected": "答案已选择！进入下一题..."
+  }
+}

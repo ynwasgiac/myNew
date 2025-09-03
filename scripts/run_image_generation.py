@@ -28,7 +28,7 @@ async def run_image_generation():
         print("=" * 50)
         
         # Get token from environment or prompt once
-        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6ImUxMDMxNjY0LWU5YmEtNDk2Ni1hZmQ4LWU3MWU3MWZjNjJiYSIsImV4cCI6MTc1NjIwNjExMX0.6RiecbDzw85i8NGWxqq4ZfK471mYDMHKlWkxl4q6oxg"
+        api_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOjEsInJvbGUiOiJhZG1pbiIsImp0aSI6IjAwNjU3NzUyLTlkOGUtNGM4NC1iNzliLWU5N2YwZmE2ZWM5NyIsImV4cCI6MTc1NjgxOTk5NH0.z4cjFuf8oP486FDQZlNhQTMjHZe0faAEobFj54jjCq0"
         if not api_token or api_token == 'your-api-token-here':
             print("\nAPI Token Required")
             print("Please enter your API token:")
@@ -93,7 +93,7 @@ def main():
             # Console handler with UTF-8 encoding
             logging.StreamHandler(sys.stdout),
             # File handler with UTF-8 encoding
-            logging.FileHandler('word_image_generation.log', encoding='utf-8')
+            # logging.FileHandler('word_image_generation.log', encoding='utf-8')
         ]
     )
     
@@ -113,7 +113,7 @@ def main():
         print(f"Check public/images/words/categories/ for generated images")
     else:
         print(f"\nTest completed with issues")
-        print(f"Check word_image_generation.log for details")
+        # print(f"Check word_image_generation.log for details")
 
 
 if __name__ == "__main__":

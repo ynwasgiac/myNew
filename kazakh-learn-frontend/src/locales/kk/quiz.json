@@ -1,66 +1,106 @@
 {
-  "loading": {
-      "generating": "Үйренген сөздерден тест жасау...",
-      "starting": "Тест сессиясын бастау..."
-  },
-  "errors": {
-      "noLearnedWords": "Тест үшін үйренген сөздер жоқ",
-      "noLearnedWordsDescription": "Тест режимі тек үйренген сөздер үшін ғана қолжетімді. Тестті ашу үшін алдымен оқу модульдерін аяқтаңыз!",
-      "needMoreWords": "Тест жасау үшін кемінде 2 үйренген сөз керек. Көбірек сөз үйреніңіз.",
+    "loading": {
+      "generating": "Үйренілген сөздерден тест жасалуда...",
+      "starting": "Тест сессиясы басталуда...",
+      "question": "Тест сұрағы жүктелуде..."
+    },
+    "errors": {
+      "noLearnedWords": "Тест үшін үйренілген сөздер жоқ",
+      "noLearnedWordsDescription": "Тест режимі тек үйренілген сөздер үшін қолжетімді. Алдымен бірнеше оқу модулін өтіңіз!",
+      "needMoreWords": "Тест жасау үшін кемінде 2 үйренілген сөз қажет. Қосымша сөздер үйреніңіз.",
       "generationFailed": "Тест жасау сәтсіз аяқталды",
-      "submissionFailed": "Тест нәтижелерін жіберу сәтсіз аяқталды"
-  },
-  "progress": {
-      "question": "{{current}} сұрақ {{total}} ішінен",
-      "score": "Нәтиже: {{correct}} / {{total}}"
-  },
-  "question": {
-      "prompt": "Бұл сөз не дегенді білдіреді?",
+      "submissionFailed": "Тест нәтижелерін жіберу сәтсіз аяқталды",
+      "noLearnedWordsTitle": "Тест үшін үйренілген сөздер жоқ",
+      "noLearnedWordsDesc": "Тест тек үйренілген сөздерге қолжетімді. Тест режимін ашу үшін оқу модульдерін өтіңіз.",
+      "generateFailed": "Тестті генерациялау мүмкін болмады"
+    },
+    "progress": {
+      "question": "Сұрақ {{current}} / {{total}}",
+      "score": "Нәтиже: {{correct}} / {{total}}",
+      "session": "Сессия барысы",
+      "correct": "Дұрыс",
+      "incorrect": "Қате",
+      "accuracy": "Дәлдік",
+      "total": "Жалпы сұрақтар"
+    },
+    "question": {
+      "prompt": "Бұл сөз нені білдіреді?",
       "selectAnswer": "Жауапты таңдаңыз"
-  },
-  "actions": {
+    },
+    "actions": {
       "nextQuestion": "Келесі сұрақ",
       "finishQuiz": "Тестті аяқтау",
       "retakeQuiz": "Тестті қайта тапсыру",
       "continueLearning": "Үйренуді жалғастыру",
       "startLearningModule": "Оқу модулін бастау",
-      "backToLearning": "Оқуға қайту",
+      "backToLearning": "Үйренуге оралу",
       "viewProgress": "Прогресті көру"
-  },
-  "results": {
+    },
+    "results": {
       "title": "Тест аяқталды!",
       "yourScore": "Сіздің нәтижеңіз: {{score}}%",
-      "description": "Міне сіздің нәтижелеріңіз:",
+      "description": "Міне, сіздің нәтижелеріңіз:",
       "correct": "Дұрыс",
-      "incorrect": "Дұрыс емес",
+      "incorrect": "Қате",
       "total": "Барлығы",
       "reviewTitle": "Сұрақтарды қарау",
       "yourAnswer": "Сіздің жауабыңыз",
       "correctAnswer": "Дұрыс жауап",
-      "timeSpent": "{{seconds}}с"
-  },
-  "stats": {
+      "timeSpent": "{{seconds}}с",
+      "completeTitle": "Тест аяқталды!",
+      "scoreLine": "Дұрыс жауаптар: {{correct}} / {{total}} ({{score}}%)",
+      "questionReview": "Сұрақтарға талдау:",
+      "cards": {
+        "correctAnswers": "Дұрыс жауаптар саны",
+        "score": "Нәтиже",
+        "totalTime": "Жалпы уақыт"
+      }
+    },
+    "stats": {
       "title": "Тест прогресі",
       "current": "Ағымдағы",
       "questionsAnswered": "Жауап берілген сұрақтар"
-  },
-  "messages": {
-      "quizStarted": "Тест {{count}} үйренген сөзбен басталды!",
+    },
+    "messages": {
+      "quizStarted": "Тест {{count}} үйренілген сөзбен басталды!",
       "quizCompleted": "Тест сәтті аяқталды!",
       "quizSubmitted": "Тест нәтижелері жіберілді"
-  },
-  "debug": {
-      "title": "Тест отладка ақпараты",
-      "url": "URL",
-      "questionCount": "Сұрақ саны",
+    },
+    "debug": {
+      "title": "Тестке қатысты техникалық ақпарат",
+      "url": "Сілтеме",
+      "questionCount": "Сұрақтар саны",
       "categoryId": "Санат ID",
       "quizQuestions": "Тест сұрақтары",
-      "totalWords": "Статистикадағы барлық сөздер",
-      "learnedWords": "Үйренген сөздер",
+      "totalWords": "Статистикадағы жалпы сөздер саны",
+      "learnedWords": "Үйренілген сөздер",
       "allCategories": "барлық санаттар"
-  },
-  "headers": {
-      "learnedWordsQuiz": "Үйренген сөздер тесті",
-      "testingVocabulary": "Меңгерген лексиканы тексеру"
+    },
+    "headers": {
+      "learnedWordsQuiz": "Үйренілген сөздер тесті",
+      "testingVocabulary": "Лексиканы тексеру"
+    },
+    "buttons": {
+      "startLearning": "Үйренуді бастау",
+      "browseWords": "Сөздерді қарау",
+      "retakeQuiz": "Тестті қайта тапсыру",
+      "viewProgress": "Прогресті көру",
+      "selectToContinue": "Жалғастыру үшін жауапты таңдаңыз"
+    },
+    "header": {
+      "session": "Тест сессиясы",
+      "questionOf": "Сұрақ {{current}} / {{total}}",
+      "inProgress": "Тест жүріп жатыр"
+    },
+    "questions": {
+      "whatMeans": "«{{word}}» нені білдіреді?",
+      "chooseTranslation": "Дұрыс аударманы таңдаңыз"
+    },
+    "toasts": {
+      "quizStarted": "Тест басталды: {{count}} сөз!"
+    },
+    "feedback": {
+      "answerSelected": "Жауап таңдалды! Келесі сұраққа көшейік..."
+    }
   }
-}
+  

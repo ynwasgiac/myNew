@@ -120,6 +120,7 @@ REQUIREMENTS:
 5. 300x300px square format
 6. Bright, clear, and easily recognizable imagery
 7. Incorporate Kazakh cultural aesthetics (traditional patterns, colors, landscapes) when relevant
+8. Put emphasis on the word. When you see a picture, you should associate it only with this word
 
 Return only a concise image description prompt, no explanations."""
 

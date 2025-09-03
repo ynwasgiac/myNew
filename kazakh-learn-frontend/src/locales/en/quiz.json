@@ -1,24 +1,33 @@
 {
-  "loading": {
-      "generating": "Generating quiz from your learned words...",
-      "starting": "Starting quiz session..."
-  },
-  "errors": {
+    "loading": {
+      "generating": "Generating quiz from learned words...",
+      "starting": "Starting quiz session...",
+      "question": "Loading quiz question..."
+    },
+    "errors": {
       "noLearnedWords": "No learned words available for quiz",
-      "noLearnedWordsDescription": "Quiz mode is only available for words you have already learned. Complete some learning modules first to unlock quiz sessions!",
-      "needMoreWords": "Need at least 2 learned words to create a quiz. Please learn more words first.",
+      "noLearnedWordsDescription": "Quiz mode is only available for already learned words. Complete some learning modules first to unlock quiz mode!",
+      "needMoreWords": "At least 2 learned words are required to create a quiz. Please learn more words.",
       "generationFailed": "Failed to generate quiz",
-      "submissionFailed": "Failed to submit quiz results"
-  },
-  "progress": {
+      "submissionFailed": "Failed to submit quiz results",
+      "noLearnedWordsTitle": "No learned words for quiz",
+      "noLearnedWordsDesc": "The quiz is only available for already learned words. Complete several learning modules to unlock quiz mode.",
+      "generateFailed": "Failed to generate quiz"
+    },
+    "progress": {
       "question": "Question {{current}} of {{total}}",
-      "score": "Score: {{correct}} / {{total}}"
-  },
-  "question": {
+      "score": "Score: {{correct}} / {{total}}",
+      "session": "Session Progress",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "accuracy": "Accuracy",
+      "total": "Total Questions"
+    },
+    "question": {
       "prompt": "What does this word mean?",
       "selectAnswer": "Select an answer"
-  },
-  "actions": {
+    },
+    "actions": {
       "nextQuestion": "Next Question",
       "finishQuiz": "Finish Quiz",
       "retakeQuiz": "Retake Quiz",
@@ -26,41 +35,72 @@
       "startLearningModule": "Start Learning Module",
       "backToLearning": "Back to Learning",
       "viewProgress": "View Progress"
-  },
-  "results": {
-      "title": "Quiz Complete!",
-      "yourScore": "Your Score: {{score}}%",
+    },
+    "results": {
+      "title": "Quiz Completed!",
+      "yourScore": "Your score: {{score}}%",
       "description": "Here are your results:",
       "correct": "Correct",
       "incorrect": "Incorrect",
       "total": "Total",
       "reviewTitle": "Question Review",
-      "yourAnswer": "Your answer",
-      "correctAnswer": "Correct answer",
-      "timeSpent": "{{seconds}}s"
-  },
-  "stats": {
+      "yourAnswer": "Your Answer",
+      "correctAnswer": "Correct Answer",
+      "timeSpent": "{{seconds}}s",
+      "completeTitle": "Quiz Completed!",
+      "scoreLine": "Correct answers: {{correct}} out of {{total}} ({{score}}%)",
+      "questionReview": "Question Breakdown:",
+      "cards": {
+        "correctAnswers": "Correct Answers",
+        "score": "Score",
+        "totalTime": "Total Time"
+      }
+    },
+    "stats": {
       "title": "Quiz Progress",
       "current": "Current",
       "questionsAnswered": "Questions Answered"
-  },
-  "messages": {
+    },
+    "messages": {
       "quizStarted": "Quiz started with {{count}} learned words!",
-      "quizCompleted": "Quiz completed successfully!",
+      "quizCompleted": "Quiz successfully completed!",
       "quizSubmitted": "Quiz results submitted"
-  },
-  "debug": {
+    },
+    "debug": {
       "title": "Quiz Debug Info",
       "url": "URL",
-      "questionCount": "Question Count",
+      "questionCount": "Number of Questions",
       "categoryId": "Category ID",
       "quizQuestions": "Quiz Questions",
-      "totalWords": "Stats Total Words",
+      "totalWords": "Total Words in Stats",
       "learnedWords": "Learned Words",
       "allCategories": "all categories"
-  },
-  "headers": {
+    },
+    "headers": {
       "learnedWordsQuiz": "Learned Words Quiz",
-      "testingVocabulary": "Testing your mastered vocabulary"
+      "testingVocabulary": "Testing Vocabulary Knowledge"
+    },
+    "buttons": {
+      "startLearning": "Start Learning",
+      "browseWords": "Browse Words",
+      "retakeQuiz": "Retake Quiz",
+      "viewProgress": "View Progress",
+      "selectToContinue": "Select an answer to continue"
+    },
+    "header": {
+      "session": "Quiz Session",
+      "questionOf": "Question {{current}} of {{total}}",
+      "inProgress": "Quiz in Progress"
+    },
+    "questions": {
+      "whatMeans": "What does «{{word}}» mean?",
+      "chooseTranslation": "Choose the correct translation"
+    },
+    "toasts": {
+      "quizStarted": "Quiz started: {{count}} words!"
+    },
+    "feedback": {
+      "answerSelected": "Answer selected! Moving to next question..."
+    }
   }
-}
+  

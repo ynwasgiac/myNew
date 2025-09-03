@@ -1,18 +1,27 @@
 {
   "loading": {
       "generating": "Создание теста из изученных слов...",
-      "starting": "Запуск сессии теста..."
+      "starting": "Запуск сессии теста...",
+      "question": "Загружается вопрос теста..."
   },
   "errors": {
       "noLearnedWords": "Нет изученных слов для теста",
       "noLearnedWordsDescription": "Режим тестирования доступен только для уже изученных слов. Сначала пройдите модули обучения, чтобы разблокировать тестирование!",
       "needMoreWords": "Для создания теста нужно минимум 2 изученных слова. Пожалуйста, изучите больше слов.",
       "generationFailed": "Не удалось создать тест",
-      "submissionFailed": "Не удалось отправить результаты теста"
+      "submissionFailed": "Не удалось отправить результаты теста",
+      "noLearnedWordsTitle": "Нет выученных слов для теста",
+      "noLearnedWordsDesc": "Тест доступен только для уже выученных слов. Пройдите несколько модулей обучения, чтобы открыть режим теста.",
+      "generateFailed": "Не удалось сгенерировать тест"
   },
   "progress": {
       "question": "Вопрос {{current}} из {{total}}",
-      "score": "Результат: {{correct}} / {{total}}"
+      "score": "Результат: {{correct}} / {{total}}",
+      "session": "Прогресс сессии",
+      "correct": "Правильно",
+      "incorrect": "Неправильно",
+      "accuracy": "Точность",
+      "total": "Всего вопросов"
   },
   "question": {
       "prompt": "Что означает это слово?",
@@ -37,7 +46,15 @@
       "reviewTitle": "Обзор вопросов",
       "yourAnswer": "Ваш ответ",
       "correctAnswer": "Правильный ответ",
-      "timeSpent": "{{seconds}}с"
+      "timeSpent": "{{seconds}}с",
+      "completeTitle": "Тест завершён!",
+      "scoreLine": "Правильных ответов: {{correct}} из {{total}} ({{score}}%)",
+      "questionReview": "Разбор вопросов:",
+      "cards": {
+        "correctAnswers": "Правильные ответы",
+        "score": "Счёт",
+        "totalTime": "Общее время"
+      }
   },
   "stats": {
       "title": "Прогресс теста",
@@ -62,5 +79,27 @@
   "headers": {
       "learnedWordsQuiz": "Тест изученных слов",
       "testingVocabulary": "Тестирование освоенной лексики"
+  },
+  "buttons": {
+    "startLearning": "Начать обучение",
+    "browseWords": "Посмотреть слова",
+    "retakeQuiz": "Пройти тест ещё раз",
+    "viewProgress": "Посмотреть прогресс",
+    "selectToContinue": "Выберите ответ, чтобы продолжить"
+  },
+  "header": {
+    "session": "Сессия теста",
+    "questionOf": "Вопрос {{current}} из {{total}}",
+    "inProgress": "Тест идёт"
+  },
+  "questions": {
+    "whatMeans": "Что означает «{{word}}»?",
+    "chooseTranslation": "Выберите правильный перевод"
+  },
+  "toasts": {
+    "quizStarted": "Тест начат: {{count}} слов!"
+  },
+  "feedback": {
+    "answerSelected": "Ответ выбран! Переходим к следующему вопросу..."
   }
 }

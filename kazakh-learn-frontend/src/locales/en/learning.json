@@ -82,7 +82,51 @@
     },
     "learnedWords": {
       "title": "Learned Words",
-      "description": "Review and manage words you've successfully learned and mastered"
+      "description": "View and manage words that you have successfully learned and mastered",
+      "searchPlaceholder": "Search learned words...",
+      "filters": {
+        "statusFilter": "Filter by status",
+        "allStatuses": "All statuses",
+        "showKazakh": "Show Kazakh words",
+        "showTranslation": "Show translations"
+      },
+      "bulkActions": {
+        "selectedCount": "{{count}} words selected",
+        "selectedCount_one": "{{count}} word selected",
+        "selectedCount_other": "{{count}} words selected",
+        "bulkUpdate": "Select action"
+      },
+      "stats": {
+        "totalWords": "words learned",
+        "totalCorrect": "Total Correct",
+        "totalIncorrect": "Total Incorrect",
+        "averageAccuracy": "Average Accuracy",
+        "summaryStatistics": "Summary Statistics"
+      },
+      "table": {
+        "kazakhWord": "Kazakh Word",
+        "translation": "Translation",
+        "status": "Status",
+        "timesCorrect": "Correct Answers",
+        "timesIncorrect": "Incorrect Answers",
+        "lastPracticed": "Last Practiced",
+        "never": "Never"
+      },
+      "status": {
+        "wantToLearn": "Want to Learn",
+        "learning": "Learning",
+        "learned": "Learned",
+        "mastered": "Mastered",
+        "review": "Review"
+      },
+      "messages": {
+        "noWords": "You don't have any learned words yet",
+        "noFilteredWords": "No words found with selected filters",
+        "updateSuccess": "Word status updated successfully",
+        "updateError": "Failed to update word status",
+        "bulkUpdateSuccess": "Words updated successfully",
+        "bulkUpdateError": "Failed to update words"
+      }
     },
     "errors": {
       "statusUpdateFailed": "Failed to update word status",
@@ -91,7 +135,8 @@
       "startingPractice": "Failed to start practice session",
       "submittingAnswer": "Failed to submit answer",
       "startingQuiz": "Failed to start quiz session",
-      "savingProgress": "Failed to save progress"
+      "savingProgress": "Failed to save progress",
+      "failedToLoadWeeklyProgress": "Failed to load weekly progress data"
     },
     "page": {
       "title": "Ready to Learn Kazakh, {{name}}?",
@@ -237,20 +282,65 @@
       "startButton": "Start Practice Session"
     },
     "practice": {
-      "title": "Practice Session",
-      "subtitle": "Practice Session",
-      "question": "What does \"{{word}}\" mean in English?",
-      "placeholder": "Type your answer...",
-      "checkAnswer": "Check Answer",
-      "nextWord": "Next Word",
-      "continueToQuiz": "Continue to Quiz",
-      "feedback": {
-        "correct": "✅ Correct!",
-        "incorrect": "❌ Try again!",
-        "hint": "Hint: Think about the image and category"
+      "title": "Practice",
+      "description": "Practice words and improve your Kazakh language skills",
+      "methods": {
+        "recognition": "🇰🇿 → 🌍 Recognition",
+        "production": "🌍 → 🇰🇿 Production",
+        "recognitionDescription": "Recognition mode: See Kazakh words, type meanings. Good for building vocabulary.",
+        "productionDescription": "Production mode: See meanings, type Kazakh words. More challenging, builds active skills."
       },
-      "imageAlt": "Image for {{word}}",
-      "noImage": "No image available"
+      "session": {
+        "question": "Question {{current}} of {{total}}",
+        "timeElapsed": "Time elapsed",
+        "score": "Score",
+        "hint": "Hint",
+        "showHint": "Show hint",
+        "nextQuestion": "Next question",
+        "checkAnswer": "Check answer",
+        "yourAnswer": "Your answer",
+        "correctAnswer": "Correct answer",
+        "type": "Type your answer...",
+        "skip": "Skip"
+      },
+      "results": {
+        "title": "Session Results",
+        "completed": "Session completed!",
+        "score": "Your score: {{correct}} out of {{total}}",
+        "accuracy": "Accuracy: {{percentage}}%",
+        "totalTime": "Total time: {{time}}",
+        "averageTime": "Average time per question: {{time}}",
+        "backToDashboard": "Back to dashboard",
+        "practiceAgain": "Practice again",
+        "reviewMistakes": "Review mistakes"
+      },
+      "status": {
+        "correct": "Correct!",
+        "incorrect": "Incorrect",
+        "loading": "Loading practice session...",
+        "starting": "Starting session...",
+        "noWords": "No words to practice",
+        "sessionComplete": "Session complete"
+      },
+      "hints": {
+        "title": "Letter Hints:",
+        "description": "Click the hint button to reveal letters one by one.",
+        "letterRevealed": "Letter revealed",
+        "allLettersRevealed": "All letters revealed"
+      },
+      "navigation": {
+        "changeMethod": "Change Method",
+        "settings": "Settings",
+        "exit": "Exit",
+        "continue": "Continue"
+      },
+      "errors": {
+        "sessionFailed": "Failed to start practice session",
+        "loadingFailed": "Failed to load practice data",
+        "noWordsAvailable": "No words available for practice. Add words to your learning list.",
+        "sessionNotFound": "Session not found",
+        "submitFailed": "Failed to submit answer"
+      }
     },
     "quiz": {
       "title": "Quiz Session",
@@ -281,10 +371,42 @@
         "backToDashboard": "Back to Dashboard",
         "reviewWords": "Review Learned Words"
       },
+      "weeklyProgress": {
+        "title": "Weekly Practice Goal",
+        "goalReached": "Weekly goal reached! 🎉",
+        "inProgress": "In progress",
+        "weekRange": "Week: {{startDate}} - {{endDate}}",
+        "sessionBreakdown": "Session Breakdown",
+        "goalComplete": "Weekly practice goal completed!",
+        "sessionsRemaining": "{{count}} more sessions to reach your weekly goal",
+        "sessionsRemaining_one": "{{count}} more session to reach your weekly goal",
+        "sessionsRemaining_other": "{{count}} more sessions to reach your weekly goal",
+        "getStarted": "Start your week strong! Complete your first session."
+      },
       "batchResults": {
         "title": "Batch Results:",
         "batchNumber": "Batch {{number}}",
         "learned": "{{count}} learned"
       }
+    },
+    "wordProgress": {
+      "title": "Word Mastery Progress",
+      "goalReached": "Mastery goal reached! 🎉",
+      "inProgress": "In progress",
+      "breakdown": "Learning Breakdown",
+      "learned": "Learned",
+      "learning": "Learning",
+      "wantToLearn": "To Learn",
+      "remaining": "Remaining",
+      "detailedBreakdown": "Detailed Status",
+      "statusLearned": "Learned",
+      "statusMastered": "Mastered",
+      "congratulations": "Congratulations!",
+      "firstGoalReached": "You've learned your first {{count}} words! Now aim for 100!",
+      "nextGoalReached": "Amazing! You've learned {{count}} words! Your next goal: {{next}} words.",
+      "almostThere": "Almost there!",
+      "keepGoing": "Keep going!",
+      "firstGoalMessage": "Your goal: learn your first {{target}} words! {{remaining}} to go.",
+      "nextGoalMessage": "Your current goal: {{target}} words! {{remaining}} more to reach this milestone."
     }
   }

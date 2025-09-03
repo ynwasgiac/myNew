@@ -44,10 +44,10 @@ const LearnedWordsPage: React.FC = () => {
       learningAPI.updateWordProgress(wordId, { status: status as any }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['learned-words'] });
-      toast.success('Word status updated successfully');
+      toast.success(t('learnedWords.messages.updateSuccess'));
     },
     onError: () => {
-      toast.error('Failed to update word status');
+      toast.error(t('learnedWords.messages.updateError'));
     }
   });
 
@@ -65,17 +65,17 @@ const LearnedWordsPage: React.FC = () => {
     },
     onSuccess: ({ successful, failed }) => {
       if (successful > 0) {
-        toast.success(`${successful} words updated successfully`);
+        toast.success(t('learnedWords.messages.bulkUpdateSuccess'));
         queryClient.invalidateQueries({ queryKey: ['learned-words'] });
         setSelectedWords([]);
         setBulkAction('');
       }
       if (failed > 0) {
-        toast.error(`${failed} words failed to update`);
+        toast.error(t('learnedWords.messages.bulkUpdateError'));
       }
     },
     onError: () => {
-      toast.error('Failed to update words');
+      toast.error(t('learnedWords.messages.bulkUpdateError'));
     }
   });
 
@@ -208,7 +208,7 @@ const LearnedWordsPage: React.FC = () => {
 
   // Format date helper
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never';
+    if (!dateString) return t('learnedWords.table.never');
     
     try {
       const date = new Date(dateString);
@@ -225,13 +225,13 @@ const LearnedWordsPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <LoadingSpinner fullScreen text="Loading learned words..." />;
+    return <LoadingSpinner fullScreen text={t('common:loading')} />;
   }
 
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error loading learned words</p>
+        <p className="text-red-600">{t('common:error')}</p>
       </div>
     );
   }
@@ -244,13 +244,13 @@ const LearnedWordsPage: React.FC = () => {
           <Trophy className="h-8 w-8 text-yellow-500" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Learned Words
+              {t('learnedWords.title')}
             </h1>
             <p className="text-gray-600">
-              {filteredAndSortedWords.length} words learned • Language: {userLanguage.toUpperCase()}
+              {filteredAndSortedWords.length} {t('learnedWords.stats.totalWords')} • {t('common:language')}: {userLanguage.toUpperCase()}
               {statusFilter !== 'all' && (
                 <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                  Filtered by: {statusFilter.replace('_', ' ')}
+                  {t('common:filteredBy')}: {statusFilter.replace('_', ' ')}
                 </span>
               )}
             </p>
@@ -261,26 +261,26 @@ const LearnedWordsPage: React.FC = () => {
         {selectedWords.length > 0 && (
           <div className="flex items-center space-x-3 bg-blue-50 px-4 py-2 rounded-lg border">
             <span className="text-sm font-medium text-blue-900">
-              {selectedWords.length} selected
+              {t('learnedWords.bulkActions.selectedCount', { count: selectedWords.length })}
             </span>
             <select
               value={bulkAction}
               onChange={(e) => setBulkAction(e.target.value)}
               className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">Select action</option>
-              <option value="want_to_learn">Want to Learn</option>
-              <option value="learning">Learning</option>
-              <option value="learned">Learned</option>
-              <option value="mastered">Mastered</option>
-              <option value="review">Review</option>
+              <option value="">{t('learnedWords.bulkActions.bulkUpdate')}</option>
+              <option value="want_to_learn">{t('learnedWords.status.wantToLearn')}</option>
+              <option value="learning">{t('learnedWords.status.learning')}</option>
+              <option value="learned">{t('learnedWords.status.learned')}</option>
+              <option value="mastered">{t('learnedWords.status.mastered')}</option>
+              <option value="review">{t('learnedWords.status.review')}</option>
             </select>
             <button
               onClick={handleBulkAction}
               disabled={!bulkAction || bulkUpdateMutation.isPending}
               className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              Apply
+              {t('common:apply')}
             </button>
             <button
               onClick={() => setSelectedWords([])}
@@ -299,7 +299,7 @@ const LearnedWordsPage: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Search learned words..."
+              placeholder={t('learnedWords.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -314,12 +314,12 @@ const LearnedWordsPage: React.FC = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">All Status</option>
-              <option value="want_to_learn">Want to Learn</option>
-              <option value="learning">Learning</option>
-              <option value="learned">Learned</option>
-              <option value="mastered">Mastered</option>
-              <option value="review">Review</option>
+              <option value="all">{t('learnedWords.filters.allStatuses')}</option>
+              <option value="want_to_learn">{t('learnedWords.status.wantToLearn')}</option>
+              <option value="learning">{t('learnedWords.status.learning')}</option>
+              <option value="learned">{t('learnedWords.status.learned')}</option>
+              <option value="mastered">{t('learnedWords.status.mastered')}</option>
+              <option value="review">{t('learnedWords.status.review')}</option>
             </select>
           </div>
         </div>
@@ -334,10 +334,10 @@ const LearnedWordsPage: React.FC = () => {
               ? 'bg-blue-100/90 text-blue-700 hover:bg-blue-200/90 border border-blue-200' 
               : 'bg-gray-100/90 text-gray-500 hover:bg-gray-200/90 border border-gray-200'
           }`}
-          title="Toggle Kazakh words visibility"
+          title={t('learnedWords.filters.showKazakh')}
         >
           {showKazakhWord ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          <span>Kazakh</span>
+          <span>{t('common:kazakh')}</span>
         </button>
         
         <button
@@ -347,10 +347,10 @@ const LearnedWordsPage: React.FC = () => {
               ? 'bg-green-100/90 text-green-700 hover:bg-green-200/90 border border-green-200' 
               : 'bg-gray-100/90 text-gray-500 hover:bg-gray-200/90 border border-gray-200'
           }`}
-          title="Toggle translations visibility"
+          title={t('learnedWords.filters.showTranslation')}
         >
           {showTranslation ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          <span>Translation</span>
+          <span>{t('common:translation')}</span>
         </button>
       </div>
 
@@ -373,14 +373,14 @@ const LearnedWordsPage: React.FC = () => {
                     onClick={() => handleSort('kazakh_word')}
                     className="flex items-center space-x-1 hover:text-gray-700"
                   >
-                    <span>Kazakh Word</span>
+                    <span>{t('learnedWords.table.kazakhWord')}</span>
                     {getSortIcon('kazakh_word')}
                   </button>
                 </th>
               )}
               {showTranslation && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Translation
+                  {t('learnedWords.table.translation')}
                 </th>
               )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -388,7 +388,7 @@ const LearnedWordsPage: React.FC = () => {
                   onClick={() => handleSort('times_correct')}
                   className="flex items-center space-x-1 hover:text-gray-700"
                 >
-                  <span>Correct Answers</span>
+                  <span>{t('learnedWords.table.timesCorrect')}</span>
                   {getSortIcon('times_correct')}
                 </button>
               </th>
@@ -397,7 +397,7 @@ const LearnedWordsPage: React.FC = () => {
                   onClick={() => handleSort('times_incorrect')}
                   className="flex items-center space-x-1 hover:text-gray-700"
                 >
-                  <span>Incorrect Answers</span>
+                  <span>{t('learnedWords.table.timesIncorrect')}</span>
                   {getSortIcon('times_incorrect')}
                 </button>
               </th>
@@ -406,7 +406,7 @@ const LearnedWordsPage: React.FC = () => {
                   onClick={() => handleSort('last_practiced')}
                   className="flex items-center space-x-1 hover:text-gray-700"
                 >
-                  <span>Last Practiced</span>
+                  <span>{t('learnedWords.table.lastPracticed')}</span>
                   {getSortIcon('last_practiced')}
                 </button>
               </th>
@@ -415,7 +415,7 @@ const LearnedWordsPage: React.FC = () => {
                   onClick={() => handleSort('status')}
                   className="flex items-center space-x-1 hover:text-gray-700"
                 >
-                  <span>Status</span>
+                  <span>{t('learnedWords.table.status')}</span>
                   {getSortIcon('status')}
                 </button>
               </th>
@@ -434,8 +434,8 @@ const LearnedWordsPage: React.FC = () => {
                   className="px-6 py-8 text-center text-gray-500"
                 >
                   {searchTerm || statusFilter !== 'all' 
-                    ? 'No words found matching your search/filter criteria' 
-                    : 'No learned words yet'
+                    ? t('learnedWords.messages.noFilteredWords')
+                    : t('learnedWords.messages.noWords')
                   }
                 </td>
               </tr>
@@ -489,11 +489,11 @@ const LearnedWordsPage: React.FC = () => {
                       disabled={updateStatusMutation.isPending}
                       className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <option value="want_to_learn">Want to Learn</option>
-                      <option value="learning">Learning</option>
-                      <option value="learned">Learned</option>
-                      <option value="mastered">Mastered</option>
-                      <option value="review">Review</option>
+                      <option value="want_to_learn">{t('learnedWords.status.wantToLearn')}</option>
+                      <option value="learning">{t('learnedWords.status.learning')}</option>
+                      <option value="learned">{t('learnedWords.status.learned')}</option>
+                      <option value="mastered">{t('learnedWords.status.mastered')}</option>
+                      <option value="review">{t('learnedWords.status.review')}</option>
                     </select>
                   </td>
                 </tr>
@@ -507,26 +507,26 @@ const LearnedWordsPage: React.FC = () => {
       {filteredAndSortedWords.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Summary Statistics
+            {t('learnedWords.stats.summaryStatistics')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {filteredAndSortedWords.length}
               </div>
-              <div className="text-sm text-gray-600">Total Words</div>
+              <div className="text-sm text-gray-600">{t('learnedWords.stats.totalWords')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + word.times_correct, 0)}
               </div>
-              <div className="text-sm text-gray-600">Total Correct</div>
+              <div className="text-sm text-gray-600">{t('learnedWords.stats.totalCorrect')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
                 {filteredAndSortedWords.reduce((sum: number, word: LearnedWord) => sum + word.times_incorrect, 0)}
               </div>
-              <div className="text-sm text-gray-600">Total Incorrect</div>
+              <div className="text-sm text-gray-600">{t('learnedWords.stats.totalIncorrect')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
@@ -537,7 +537,7 @@ const LearnedWordsPage: React.FC = () => {
                     ) 
                   : 0}%
               </div>
-              <div className="text-sm text-gray-600">Average Accuracy</div>
+              <div className="text-sm text-gray-600">{t('learnedWords.stats.averageAccuracy')}</div>
             </div>
           </div>
         </div>
