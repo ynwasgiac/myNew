@@ -18,6 +18,13 @@ import ExampleSentencesModal from '../../components/admin/ExampleSentencesModal'
 import { 
   DocumentTextIcon  // Добавить этот импорт для иконки Example Sentences
 } from '@heroicons/react/24/outline';
+import { 
+  Plus as PlusIcon,
+  Loader as LoaderIcon,
+  CheckCircle as CheckCircleIcon,
+  AlertCircle as AlertCircleIcon,
+  Sparkles as SparklesIcon
+} from 'lucide-react';
 
 // Memoized table row component (unchanged)
 const WordTableRow = memo<{
@@ -208,6 +215,10 @@ const AdminWordsPage: React.FC = () => {
   const [showImagesModal, setShowImagesModal] = useState(false);
   const [showSoundsModal, setShowSoundsModal] = useState(false);
   const [selectedWordForMedia, setSelectedWordForMedia] = useState<KazakhWordSummary | null>(null);
+  
+  // Add these new state variables for sentence generation
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<'idle' | 'starting' | 'processing' | 'completed' | 'error'>('idle');
 
   const [showExampleSentencesModal, setShowExampleSentencesModal] = useState(false);
   const [selectedWordForSentences, setSelectedWordForSentences] = useState<{
@@ -263,6 +274,61 @@ const AdminWordsPage: React.FC = () => {
 
     loadFilterOptions();
   }, []);
+
+  
+  // Add this function for sentence generation
+  const runSentenceGeneration = async () => {
+    try {
+      setIsGenerating(true);
+      setGenerationStatus('starting');
+      
+      // Try both possible token keys
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        token = localStorage.getItem('kazakh_learn_token');
+      }
+      
+      if (!token) {
+        toast.error('No authentication token found. Please login again.');
+        return;
+      }
+      
+      const response = await fetch('http://localhost:8000/admin/run-sentence-generation', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to start sentence generation');
+      }
+  
+      const data = await response.json();
+      setGenerationStatus('processing');
+      toast.success('Sentence generation started successfully!');
+      
+      // Simulate completion after 30 seconds
+      setTimeout(() => {
+        setGenerationStatus('completed');
+        setIsGenerating(false);
+        toast.success('Sentence generation completed!');
+        // Reset status after showing completion
+        setTimeout(() => setGenerationStatus('idle'), 5000);
+      }, 30000);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to start sentence generation');
+      setGenerationStatus('error');
+      setIsGenerating(false);
+      // Reset status after showing error
+      setTimeout(() => setGenerationStatus('idle'), 5000);
+    }
+  }; 
+  
 
   // Fetch words with server-side filtering
   const fetchWords = useCallback(async (
@@ -701,6 +767,31 @@ const AdminWordsPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3">
+          {/* AI Generation Button - Add this to your existing buttons */}
+          <button
+            onClick={runSentenceGeneration}
+            disabled={isGenerating}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm
+              font-medium text-white transition-all duration-200
+              ${isGenerating 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+              }
+            `}
+          >
+            {isGenerating ? (
+              <>
+                <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <SparklesIcon className="h-4 w-4 mr-2" />
+                AI Sentences
+              </>
+            )}
+          </button>
           <button
             onClick={() => setShowStats(!showStats)}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-sm"
@@ -720,6 +811,37 @@ const AdminWordsPage: React.FC = () => {
             Add Word
           </button>
         </div>
+
+        {generationStatus !== 'idle' && (
+        <div className="bg-white rounded-lg border p-3 mb-4">
+          <div className="flex items-center text-sm">
+            {generationStatus === 'starting' && (
+              <>
+                <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-blue-600" />
+                <span className="text-blue-600">Starting sentence generation...</span>
+              </>
+            )}
+            {generationStatus === 'processing' && (
+              <>
+                <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-purple-600" />
+                <span className="text-purple-600">Generating sentences for words...</span>
+              </>
+            )}
+            {generationStatus === 'completed' && (
+              <>
+                <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
+                <span className="text-green-600">Sentence generation completed successfully!</span>
+              </>
+            )}
+            {generationStatus === 'error' && (
+              <>
+                <AlertCircleIcon className="h-4 w-4 mr-2 text-red-600" />
+                <span className="text-red-600">Sentence generation failed. Please try again.</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       </div>
 
       {/* Statistics Panel */}

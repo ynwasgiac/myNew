@@ -1,0 +1,136 @@
+2025-09-03 12:40:57,836 - __main__ - INFO - Found 50 words to process
+2025-09-03 12:41:09,631 - __main__ - INFO - Processing word: таразы (ID: 802)
+2025-09-03 12:41:13,054 - __main__ - ERROR - Failed to generate sentence for таразы: 500
+2025-09-03 12:41:19,245 - __main__ - INFO - Processing word: жаман (ID: 1080)
+2025-09-03 12:41:21,357 - __main__ - ERROR - Failed to generate sentence for жаман: 500
+2025-09-03 12:41:23,370 - __main__ - INFO - Processing word: алыс (ID: 1087)
+2025-09-03 12:41:26,199 - __main__ - ERROR - Failed to generate sentence for алыс: 500
+2025-09-03 12:41:43,287 - __main__ - INFO - Progress: 10/50 processed
+2025-09-03 12:42:02,448 - __main__ - INFO - Processing word: жылы киім (ID: 756)
+2025-09-03 12:42:04,901 - __main__ - ERROR - Failed to generate sentence for жылы киім: 500
+2025-09-03 12:42:06,913 - __main__ - INFO - Processing word: табу (ID: 1124)
+2025-09-03 12:42:09,054 - __main__ - ERROR - Failed to generate sentence for табу: 500
+2025-09-03 12:42:19,408 - __main__ - INFO - Processing word: бидай (ID: 847)
+2025-09-03 12:42:21,577 - __main__ - ERROR - Failed to generate sentence for бидай: 500
+2025-09-03 12:42:23,592 - __main__ - INFO - Processing word: Кімнен? (ID: 1048)
+2025-09-03 12:42:26,166 - __main__ - ERROR - Failed to generate sentence for Кімнен?: 500
+2025-09-03 12:42:26,166 - __main__ - INFO - Progress: 20/50 processed
+2025-09-03 12:42:28,175 - __main__ - INFO - Processing word: сіздер (ID: 1043)
+2025-09-03 12:42:30,158 - __main__ - ERROR - Failed to generate sentence for сіздер: 500
+2025-09-03 12:42:32,170 - __main__ - INFO - Processing word: мынау (ID: 1060)
+2025-09-03 12:42:34,373 - __main__ - ERROR - Failed to generate sentence for мынау: 500
+2025-09-03 12:42:36,375 - __main__ - INFO - Processing word: олардан (ID: 969)
+2025-09-03 12:42:38,537 - __main__ - ERROR - Failed to generate sentence for олардан: 500
+2025-09-03 12:42:44,823 - __main__ - INFO - Processing word: жауап (ID: 785)
+2025-09-03 12:42:46,961 - __main__ - ERROR - Failed to generate sentence for жауап: 500
+2025-09-03 12:42:53,074 - __main__ - INFO - Processing word: ащы (ID: 1108)
+2025-09-03 12:42:55,280 - __main__ - ERROR - Failed to generate sentence for ащы: 500
+2025-09-03 12:42:57,288 - __main__ - INFO - Processing word: маса (ID: 899)
+2025-09-03 12:42:59,764 - __main__ - ERROR - Failed to generate sentence for маса: 500
+2025-09-03 12:43:01,770 - __main__ - INFO - Processing word: ашу (ID: 1120)
+2025-09-03 12:43:04,066 - __main__ - ERROR - Failed to generate sentence for ашу: 500
+2025-09-03 12:43:06,067 - __main__ - INFO - Processing word: жол (ID: 786)
+2025-09-03 12:43:08,107 - __main__ - ERROR - Failed to generate sentence for жол: 500
+2025-09-03 12:43:08,107 - __main__ - INFO - Progress: 30/50 processed
+2025-09-03 12:43:31,380 - __main__ - INFO - Processing word: жусан (ID: 714)
+2025-09-03 12:43:33,467 - __main__ - ERROR - Failed to generate sentence for жусан: 500
+2025-09-03 12:43:35,478 - __main__ - INFO - Processing word: кейбіреу (ID: 1065)
+2025-09-03 12:43:37,507 - __main__ - ERROR - Failed to generate sentence for кейбіреу: 500
+2025-09-03 12:43:48,301 - __main__ - INFO - Processing word: бізбен (ID: 974)
+2025-09-03 12:43:50,510 - __main__ - ERROR - Failed to generate sentence for бізбен: 500
+2025-09-03 12:43:50,510 - __main__ - INFO - Progress: 40/50 processed
+2025-09-03 12:43:52,524 - __main__ - INFO - Processing word: онда (ID: 958)
+2025-09-03 12:43:54,570 - __main__ - ERROR - Failed to generate sentence for онда: 500
+2025-09-03 12:43:56,577 - __main__ - INFO - Processing word: шырпы (ID: 812)
+2025-09-03 12:43:58,838 - __main__ - ERROR - Failed to generate sentence for шырпы: 500
+2025-09-03 12:44:00,852 - __main__ - INFO - Processing word: тауар (ID: 1021)
+2025-09-03 12:44:03,053 - __main__ - ERROR - Failed to generate sentence for тауар: 500
+2025-09-03 12:44:05,063 - __main__ - INFO - Processing word: Неге? (ID: 980)
+2025-09-03 12:44:07,264 - __main__ - ERROR - Failed to generate sentence for Неге?: 500
+2025-09-03 12:44:31,970 - __main__ - INFO - Processing word: шыбын (ID: 900)
+2025-09-03 12:44:41,341 - __main__ - INFO - Progress: 50/50 processed
+2025-09-03 12:44:43,348 - __main__ - INFO - ==================================================
+2025-09-03 12:44:43,348 - __main__ - INFO - SENTENCE GENERATION COMPLETE!
+2025-09-03 12:44:43,348 - __main__ - INFO - Total words: 50
+2025-09-03 12:44:43,348 - __main__ - INFO - Processed: 50
+2025-09-03 12:44:43,348 - __main__ - INFO - Successful: 4
+2025-09-03 12:44:43,348 - __main__ - INFO - Failed: 46
+2025-09-03 12:44:43,348 - __main__ - INFO - Success rate: 8.0%
+2025-09-03 12:45:27,361 - __main__ - INFO - Found 50 words to process
+2025-09-03 12:45:41,067 - __main__ - INFO - Processing word: таразы (ID: 802)
+2025-09-03 12:45:54,782 - __main__ - INFO - Processing word: жаман (ID: 1080)
+2025-09-03 12:46:00,683 - __main__ - INFO - Processing word: алыс (ID: 1087)
+2025-09-03 12:46:30,842 - __main__ - INFO - Progress: 10/50 processed
+2025-09-03 12:46:58,577 - __main__ - INFO - Processing word: жылы киім (ID: 756)
+2025-09-03 12:47:05,953 - __main__ - INFO - Processing word: табу (ID: 1124)
+2025-09-03 12:47:25,610 - __main__ - INFO - Processing word: бидай (ID: 847)
+2025-09-03 12:47:32,338 - __main__ - INFO - Processing word: Кімнен? (ID: 1048)
+2025-09-03 12:47:36,256 - __main__ - INFO - Progress: 20/50 processed
+2025-09-03 12:47:38,266 - __main__ - INFO - Processing word: сіздер (ID: 1043)
+2025-09-03 12:47:45,066 - __main__ - INFO - Processing word: мынау (ID: 1060)
+2025-09-03 12:47:50,686 - __main__ - INFO - Processing word: олардан (ID: 969)
+2025-09-03 12:48:03,366 - __main__ - INFO - Processing word: жауап (ID: 785)
+2025-09-03 12:48:16,434 - __main__ - INFO - Processing word: ащы (ID: 1108)
+2025-09-03 12:48:24,317 - __main__ - INFO - Processing word: маса (ID: 899)
+2025-09-03 12:48:33,021 - __main__ - INFO - Processing word: ашу (ID: 1120)
+2025-09-03 12:48:38,705 - __main__ - INFO - Processing word: жол (ID: 786)
+2025-09-03 12:48:42,902 - __main__ - INFO - Progress: 30/50 processed
+2025-09-03 12:49:18,771 - __main__ - INFO - Processing word: жусан (ID: 714)
+2025-09-03 12:49:26,582 - __main__ - INFO - Processing word: кейбіреу (ID: 1065)
+2025-09-03 12:49:46,608 - __main__ - INFO - Processing word: бізбен (ID: 974)
+2025-09-03 12:49:51,802 - __main__ - INFO - Progress: 40/50 processed
+2025-09-03 12:49:53,817 - __main__ - INFO - Processing word: онда (ID: 958)
+2025-09-03 12:49:59,411 - __main__ - INFO - Processing word: шырпы (ID: 812)
+2025-09-03 12:50:06,925 - __main__ - INFO - Processing word: тауар (ID: 1021)
+2025-09-03 12:50:13,938 - __main__ - INFO - Processing word: Неге? (ID: 980)
+2025-09-03 12:50:45,950 - __main__ - INFO - Processing word: баяндау (ID: 1129)
+2025-09-03 12:50:53,040 - __main__ - INFO - Processing word: жауырын (ID: 644)
+2025-09-03 12:50:58,999 - __main__ - INFO - Processing word: сыра (ID: 763)
+2025-09-03 12:51:02,310 - __main__ - INFO - Progress: 50/50 processed
+2025-09-03 12:51:04,323 - __main__ - INFO - ==================================================
+2025-09-03 12:51:04,323 - __main__ - INFO - SENTENCE GENERATION COMPLETE!
+2025-09-03 12:51:04,323 - __main__ - INFO - Total words: 50
+2025-09-03 12:51:04,323 - __main__ - INFO - Processed: 50
+2025-09-03 12:51:04,323 - __main__ - INFO - Successful: 50
+2025-09-03 12:51:04,323 - __main__ - INFO - Failed: 0
+2025-09-03 12:51:04,323 - __main__ - INFO - Success rate: 100.0%
+2025-09-03 14:42:09,106 - __main__ - INFO - Found 50 words to process
+2025-09-03 14:42:09,107 - __main__ - INFO - Processing word: шіркеу (ID: 686)
+2025-09-03 14:42:23,618 - __main__ - INFO - Processing word: ас (ID: 752)
+2025-09-03 14:42:36,410 - __main__ - INFO - Processing word: бастауыш мектеп (ID: 853)
+2025-09-03 14:43:04,380 - __main__ - INFO - Processing word: ауыл (ID: 672)
+2025-09-03 14:43:11,064 - __main__ - INFO - Processing word: сенде (ID: 956)
+2025-09-03 14:43:16,354 - __main__ - INFO - Progress: 10/50 processed
+2025-09-03 14:43:18,361 - __main__ - INFO - Processing word: айыпталушы (ID: 629)
+2025-09-03 14:43:49,860 - __main__ - INFO - Processing word: мыс (ID: 1026)
+2025-09-03 14:43:55,928 - __main__ - INFO - Processing word: ауру (ID: 624)
+2025-09-03 14:44:02,641 - __main__ - INFO - Processing word: майдангер (ID: 626)
+2025-09-03 14:44:17,228 - __main__ - INFO - Processing word: шемекі май (ID: 705)
+2025-09-03 14:44:27,695 - __main__ - INFO - Progress: 20/50 processed
+2025-09-03 14:44:29,704 - __main__ - INFO - Processing word: ауа (ID: 886)
+2025-09-03 14:44:57,950 - __main__ - INFO - Processing word: кету (ID: 1139)
+2025-09-03 14:45:17,951 - __main__ - INFO - Processing word: жіп (ID: 819)
+2025-09-03 14:45:24,774 - __main__ - INFO - Processing word: аспаз (ID: 595)
+2025-09-03 14:45:35,896 - __main__ - INFO - Progress: 30/50 processed
+2025-09-03 14:45:37,901 - __main__ - INFO - Processing word: менімен (ID: 970)
+2025-09-03 14:45:45,800 - __main__ - INFO - Processing word: кесе (ID: 806)
+2025-09-03 14:45:52,523 - __main__ - INFO - Processing word: саясатшы (ID: 590)
+2025-09-03 14:45:59,360 - __main__ - INFO - Processing word: суретші (ID: 579)
+2025-09-03 14:46:04,570 - __main__ - INFO - Processing word: сіздерге (ID: 946)
+2025-09-03 14:46:25,017 - __main__ - INFO - Processing word: Кімде? (ID: 1045)
+2025-09-03 14:46:39,977 - __main__ - INFO - Processing word: Батыс (ID: 880)
+2025-09-03 14:46:43,407 - __main__ - INFO - Progress: 40/50 processed
+2025-09-03 14:46:45,409 - __main__ - INFO - Processing word: зерттеуші (ID: 575)
+2025-09-03 14:46:59,389 - __main__ - INFO - Processing word: сиыр еті (ID: 915)
+2025-09-03 14:47:25,699 - __main__ - INFO - Processing word: тірек (ID: 997)
+2025-09-03 14:47:33,314 - __main__ - INFO - Processing word: сендерді (ID: 952)
+2025-09-03 14:47:40,020 - __main__ - INFO - Processing word: сезу (ID: 1118)
+2025-09-03 14:47:46,010 - __main__ - INFO - Processing word: Кім? (ID: 977)
+2025-09-03 14:47:49,685 - __main__ - INFO - Progress: 50/50 processed
+2025-09-03 14:47:51,699 - __main__ - INFO - ==================================================
+2025-09-03 14:47:51,699 - __main__ - INFO - SENTENCE GENERATION COMPLETE!
+2025-09-03 14:47:51,699 - __main__ - INFO - Total words: 50
+2025-09-03 14:47:51,699 - __main__ - INFO - Processed: 50
+2025-09-03 14:47:51,699 - __main__ - INFO - Successful: 50
+2025-09-03 14:47:51,699 - __main__ - INFO - Failed: 0
+2025-09-03 14:47:51,699 - __main__ - INFO - Success rate: 100.0%

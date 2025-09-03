@@ -1,17 +1,23 @@
 # Add these endpoints to your main.py or create a new admin_routes.py file
+import asyncio
+import subprocess
+import sys
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, HTTPException, BackgroundTasks, \
+    Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func, or_, and_, asc, desc
 from typing import Dict, List, Optional, Union, Any
 
 from sqlalchemy.sql.elements import or_
 
+from auth.utils import create_access_token
 from database import get_db
 from database.models import (Category, CategoryTranslation, Language, KazakhWord, WordSound,
-                            KazakhWord, WordImage, Translation, Pronunciation, WordType, DifficultyLevel)
+                             KazakhWord, WordImage, Translation, Pronunciation, WordType, DifficultyLevel,
+                             ExampleSentence)
 from database.crud import CategoryCRUD, LanguageCRUD
 from auth.dependencies import get_current_admin
 from database.auth_models import User
@@ -24,6 +30,7 @@ import logging
 import os
 from pydantic import BaseModel
 from typing import List, Optional
+from jose import jwt, JWTError  # Use jose instead of jwt
 
 from database.learning_models import (
     LearningGuide, UserGuideProgress, GuideWordMapping,
@@ -4065,6 +4072,175 @@ async def reorder_guide_words(
 # Add the admin router to your main app
 # In your main.py, add:
 # app.include_router(admin_router)
+
+@admin_router.post("/run-sentence-generation")
+async def run_sentence_generation(
+        background_tasks: BackgroundTasks,
+        authorization: Optional[str] = Header(None),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_admin)
+):
+    """Run the sentence generation script with the current user's token"""
+
+    # Extract token from Authorization header
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+    else:
+        # Create a new token for the script if not provided
+        token = create_access_token(
+            data={
+                "sub": current_user.username,
+                "user_id": current_user.id,
+                "role": current_user.role.value,
+            },
+            expires_delta=timedelta(hours=24)
+        )
+
+    async def run_script():
+        try:
+            # Get Python executable and script path
+            python_exe = sys.executable
+            script_path = '..\\scripts\\run_sentence_generation.py'
+
+            logger.info(f"=" * 50)
+            logger.info(f"Starting sentence generation script")
+            logger.info(f"Python executable: {python_exe}")
+            logger.info(f"Script path: {script_path}")
+            logger.info(f"Current directory: {os.getcwd()}")
+            logger.info(f"Script exists: {os.path.exists(script_path)}")
+
+            # Create script if it doesn't exist
+            if not os.path.exists(script_path):
+                logger.warning(f"Script not found, creating at: {script_path}")
+                logger.info(f"Directory contents before: {os.listdir(os.getcwd())}")
+
+            # Prepare command based on OS
+            cmd_args = [
+                python_exe,
+                script_path,
+                '--api-url', 'http://localhost:8000',
+                '--token', token,
+                '--max-words', '50',
+                '--delay', '2'
+            ]
+
+            logger.info(f"Command: {' '.join(cmd_args)}")
+
+            # Run the script
+            if sys.platform == 'win32':
+                # Windows
+                process = await asyncio.create_subprocess_exec(
+                    *cmd_args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+            else:
+                # Unix/Linux/Mac
+                process = await asyncio.create_subprocess_exec(
+                    *cmd_args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+
+            # Wait for completion
+            stdout, stderr = await process.communicate()
+
+            if stdout:
+                logger.info(f"Script output: {stdout.decode('utf-8', errors='ignore')}")
+            if stderr:
+                logger.error(f"Script errors: {stderr.decode('utf-8', errors='ignore')}")
+
+            if process.returncode == 0:
+                logger.info("Sentence generation completed successfully")
+            else:
+                logger.error(f"Sentence generation failed with code: {process.returncode}")
+
+        except Exception as e:
+            logger.error(f"Error running sentence generation: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+
+    # Run in background
+    background_tasks.add_task(run_script)
+
+    return {
+        "message": "Sentence generation started in background",
+        "status": "processing",
+        "details": {
+            "user": current_user.username,
+            "max_words": 50
+        }
+    }
+
+
+@admin_router.get("/words-without-sentences")
+async def get_words_without_sentences(
+        limit: int = Query(100, ge=1, le=1000),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_admin)
+):
+    """Get words that don't have example sentences"""
+
+    # Query for words without sentences
+    query = select(KazakhWord).outerjoin(
+        ExampleSentence,
+        KazakhWord.id == ExampleSentence.kazakh_word_id
+    ).where(
+        ExampleSentence.id.is_(None)
+    ).limit(limit)
+
+    result = await db.execute(query)
+    words = result.scalars().all()
+
+    # Format response
+    word_list = []
+    for word in words:
+        word_data = {
+            "id": word.id,
+            "kazakh_word": word.kazakh_word,
+            "kazakh_cyrillic": word.kazakh_cyrillic if hasattr(word, 'kazakh_cyrillic') else None,
+            "difficulty_level": 2  # Default difficulty
+        }
+
+        # Try to get difficulty level if it exists
+        if hasattr(word, 'difficulty_level_id'):
+            word_data["difficulty_level"] = word.difficulty_level_id
+        elif hasattr(word, 'difficulty_level') and word.difficulty_level:
+            word_data["difficulty_level"] = word.difficulty_level.level
+
+        word_list.append(word_data)
+
+    return {
+        "words": word_list,
+        "total": len(word_list),
+        "limit": limit
+    }
+
+
+@admin_router.get("/sentence-generation-status")
+async def get_sentence_generation_status(
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_admin)
+):
+    """Check the status of sentence generation"""
+
+    # Count words without sentences
+    query = select(KazakhWord).outerjoin(
+        ExampleSentence,
+        KazakhWord.id == ExampleSentence.kazakh_word_id
+    ).where(
+        ExampleSentence.id.is_(None)
+    )
+
+    result = await db.execute(query)
+    words_without_sentences = len(result.scalars().all())
+
+    return {
+        "status": "ready",
+        "words_without_sentences": words_without_sentences,
+        "message": f"{words_without_sentences} words need example sentences"
+    }
 
 # Also add these imports to your main.py:
 from sqlalchemy.orm import selectinload, joinedload
