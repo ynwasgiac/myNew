@@ -23,7 +23,8 @@ import {
   Loader as LoaderIcon,
   CheckCircle as CheckCircleIcon,
   AlertCircle as AlertCircleIcon,
-  Sparkles as SparklesIcon
+  Sparkles as SparklesIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 
 // Memoized table row component (unchanged)
@@ -219,6 +220,9 @@ const AdminWordsPage: React.FC = () => {
   // Add these new state variables for sentence generation
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<'idle' | 'starting' | 'processing' | 'completed' | 'error'>('idle');
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [imageGenerationStatus, setImageGenerationStatus] = useState<'idle' | 'starting' | 'processing' | 'completed' | 'error'>('idle');
+
 
   const [showExampleSentencesModal, setShowExampleSentencesModal] = useState(false);
   const [selectedWordForSentences, setSelectedWordForSentences] = useState<{
@@ -275,6 +279,57 @@ const AdminWordsPage: React.FC = () => {
     loadFilterOptions();
   }, []);
 
+  const runImageGeneration = async () => {
+    try {
+      setIsGeneratingImages(true);
+      setImageGenerationStatus('starting');
+      
+      // Try both possible token keys
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        token = localStorage.getItem('kazakh_learn_token');
+      }
+      
+      if (!token) {
+        toast.error('No authentication token found. Please login again.');
+        return;
+      }
+      
+      const response = await fetch('http://localhost:8000/admin/run-image-generation', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to start image generation');
+      }
+  
+      const data = await response.json();
+      setImageGenerationStatus('processing');
+      toast.success('Image generation started successfully!');
+      
+      // Simulate completion after 60 seconds (images take longer)
+      setTimeout(() => {
+        setImageGenerationStatus('completed');
+        setIsGeneratingImages(false);
+        toast.success('Image generation completed!');
+        // Reset status after showing completion
+        setTimeout(() => setImageGenerationStatus('idle'), 5000);
+      }, 60000);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to start image generation');
+      setImageGenerationStatus('error');
+      setIsGeneratingImages(false);
+      // Reset status after showing error
+      setTimeout(() => setImageGenerationStatus('idle'), 5000);
+    }
+  };
   
   // Add this function for sentence generation
   const runSentenceGeneration = async () => {
@@ -768,6 +823,91 @@ const AdminWordsPage: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           {/* AI Generation Button - Add this to your existing buttons */}
+          <button
+            onClick={runImageGeneration}
+            disabled={isGeneratingImages}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm
+              font-medium text-white transition-all duration-200
+              ${isGeneratingImages 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700'
+              }
+            `}
+          >
+            {isGeneratingImages ? (
+              <>
+                <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <ImageIcon className="h-4 w-4 mr-2" />
+                AI Images
+              </>
+            )}
+          </button>
+
+          {imageGenerationStatus !== 'idle' && (
+          <div className="bg-white rounded-lg border p-3 mb-4">
+            <div className="flex items-center text-sm">
+              {imageGenerationStatus === 'starting' && (
+                <>
+                  <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-green-600" />
+                  <span className="text-green-600">Starting image generation...</span>
+                </>
+              )}
+              {imageGenerationStatus === 'processing' && (
+                <>
+                  <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-teal-600" />
+                  <span className="text-teal-600">Generating images with DALL-E...</span>
+                </>
+              )}
+              {imageGenerationStatus === 'completed' && (
+                <>
+                  <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
+                  <span className="text-green-600">Image generation completed successfully!</span>
+                </>
+              )}
+              {imageGenerationStatus === 'error' && (
+                <>
+                  <AlertCircleIcon className="h-4 w-4 mr-2 text-red-600" />
+                  <span className="text-red-600">Image generation failed. Please try again.</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+          {imageGenerationStatus !== 'idle' && (
+            <div className="bg-white rounded-lg border p-3 mb-4">
+              <div className="flex items-center text-sm">
+                {imageGenerationStatus === 'starting' && (
+                  <>
+                    <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-green-600" />
+                    <span className="text-green-600">Starting image generation...</span>
+                  </>
+                )}
+                {imageGenerationStatus === 'processing' && (
+                  <>
+                    <LoaderIcon className="h-4 w-4 mr-2 animate-spin text-teal-600" />
+                    <span className="text-teal-600">Generating images with DALL-E...</span>
+                  </>
+                )}
+                {imageGenerationStatus === 'completed' && (
+                  <>
+                    <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
+                    <span className="text-green-600">Image generation completed successfully!</span>
+                  </>
+                )}
+                {imageGenerationStatus === 'error' && (
+                  <>
+                    <AlertCircleIcon className="h-4 w-4 mr-2 text-red-600" />
+                    <span className="text-red-600">Image generation failed. Please try again.</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
           <button
             onClick={runSentenceGeneration}
             disabled={isGenerating}

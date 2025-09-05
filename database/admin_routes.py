@@ -4242,5 +4242,171 @@ async def get_sentence_generation_status(
         "message": f"{words_without_sentences} words need example sentences"
     }
 
+@admin_router.post("/run-image-generation")
+async def run_image_generation(
+    background_tasks: BackgroundTasks,
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Run the image generation script with the current user's token"""
+    
+    # Extract token from Authorization header
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+    else:
+        # Create a new token for the script if not provided
+        token = create_access_token(
+            data={
+                "sub": current_user.username,
+                "user_id": current_user.id,
+                "role": current_user.role.value,
+            },
+            expires_delta=timedelta(hours=24)
+        )
+    
+    async def run_script():
+        try:
+            # Get Python executable and script path
+            python_exe = sys.executable
+            script_path = '..\\scripts\\run_image_generation.py'
+            
+            logger.info(f"=" * 50)
+            logger.info(f"Starting image generation script")
+            logger.info(f"Python executable: {python_exe}")
+            logger.info(f"Script path: {script_path}")
+            logger.info(f"Current directory: {os.getcwd()}")
+            logger.info(f"Script exists: {os.path.exists(script_path)}")
+            
+            # Create script if it doesn't exist
+            if not os.path.exists(script_path):
+                logger.warning(f"Script not found, creating at: {script_path}")
+                logger.info(f"Directory contents before: {os.listdir(os.getcwd())}")
+            
+            # Prepare command based on OS
+            cmd_args = [
+                python_exe, 
+                script_path,
+                '--api-url', 'http://localhost:8000',
+                '--token', token,
+                '--max-words', '20',  # Less words for images (they take longer)
+                '--delay', '3'  # Longer delay for image generation
+            ]
+            
+            logger.info(f"Command: {' '.join(cmd_args)}")
+            
+            # Run the script
+            if sys.platform == 'win32':
+                # Windows
+                process = await asyncio.create_subprocess_exec(
+                    *cmd_args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+            else:
+                # Unix/Linux/Mac
+                process = await asyncio.create_subprocess_exec(
+                    *cmd_args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+            
+            # Wait for completion
+            stdout, stderr = await process.communicate()
+            
+            if stdout:
+                logger.info(f"Script output: {stdout.decode('utf-8', errors='ignore')}")
+            if stderr:
+                logger.error(f"Script errors: {stderr.decode('utf-8', errors='ignore')}")
+            
+            if process.returncode == 0:
+                logger.info("Image generation completed successfully")
+            else:
+                logger.error(f"Image generation failed with code: {process.returncode}")
+                
+        except Exception as e:
+            logger.error(f"Error running image generation: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+    
+    # Run in background
+    background_tasks.add_task(run_script)
+    
+    return {
+        "message": "Image generation started in background",
+        "status": "processing",
+        "details": {
+            "user": current_user.username,
+            "max_words": 20
+        }
+    }
+
+
+@admin_router.get("/words-without-images")
+async def get_words_without_images(
+    limit: int = Query(100, ge=1, le=1000),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get words that don't have images"""
+    
+    from database import WordImage
+    
+    # Query for words without images
+    query = select(KazakhWord).outerjoin(
+        WordImage,
+        KazakhWord.id == WordImage.kazakh_word_id
+    ).where(
+        WordImage.id.is_(None)
+    ).limit(limit)
+    
+    result = await db.execute(query)
+    words = result.scalars().all()
+    
+    # Format response
+    word_list = []
+    for word in words:
+        word_data = {
+            "id": word.id,
+            "kazakh_word": word.kazakh_word,
+            "kazakh_cyrillic": word.kazakh_cyrillic if hasattr(word, 'kazakh_cyrillic') else None,
+            "category_id": word.category_id if hasattr(word, 'category_id') else None
+        }
+        word_list.append(word_data)
+    
+    return {
+        "words": word_list,
+        "total": len(word_list),
+        "limit": limit
+    }
+
+
+@admin_router.get("/image-generation-status")
+async def get_image_generation_status(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Check the status of image generation"""
+    
+    from database import WordImage
+    
+    # Count words without images
+    query = select(KazakhWord).outerjoin(
+        WordImage,
+        KazakhWord.id == WordImage.kazakh_word_id
+    ).where(
+        WordImage.id.is_(None)
+    )
+    
+    result = await db.execute(query)
+    words_without_images = len(result.scalars().all())
+    
+    return {
+        "status": "ready",
+        "words_without_images": words_without_images,
+        "message": f"{words_without_images} words need images"
+    }
+
 # Also add these imports to your main.py:
 from sqlalchemy.orm import selectinload, joinedload

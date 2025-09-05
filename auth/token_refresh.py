@@ -11,7 +11,7 @@ from .utils import decode_access_token, create_access_token, ACCESS_TOKEN_EXPIRE
 from .dependencies import security
 
 # Configuration
-TOKEN_REFRESH_THRESHOLD_MINUTES = 15  # Refresh if token expires in less than 15 minutes
+TOKEN_REFRESH_THRESHOLD_MINUTES = 60  # Refresh if token expires in less than 15 minutes
 AUTO_REFRESH_ON_ACTIVITY = True  # Enable automatic refresh on user activity
 
 
