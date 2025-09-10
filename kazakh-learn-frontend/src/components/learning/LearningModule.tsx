@@ -780,6 +780,12 @@ const OverviewPhase: React.FC<{
   const [fallbackLevels, setFallbackLevels] = useState<Record<number, number>>({});
   const { t } = useTranslation(['learning']);
 
+  // ✅ ИСПРАВЛЕНИЕ: Сбрасываем состояние при смене списка слов
+  useEffect(() => {
+    setImageErrors({});
+    setFallbackLevels({});
+  }, [words]);
+
   // ✅ ИСПРАВЛЕННАЯ система fallback для изображений
   const getImageSources = (word: LearningWord): string[] => {
     const sources: string[] = [];

@@ -61,6 +61,12 @@ const WordImageDisplay: React.FC<WordImageDisplayProps> = ({
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [fallbackLevels, setFallbackLevels] = useState<Record<string, number>>({});
 
+  // ✅ ИСПРАВЛЕНИЕ: Сбрасываем состояние при смене слова
+  useEffect(() => {
+    setImageErrors({});
+    setFallbackLevels({});
+  }, [word.id])
+
   // Generate all possible image sources for fallback system
   const getImageSources = (imageKey: string, originalPath?: string): string[] => {
     const sources = [];

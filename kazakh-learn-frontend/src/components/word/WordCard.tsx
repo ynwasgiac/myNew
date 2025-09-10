@@ -1,5 +1,5 @@
 // src/components/word/WordCard.tsx - Fixed Image Handling (No Infinite Recursion)
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   HeartIcon, 
@@ -34,6 +34,12 @@ const WordCard: React.FC<WordCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [fallbackLevel, setFallbackLevel] = useState(0);
+
+  // ✅ ИСПРАВЛЕНИЕ: Сбрасываем состояние при смене слова
+  useEffect(() => {
+    setImageError(false);
+    setFallbackLevel(0);
+  }, [word.id]); // Зависимость от ID слова
 
   const handleToggleLearning = (e: React.MouseEvent) => {
     e.preventDefault();

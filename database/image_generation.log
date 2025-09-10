@@ -2506,3 +2506,681 @@
 2025-09-05 17:29:27,231 - INFO - [STATS] Skipped: 1
 2025-09-05 17:29:27,231 - INFO - [STATS] Success rate: 70.0%
 2025-09-05 17:29:27,231 - INFO - ============================================================
+2025-09-09 21:14:38,585 - INFO - ============================================================
+2025-09-09 21:14:38,585 - INFO - [START] DALL-E 3 Image Generation for Kazakh Words
+2025-09-09 21:14:38,585 - INFO - ============================================================
+2025-09-09 21:14:38,585 - INFO - [CONFIG] API URL: http://localhost:8000
+2025-09-09 21:14:38,585 - INFO - [CONFIG] Max words: 20
+2025-09-09 21:14:38,585 - INFO - [CONFIG] Delay: 3.0s
+2025-09-09 21:14:38,585 - INFO - ============================================================
+2025-09-09 21:14:39,057 - INFO - [OK] OpenAI client initialized
+2025-09-09 21:14:39,057 - INFO - Testing connection to http://localhost:8000
+2025-09-09 21:14:39,335 - INFO - [OK] API connection successful
+2025-09-09 21:14:39,335 - INFO - Testing OpenAI connection...
+2025-09-09 21:14:42,427 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:14:42,427 - INFO - [OK] OpenAI connection successful
+2025-09-09 21:14:42,427 - INFO - Fetching words without images (limit: 20)
+2025-09-09 21:14:42,443 - INFO - [OK] Found 20 words without images
+2025-09-09 21:14:42,443 - INFO - Processing 20 words with 3.0s delay between requests
+2025-09-09 21:14:42,443 - INFO - ============================================================
+2025-09-09 21:14:42,443 - INFO - 
+[1/20] Processing: калым (ID: 1143)
+2025-09-09 21:14:42,443 - INFO - Generating image for: калым
+2025-09-09 21:14:45,660 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:14:45,691 - INFO - Generated prompt for 'калым': High quality "A photorealistic illustration of a traditional Kazakh 'калым' (dowry) items including ...
+2025-09-09 21:14:45,691 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic illustration of a traditional Kazakh 'калым' (dowry) items including ...
+2025-09-09 21:15:04,698 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:15:04,714 - INFO - [OK] Generated image URL for 'калым'
+2025-09-09 21:15:08,359 - INFO - Downloaded image for 'калым': 2069.1 KB
+2025-09-09 21:15:09,250 - INFO - [OK] Saved image for 'калым' (ID: 1143)
+2025-09-09 21:15:09,250 - INFO - [SUCCESS] Successfully processed 'калым'
+2025-09-09 21:15:09,250 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:15:12,260 - INFO - 
+[2/20] Processing: қысқа (ID: 1099)
+2025-09-09 21:15:12,260 - INFO - Generating image for: қысқа
+2025-09-09 21:15:15,339 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:15:15,339 - INFO - Generated prompt for 'қысқа': High quality "Generate a photorealistic illustration of a short, traditional Kazakh bow (қысқа), on ...
+2025-09-09 21:15:15,339 - INFO - Calling DALL-E 3 with prompt: High quality "Generate a photorealistic illustration of a short, traditional Kazakh bow (қысқа), on ...
+2025-09-09 21:15:35,031 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:15:35,031 - INFO - [OK] Generated image URL for 'қысқа'
+2025-09-09 21:15:37,718 - INFO - Downloaded image for 'қысқа': 1889.3 KB
+2025-09-09 21:15:38,218 - INFO - [OK] Saved image for 'қысқа' (ID: 1099)
+2025-09-09 21:15:38,218 - INFO - [SUCCESS] Successfully processed 'қысқа'
+2025-09-09 21:15:38,218 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:15:41,225 - INFO - 
+[3/20] Processing: сел (ID: 1020)
+2025-09-09 21:15:41,225 - INFO - Generating image for: сел
+2025-09-09 21:15:43,508 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:15:43,508 - INFO - Generated prompt for 'сел': High quality "A photorealistic illustration of a Kazakh village (сел) with traditional houses and ty...
+2025-09-09 21:15:43,508 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic illustration of a Kazakh village (сел) with traditional houses and ty...
+2025-09-09 21:15:58,603 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:15:58,603 - INFO - [OK] Generated image URL for 'сел'
+2025-09-09 21:16:01,322 - INFO - Downloaded image for 'сел': 1695.2 KB
+2025-09-09 21:16:01,992 - INFO - [OK] Saved image for 'сел' (ID: 1020)
+2025-09-09 21:16:01,992 - INFO - [SUCCESS] Successfully processed 'сел'
+2025-09-09 21:16:01,992 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:16:04,995 - INFO - 
+[4/20] Processing: сенен (ID: 964)
+2025-09-09 21:16:04,995 - INFO - Generating image for: сенен
+2025-09-09 21:16:07,496 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:16:07,512 - INFO - Generated prompt for 'сенен': High quality "An illustrated hand holding a traditional Kazakh dombra guitar, on a white background,...
+2025-09-09 21:16:07,512 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated hand holding a traditional Kazakh dombra guitar, on a white background,...
+2025-09-09 21:16:26,276 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:16:26,276 - INFO - [OK] Generated image URL for 'сенен'
+2025-09-09 21:16:29,510 - INFO - Downloaded image for 'сенен': 1712.0 KB
+2025-09-09 21:16:30,135 - INFO - [OK] Saved image for 'сенен' (ID: 964)
+2025-09-09 21:16:30,135 - INFO - [SUCCESS] Successfully processed 'сенен'
+2025-09-09 21:16:30,135 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:16:33,140 - INFO - 
+[5/20] Processing: өзіміз (ID: 1072)
+2025-09-09 21:16:33,140 - INFO - Generating image for: өзіміз
+2025-09-09 21:16:35,816 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:16:35,832 - INFO - Generated prompt for 'өзіміз': High quality "An illustration of a group of traditional Kazakh people of different ages, standing to...
+2025-09-09 21:16:35,832 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a group of traditional Kazakh people of different ages, standing to...
+2025-09-09 21:17:27,293 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:17:27,293 - INFO - [OK] Generated image URL for 'өзіміз'
+2025-09-09 21:17:30,590 - INFO - Downloaded image for 'өзіміз': 1954.9 KB
+2025-09-09 21:17:31,282 - INFO - [OK] Saved image for 'өзіміз' (ID: 1072)
+2025-09-09 21:17:31,282 - INFO - [SUCCESS] Successfully processed 'өзіміз'
+2025-09-09 21:17:31,282 - INFO - [PROGRESS] 5/20 | Success: 5 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-09 21:17:31,282 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:17:34,285 - INFO - 
+[6/20] Processing: оларға (ID: 947)
+2025-09-09 21:17:34,285 - INFO - Generating image for: оларға
+2025-09-09 21:17:36,958 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:17:36,974 - INFO - Generated prompt for 'оларға': High quality "An illustration of a person in Kazakh traditional clothing pointing towards a group of...
+2025-09-09 21:17:36,974 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a person in Kazakh traditional clothing pointing towards a group of...
+2025-09-09 21:17:58,677 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:17:58,677 - INFO - [OK] Generated image URL for 'оларға'
+2025-09-09 21:18:01,069 - INFO - Downloaded image for 'оларға': 1383.2 KB
+2025-09-09 21:18:02,023 - INFO - [OK] Saved image for 'оларға' (ID: 947)
+2025-09-09 21:18:02,023 - INFO - [SUCCESS] Successfully processed 'оларға'
+2025-09-09 21:18:02,023 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:18:05,030 - INFO - 
+[7/20] Processing: бірдеңе (ID: 1066)
+2025-09-09 21:18:05,030 - INFO - Generating image for: бірдеңе
+2025-09-09 21:18:06,905 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:18:06,921 - INFO - Generated prompt for 'бірдеңе': High quality "An illustration of a traditional Kazakh yurt, known as бірдеңе, on a white background,...
+2025-09-09 21:18:06,921 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh yurt, known as бірдеңе, on a white background,...
+2025-09-09 21:18:23,720 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:18:23,720 - INFO - [OK] Generated image URL for 'бірдеңе'
+2025-09-09 21:18:25,627 - INFO - Downloaded image for 'бірдеңе': 678.2 KB
+2025-09-09 21:18:26,190 - INFO - [OK] Saved image for 'бірдеңе' (ID: 1066)
+2025-09-09 21:18:26,190 - INFO - [SUCCESS] Successfully processed 'бірдеңе'
+2025-09-09 21:18:26,190 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:18:29,198 - INFO - 
+[8/20] Processing: менде (ID: 955)
+2025-09-09 21:18:29,198 - INFO - Generating image for: менде
+2025-09-09 21:18:30,779 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:18:30,779 - INFO - Generated prompt for 'менде': High quality "A hand holding a heart shaped object, symbolizing the concept 'I have' in Kazakh cultu...
+2025-09-09 21:18:30,779 - INFO - Calling DALL-E 3 with prompt: High quality "A hand holding a heart shaped object, symbolizing the concept 'I have' in Kazakh cultu...
+2025-09-09 21:18:44,528 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:18:44,528 - INFO - [OK] Generated image URL for 'менде'
+2025-09-09 21:18:47,355 - INFO - Downloaded image for 'менде': 1350.6 KB
+2025-09-09 21:18:48,356 - INFO - [OK] Saved image for 'менде' (ID: 955)
+2025-09-09 21:18:48,356 - INFO - [SUCCESS] Successfully processed 'менде'
+2025-09-09 21:18:48,356 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:18:51,362 - INFO - 
+[9/20] Processing: айыптау (ID: 1132)
+2025-09-09 21:18:51,362 - INFO - Generating image for: айыптау
+2025-09-09 21:18:52,988 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:18:53,003 - INFO - Generated prompt for 'айыптау': High quality "An illustrated Kazakh person respectfully showing the gesture of 'айыптау', a traditio...
+2025-09-09 21:18:53,003 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated Kazakh person respectfully showing the gesture of 'айыптау', a traditio...
+2025-09-09 21:19:07,474 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:19:07,474 - INFO - [OK] Generated image URL for 'айыптау'
+2025-09-09 21:19:11,752 - INFO - Downloaded image for 'айыптау': 1874.9 KB
+2025-09-09 21:19:12,440 - INFO - [OK] Saved image for 'айыптау' (ID: 1132)
+2025-09-09 21:19:12,440 - INFO - [SUCCESS] Successfully processed 'айыптау'
+2025-09-09 21:19:12,440 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:19:15,445 - INFO - 
+[10/20] Processing: аспан (ID: 1013)
+2025-09-09 21:19:15,445 - INFO - Generating image for: аспан
+2025-09-09 21:19:18,393 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:19:18,402 - INFO - Generated prompt for 'аспан': High quality "An illustration of аспан, the Kazakh word for sky, showing a clear blue sky over the s...
+2025-09-09 21:19:18,402 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of аспан, the Kazakh word for sky, showing a clear blue sky over the s...
+2025-09-09 21:19:33,623 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:19:33,623 - INFO - [OK] Generated image URL for 'аспан'
+2025-09-09 21:19:36,452 - INFO - Downloaded image for 'аспан': 1825.1 KB
+2025-09-09 21:19:37,175 - INFO - [OK] Saved image for 'аспан' (ID: 1013)
+2025-09-09 21:19:37,175 - INFO - [SUCCESS] Successfully processed 'аспан'
+2025-09-09 21:19:37,175 - INFO - [PROGRESS] 10/20 | Success: 10 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-09 21:19:37,175 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:19:40,176 - INFO - 
+[11/20] Processing: өзім (ID: 1068)
+2025-09-09 21:19:40,176 - INFO - Generating image for: өзім
+2025-09-09 21:19:41,992 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:19:41,992 - INFO - Generated prompt for 'өзім': High quality "A person pointing at themselves, demonstrating the Kazakh concept of 'өзім' (myself), ...
+2025-09-09 21:19:41,992 - INFO - Calling DALL-E 3 with prompt: High quality "A person pointing at themselves, demonstrating the Kazakh concept of 'өзім' (myself), ...
+2025-09-09 21:19:57,407 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:19:57,407 - INFO - [OK] Generated image URL for 'өзім'
+2025-09-09 21:20:00,703 - INFO - Downloaded image for 'өзім': 1938.2 KB
+2025-09-09 21:20:01,284 - INFO - [OK] Saved image for 'өзім' (ID: 1068)
+2025-09-09 21:20:01,284 - INFO - [SUCCESS] Successfully processed 'өзім'
+2025-09-09 21:20:01,284 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:20:04,299 - INFO - 
+[12/20] Processing: гауһартас (ID: 1025)
+2025-09-09 21:20:04,299 - INFO - Generating image for: гауһартас
+2025-09-09 21:20:06,866 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:20:06,882 - INFO - Generated prompt for 'гауһартас': High quality "An illustrated compass (гауһартас) in traditional Kazakh style on a white background."...
+2025-09-09 21:20:06,882 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated compass (гауһартас) in traditional Kazakh style on a white background."...
+2025-09-09 21:20:20,798 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:20:20,798 - INFO - [OK] Generated image URL for 'гауһартас'
+2025-09-09 21:20:23,643 - INFO - Downloaded image for 'гауһартас': 2069.7 KB
+2025-09-09 21:20:24,239 - INFO - [OK] Saved image for 'гауһартас' (ID: 1025)
+2025-09-09 21:20:24,240 - INFO - [SUCCESS] Successfully processed 'гауһартас'
+2025-09-09 21:20:24,240 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:20:27,254 - INFO - 
+[13/20] Processing: әкелу (ID: 1111)
+2025-09-09 21:20:27,254 - INFO - Generating image for: әкелу
+2025-09-09 21:20:29,164 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:20:29,164 - INFO - Generated prompt for 'әкелу': High quality "Show a high-quality, photorealistic image of a person performing the action of 'әкелу'...
+2025-09-09 21:20:29,164 - INFO - Calling DALL-E 3 with prompt: High quality "Show a high-quality, photorealistic image of a person performing the action of 'әкелу'...
+2025-09-09 21:20:46,571 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:20:46,571 - INFO - [OK] Generated image URL for 'әкелу'
+2025-09-09 21:20:49,149 - INFO - Downloaded image for 'әкелу': 1779.2 KB
+2025-09-09 21:20:49,777 - INFO - [OK] Saved image for 'әкелу' (ID: 1111)
+2025-09-09 21:20:49,777 - INFO - [SUCCESS] Successfully processed 'әкелу'
+2025-09-09 21:20:49,777 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:20:52,777 - INFO - 
+[14/20] Processing: қиын (ID: 1095)
+2025-09-09 21:20:52,777 - INFO - Generating image for: қиын
+2025-09-09 21:20:54,591 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:20:54,607 - INFO - Generated prompt for 'қиын': High quality "A person showing a facial expression of difficulty or strain, representative of the Ka...
+2025-09-09 21:20:54,607 - INFO - Calling DALL-E 3 with prompt: High quality "A person showing a facial expression of difficulty or strain, representative of the Ka...
+2025-09-09 21:21:08,791 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:21:08,791 - INFO - [OK] Generated image URL for 'қиын'
+2025-09-09 21:21:12,102 - INFO - Downloaded image for 'қиын': 1886.3 KB
+2025-09-09 21:21:12,640 - INFO - [OK] Saved image for 'қиын' (ID: 1095)
+2025-09-09 21:21:12,640 - INFO - [SUCCESS] Successfully processed 'қиын'
+2025-09-09 21:21:12,640 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:21:15,655 - INFO - 
+[15/20] Processing: ауызша (ID: 992)
+2025-09-09 21:21:15,655 - INFO - Generating image for: ауызша
+2025-09-09 21:21:17,818 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:21:17,819 - INFO - Generated prompt for 'ауызша': High quality "An illustrated Kazakh person speaking, with sound waves coming out of their mouth, on ...
+2025-09-09 21:21:17,819 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated Kazakh person speaking, with sound waves coming out of their mouth, on ...
+2025-09-09 21:21:30,597 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:21:30,597 - INFO - [OK] Generated image URL for 'ауызша'
+2025-09-09 21:21:33,471 - INFO - Downloaded image for 'ауызша': 1825.0 KB
+2025-09-09 21:21:34,197 - INFO - [OK] Saved image for 'ауызша' (ID: 992)
+2025-09-09 21:21:34,197 - INFO - [SUCCESS] Successfully processed 'ауызша'
+2025-09-09 21:21:34,197 - INFO - [PROGRESS] 15/20 | Success: 15 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-09 21:21:34,197 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:21:37,204 - INFO - 
+[16/20] Processing: киіну (ID: 1112)
+2025-09-09 21:21:37,204 - INFO - Generating image for: киіну
+2025-09-09 21:21:39,066 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:21:39,066 - INFO - Generated prompt for 'киіну': High quality "A high-quality illustration of a traditional Kazakh yurt being disassembled (киіну) on...
+2025-09-09 21:21:39,066 - INFO - Calling DALL-E 3 with prompt: High quality "A high-quality illustration of a traditional Kazakh yurt being disassembled (киіну) on...
+2025-09-09 21:21:52,660 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:21:52,660 - INFO - [OK] Generated image URL for 'киіну'
+2025-09-09 21:21:55,427 - INFO - Downloaded image for 'киіну': 1868.1 KB
+2025-09-09 21:21:56,130 - INFO - [OK] Saved image for 'киіну' (ID: 1112)
+2025-09-09 21:21:56,130 - INFO - [SUCCESS] Successfully processed 'киіну'
+2025-09-09 21:21:56,130 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:21:59,154 - INFO - 
+[17/20] Processing: кіші (ID: 1090)
+2025-09-09 21:21:59,154 - INFO - Generating image for: кіші
+2025-09-09 21:22:01,620 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:22:01,631 - INFO - Generated prompt for 'кіші': High quality "An illustration of a cute, small ('кіші') traditional Kazakh yurt on a white backgroun...
+2025-09-09 21:22:01,631 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a cute, small ('кіші') traditional Kazakh yurt on a white backgroun...
+2025-09-09 21:22:13,406 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:22:13,406 - INFO - [OK] Generated image URL for 'кіші'
+2025-09-09 21:22:15,782 - INFO - Downloaded image for 'кіші': 812.8 KB
+2025-09-09 21:22:16,350 - INFO - [OK] Saved image for 'кіші' (ID: 1090)
+2025-09-09 21:22:16,350 - INFO - [SUCCESS] Successfully processed 'кіші'
+2025-09-09 21:22:16,350 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:22:19,349 - INFO - 
+[18/20] Processing: шойын (ID: 1028)
+2025-09-09 21:22:19,349 - INFO - Generating image for: шойын
+2025-09-09 21:22:20,852 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:22:20,852 - INFO - Generated prompt for 'шойын': High quality "An illustration of a traditional Kazakh instrument called шойын (shoyin) on a neutral ...
+2025-09-09 21:22:20,852 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh instrument called шойын (shoyin) on a neutral ...
+2025-09-09 21:22:35,305 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:22:35,305 - INFO - [OK] Generated image URL for 'шойын'
+2025-09-09 21:22:37,883 - INFO - Downloaded image for 'шойын': 1597.6 KB
+2025-09-09 21:22:38,693 - INFO - [OK] Saved image for 'шойын' (ID: 1028)
+2025-09-09 21:22:38,693 - INFO - [SUCCESS] Successfully processed 'шойын'
+2025-09-09 21:22:38,693 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:22:41,700 - INFO - 
+[19/20] Processing: жүн (ID: 1038)
+2025-09-09 21:22:41,700 - INFO - Generating image for: жүн
+2025-09-09 21:22:43,404 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:22:43,404 - INFO - Generated prompt for 'жүн': High quality "A photorealistic illustration of a traditional Kazakh yurt, known as жүн, on a neutral...
+2025-09-09 21:22:43,404 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic illustration of a traditional Kazakh yurt, known as жүн, on a neutral...
+2025-09-09 21:22:59,671 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:22:59,671 - INFO - [OK] Generated image URL for 'жүн'
+2025-09-09 21:23:02,062 - INFO - Downloaded image for 'жүн': 1324.8 KB
+2025-09-09 21:23:02,661 - INFO - [OK] Saved image for 'жүн' (ID: 1038)
+2025-09-09 21:23:02,661 - INFO - [SUCCESS] Successfully processed 'жүн'
+2025-09-09 21:23:02,661 - INFO - Waiting 3.0s before next request...
+2025-09-09 21:23:05,675 - INFO - 
+[20/20] Processing: мені (ID: 948)
+2025-09-09 21:23:05,675 - INFO - Generating image for: мені
+2025-09-09 21:23:07,020 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-09 21:23:07,020 - INFO - Generated prompt for 'мені': High quality "A person pointing to themselves in traditional Kazakh clothing on a white background."...
+2025-09-09 21:23:07,020 - INFO - Calling DALL-E 3 with prompt: High quality "A person pointing to themselves in traditional Kazakh clothing on a white background."...
+2025-09-09 21:23:23,801 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-09 21:23:23,801 - INFO - [OK] Generated image URL for 'мені'
+2025-09-09 21:23:26,877 - INFO - Downloaded image for 'мені': 1661.1 KB
+2025-09-09 21:23:27,691 - INFO - [OK] Saved image for 'мені' (ID: 948)
+2025-09-09 21:23:27,691 - INFO - [SUCCESS] Successfully processed 'мені'
+2025-09-09 21:23:27,691 - INFO - [PROGRESS] 20/20 | Success: 20 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-09 21:23:27,691 - INFO - 
+============================================================
+2025-09-09 21:23:27,691 - INFO - [COMPLETE] IMAGE GENERATION FINISHED!
+2025-09-09 21:23:27,691 - INFO - ============================================================
+2025-09-09 21:23:27,691 - INFO - [STATS] Total words: 20
+2025-09-09 21:23:27,691 - INFO - [STATS] Successful: 20
+2025-09-09 21:23:27,691 - INFO - [STATS] Failed: 0
+2025-09-09 21:23:27,691 - INFO - [STATS] Skipped: 0
+2025-09-09 21:23:27,691 - INFO - [STATS] Success rate: 100.0%
+2025-09-09 21:23:27,691 - INFO - ============================================================
+2025-09-10 11:03:22,081 - INFO - ============================================================
+2025-09-10 11:03:22,081 - INFO - [START] DALL-E 3 Image Generation for Kazakh Words
+2025-09-10 11:03:22,081 - INFO - ============================================================
+2025-09-10 11:03:22,081 - INFO - [CONFIG] API URL: http://localhost:8000
+2025-09-10 11:03:22,081 - INFO - [CONFIG] Max words: 20
+2025-09-10 11:03:22,081 - INFO - [CONFIG] Delay: 3.0s
+2025-09-10 11:03:22,081 - INFO - ============================================================
+2025-09-10 11:03:22,538 - INFO - [OK] OpenAI client initialized
+2025-09-10 11:03:22,538 - INFO - Testing connection to http://localhost:8000
+2025-09-10 11:03:22,835 - INFO - [OK] API connection successful
+2025-09-10 11:03:22,835 - INFO - Testing OpenAI connection...
+2025-09-10 11:03:24,666 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:03:24,684 - INFO - [OK] OpenAI connection successful
+2025-09-10 11:03:24,684 - INFO - Fetching words without images (limit: 20)
+2025-09-10 11:03:24,700 - INFO - [OK] Found 20 words without images
+2025-09-10 11:03:24,700 - INFO - Processing 20 words with 3.0s delay between requests
+2025-09-10 11:03:24,700 - INFO - ============================================================
+2025-09-10 11:03:24,700 - INFO - 
+[1/20] Processing: ағылшын тілі (ID: 990)
+2025-09-10 11:03:24,700 - INFO - Generating image for: ағылшын тілі
+2025-09-10 11:03:26,642 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:03:26,643 - INFO - Generated prompt for 'ағылшын тілі': High quality "An illustrated Kazakh person enthusiastically learning English language, represented b...
+2025-09-10 11:03:26,643 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated Kazakh person enthusiastically learning English language, represented b...
+2025-09-10 11:03:39,475 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:03:39,477 - INFO - [OK] Generated image URL for 'ағылшын тілі'
+2025-09-10 11:03:42,382 - INFO - Downloaded image for 'ағылшын тілі': 1757.4 KB
+2025-09-10 11:03:43,147 - INFO - [OK] Saved image for 'ағылшын тілі' (ID: 990)
+2025-09-10 11:03:43,147 - INFO - [SUCCESS] Successfully processed 'ағылшын тілі'
+2025-09-10 11:03:43,147 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:03:46,161 - INFO - 
+[2/20] Processing: сенің (ID: 936)
+2025-09-10 11:03:46,161 - INFO - Generating image for: сенің
+2025-09-10 11:03:48,648 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:03:48,649 - INFO - Generated prompt for 'сенің': High quality "A hand pointing towards the viewer in a friendly gesture, symbolizing 'you' in Kazakh ...
+2025-09-10 11:03:48,649 - INFO - Calling DALL-E 3 with prompt: High quality "A hand pointing towards the viewer in a friendly gesture, symbolizing 'you' in Kazakh ...
+2025-09-10 11:04:43,229 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:04:43,230 - INFO - [OK] Generated image URL for 'сенің'
+2025-09-10 11:04:46,354 - INFO - Downloaded image for 'сенің': 1780.1 KB
+2025-09-10 11:04:46,928 - INFO - [OK] Saved image for 'сенің' (ID: 936)
+2025-09-10 11:04:46,929 - INFO - [SUCCESS] Successfully processed 'сенің'
+2025-09-10 11:04:46,929 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:04:49,944 - INFO - 
+[3/20] Processing: тарих (ID: 998)
+2025-09-10 11:04:49,944 - INFO - Generating image for: тарих
+2025-09-10 11:04:51,751 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:04:51,757 - INFO - Generated prompt for 'тарих': High quality "An illustrated timeline showing significant events in the history of Kazakhstan, with ...
+2025-09-10 11:04:51,758 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated timeline showing significant events in the history of Kazakhstan, with ...
+2025-09-10 11:05:26,388 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:05:26,389 - INFO - [OK] Generated image URL for 'тарих'
+2025-09-10 11:05:29,384 - INFO - Downloaded image for 'тарих': 2205.3 KB
+2025-09-10 11:05:30,012 - INFO - [OK] Saved image for 'тарих' (ID: 998)
+2025-09-10 11:05:30,013 - INFO - [SUCCESS] Successfully processed 'тарих'
+2025-09-10 11:05:30,013 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:05:33,008 - INFO - 
+[4/20] Processing: жеңіл (ID: 1097)
+2025-09-10 11:05:33,008 - INFO - Generating image for: жеңіл
+2025-09-10 11:05:35,102 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:05:35,115 - INFO - Generated prompt for 'жеңіл': High quality "A photorealistic image of a lightweight object, such as a feather, representative of t...
+2025-09-10 11:05:35,115 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic image of a lightweight object, such as a feather, representative of t...
+2025-09-10 11:05:48,332 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:05:48,332 - INFO - [OK] Generated image URL for 'жеңіл'
+2025-09-10 11:05:51,116 - INFO - Downloaded image for 'жеңіл': 1680.8 KB
+2025-09-10 11:05:51,703 - INFO - [OK] Saved image for 'жеңіл' (ID: 1097)
+2025-09-10 11:05:51,703 - INFO - [SUCCESS] Successfully processed 'жеңіл'
+2025-09-10 11:05:51,703 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:05:54,704 - INFO - 
+[5/20] Processing: Не? (ID: 978)
+2025-09-10 11:05:54,704 - INFO - Generating image for: Не?
+2025-09-10 11:05:56,336 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:05:56,351 - INFO - Generated prompt for 'Не?': High quality "An illustrated scene of a Kazakh person nodding and expressing the action of asking 'Н...
+2025-09-10 11:05:56,351 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated scene of a Kazakh person nodding and expressing the action of asking 'Н...
+2025-09-10 11:06:11,324 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:06:11,325 - INFO - [OK] Generated image URL for 'Не?'
+2025-09-10 11:06:13,812 - INFO - Downloaded image for 'Не?': 1076.0 KB
+2025-09-10 11:06:14,688 - INFO - [OK] Saved image for 'Не?' (ID: 978)
+2025-09-10 11:06:14,688 - INFO - [SUCCESS] Successfully processed 'Не?'
+2025-09-10 11:06:14,688 - INFO - [PROGRESS] 5/20 | Success: 5 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-10 11:06:14,688 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:06:17,702 - INFO - 
+[6/20] Processing: бекіре (ID: 912)
+2025-09-10 11:06:17,702 - INFO - Generating image for: бекіре
+2025-09-10 11:06:19,171 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:06:19,197 - INFO - Generated prompt for 'бекіре': High quality "A photorealistic illustration of a traditional Kazakh dish called бекіре (Beshbarmak),...
+2025-09-10 11:06:19,197 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic illustration of a traditional Kazakh dish called бекіре (Beshbarmak),...
+2025-09-10 11:06:34,158 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:06:34,159 - INFO - [OK] Generated image URL for 'бекіре'
+2025-09-10 11:06:37,029 - INFO - Downloaded image for 'бекіре': 1866.0 KB
+2025-09-10 11:06:37,640 - INFO - [OK] Saved image for 'бекіре' (ID: 912)
+2025-09-10 11:06:37,640 - INFO - [SUCCESS] Successfully processed 'бекіре'
+2025-09-10 11:06:37,640 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:06:40,649 - INFO - 
+[7/20] Processing: Қай? (ID: 1058)
+2025-09-10 11:06:40,649 - INFO - Generating image for: Қай?
+2025-09-10 11:06:41,972 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:06:41,975 - INFO - Generated prompt for 'Қай?': High quality "A curious Kazakh child pointing at a distant mountain range on a clear day, embodying ...
+2025-09-10 11:06:41,975 - INFO - Calling DALL-E 3 with prompt: High quality "A curious Kazakh child pointing at a distant mountain range on a clear day, embodying ...
+2025-09-10 11:07:03,571 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:07:03,571 - INFO - [OK] Generated image URL for 'Қай?'
+2025-09-10 11:07:06,437 - INFO - Downloaded image for 'Қай?': 1591.4 KB
+2025-09-10 11:07:07,193 - INFO - [OK] Saved image for 'Қай?' (ID: 1058)
+2025-09-10 11:07:07,193 - INFO - [SUCCESS] Successfully processed 'Қай?'
+2025-09-10 11:07:07,193 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:07:10,205 - INFO - 
+[8/20] Processing: мында (ID: 1061)
+2025-09-10 11:07:10,206 - INFO - Generating image for: мында
+2025-09-10 11:07:12,668 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:07:12,683 - INFO - Generated prompt for 'мында': High quality "An illustration of 'мында' (Kazakh yurt) with a neutral background, in a style that is...
+2025-09-10 11:07:12,683 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of 'мында' (Kazakh yurt) with a neutral background, in a style that is...
+2025-09-10 11:07:27,513 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:07:27,513 - INFO - [OK] Generated image URL for 'мында'
+2025-09-10 11:07:29,368 - INFO - Downloaded image for 'мында': 772.6 KB
+2025-09-10 11:07:30,250 - INFO - [OK] Saved image for 'мында' (ID: 1061)
+2025-09-10 11:07:30,250 - INFO - [SUCCESS] Successfully processed 'мында'
+2025-09-10 11:07:30,250 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:07:33,252 - INFO - 
+[9/20] Processing: Қашан? (ID: 1054)
+2025-09-10 11:07:33,252 - INFO - Generating image for: Қашан?
+2025-09-10 11:07:34,751 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:07:34,782 - INFO - Generated prompt for 'Қашан?': High quality "A photorealistic illustration of a Kazakh person quizzically pointing at a calendar on...
+2025-09-10 11:07:34,782 - INFO - Calling DALL-E 3 with prompt: High quality "A photorealistic illustration of a Kazakh person quizzically pointing at a calendar on...
+2025-09-10 11:07:47,334 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:07:47,335 - INFO - [OK] Generated image URL for 'Қашан?'
+2025-09-10 11:07:54,217 - INFO - Downloaded image for 'Қашан?': 1627.4 KB
+2025-09-10 11:07:55,046 - INFO - [OK] Saved image for 'Қашан?' (ID: 1054)
+2025-09-10 11:07:55,046 - INFO - [SUCCESS] Successfully processed 'Қашан?'
+2025-09-10 11:07:55,046 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:07:58,053 - INFO - 
+[10/20] Processing: сазан (ID: 909)
+2025-09-10 11:07:58,053 - INFO - Generating image for: сазан
+2025-09-10 11:07:59,611 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:07:59,616 - INFO - Generated prompt for 'сазан': High quality "A high-quality, photorealistic illustration of a сазан (Carp fish), a popular fish in ...
+2025-09-10 11:07:59,616 - INFO - Calling DALL-E 3 with prompt: High quality "A high-quality, photorealistic illustration of a сазан (Carp fish), a popular fish in ...
+2025-09-10 11:08:09,585 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:08:09,586 - INFO - [OK] Generated image URL for 'сазан'
+2025-09-10 11:08:12,989 - INFO - Downloaded image for 'сазан': 1430.5 KB
+2025-09-10 11:08:13,761 - INFO - [OK] Saved image for 'сазан' (ID: 909)
+2025-09-10 11:08:13,761 - INFO - [SUCCESS] Successfully processed 'сазан'
+2025-09-10 11:08:13,761 - INFO - [PROGRESS] 10/20 | Success: 10 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-10 11:08:13,761 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:08:16,753 - INFO - 
+[11/20] Processing: Қалай? (ID: 1053)
+2025-09-10 11:08:16,753 - INFO - Generating image for: Қалай?
+2025-09-10 11:08:18,326 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:08:18,327 - INFO - Generated prompt for 'Қалай?': High quality "An illustrated character from Kazakhstan showing a curious expression, symbolizing the...
+2025-09-10 11:08:18,327 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated character from Kazakhstan showing a curious expression, symbolizing the...
+2025-09-10 11:08:33,040 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:08:33,041 - INFO - [OK] Generated image URL for 'Қалай?'
+2025-09-10 11:08:36,789 - INFO - Downloaded image for 'Қалай?': 1197.2 KB
+2025-09-10 11:08:37,858 - INFO - [OK] Saved image for 'Қалай?' (ID: 1053)
+2025-09-10 11:08:37,858 - INFO - [SUCCESS] Successfully processed 'Қалай?'
+2025-09-10 11:08:37,858 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:08:40,870 - INFO - 
+[12/20] Processing: қола (ID: 1024)
+2025-09-10 11:08:40,870 - INFO - Generating image for: қола
+2025-09-10 11:08:42,216 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:08:42,219 - INFO - Generated prompt for 'қола': High quality "An illustration of a traditional Kazakh dombra in a photorealistic style, on a white b...
+2025-09-10 11:08:42,219 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh dombra in a photorealistic style, on a white b...
+2025-09-10 11:08:56,418 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:08:56,418 - INFO - [OK] Generated image URL for 'қола'
+2025-09-10 11:08:59,335 - INFO - Downloaded image for 'қола': 1334.3 KB
+2025-09-10 11:09:00,455 - INFO - [OK] Saved image for 'қола' (ID: 1024)
+2025-09-10 11:09:00,455 - INFO - [SUCCESS] Successfully processed 'қола'
+2025-09-10 11:09:00,455 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:09:03,468 - INFO - 
+[13/20] Processing: қасқыр (ID: 905)
+2025-09-10 11:09:03,468 - INFO - Generating image for: қасқыр
+2025-09-10 11:09:05,884 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:09:05,901 - INFO - Generated prompt for 'қасқыр': High quality "Create a photorealistic illustration of a қасқыр (wolf) in its natural habitat in Kaza...
+2025-09-10 11:09:05,901 - INFO - Calling DALL-E 3 with prompt: High quality "Create a photorealistic illustration of a қасқыр (wolf) in its natural habitat in Kaza...
+2025-09-10 11:09:17,101 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:09:17,101 - INFO - [OK] Generated image URL for 'қасқыр'
+2025-09-10 11:09:20,202 - INFO - Downloaded image for 'қасқыр': 1584.4 KB
+2025-09-10 11:09:21,017 - INFO - [OK] Saved image for 'қасқыр' (ID: 905)
+2025-09-10 11:09:21,017 - INFO - [SUCCESS] Successfully processed 'қасқыр'
+2025-09-10 11:09:21,017 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:09:24,016 - INFO - 
+[14/20] Processing: келер аптада (ID: 982)
+2025-09-10 11:09:24,016 - INFO - Generating image for: келер аптада
+2025-09-10 11:09:26,433 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:09:26,433 - INFO - Generated prompt for 'келер аптада': High quality "An illustration of a traditional Kazakh yurt with a white or neutral background, showi...
+2025-09-10 11:09:26,433 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh yurt with a white or neutral background, showi...
+2025-09-10 11:09:37,713 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:09:37,713 - INFO - [OK] Generated image URL for 'келер аптада'
+2025-09-10 11:09:41,066 - INFO - Downloaded image for 'келер аптада': 1824.7 KB
+2025-09-10 11:09:41,802 - INFO - [OK] Saved image for 'келер аптада' (ID: 982)
+2025-09-10 11:09:41,802 - INFO - [SUCCESS] Successfully processed 'келер аптада'
+2025-09-10 11:09:41,802 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:09:44,804 - INFO - 
+[15/20] Processing: иіс (ID: 1015)
+2025-09-10 11:09:44,804 - INFO - Generating image for: иіс
+2025-09-10 11:09:47,387 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:09:47,389 - INFO - Generated prompt for 'иіс': High quality "An illustration of a traditional Kazakh 'иіс' (yurt) on a plain background, in a style...
+2025-09-10 11:09:47,389 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh 'иіс' (yurt) on a plain background, in a style...
+2025-09-10 11:09:59,310 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:09:59,310 - INFO - [OK] Generated image URL for 'иіс'
+2025-09-10 11:10:03,346 - INFO - Downloaded image for 'иіс': 1901.1 KB
+2025-09-10 11:10:03,924 - INFO - [OK] Saved image for 'иіс' (ID: 1015)
+2025-09-10 11:10:03,924 - INFO - [SUCCESS] Successfully processed 'иіс'
+2025-09-10 11:10:03,924 - INFO - [PROGRESS] 15/20 | Success: 15 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-10 11:10:03,924 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:10:06,933 - INFO - 
+[16/20] Processing: біз (ID: 920)
+2025-09-10 11:10:06,933 - INFO - Generating image for: біз
+2025-09-10 11:10:08,763 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:10:08,763 - INFO - Generated prompt for 'біз': High quality "Photorealistic illustration of two friendly people from Kazakhstan, wearing traditiona...
+2025-09-10 11:10:08,763 - INFO - Calling DALL-E 3 with prompt: High quality "Photorealistic illustration of two friendly people from Kazakhstan, wearing traditiona...
+2025-09-10 11:10:21,373 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:10:21,374 - INFO - [OK] Generated image URL for 'біз'
+2025-09-10 11:10:24,307 - INFO - Downloaded image for 'біз': 1834.0 KB
+2025-09-10 11:10:24,932 - INFO - [OK] Saved image for 'біз' (ID: 920)
+2025-09-10 11:10:24,932 - INFO - [SUCCESS] Successfully processed 'біз'
+2025-09-10 11:10:24,932 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:10:27,936 - INFO - 
+[17/20] Processing: сол (ID: 1059)
+2025-09-10 11:10:27,936 - INFO - Generating image for: сол
+2025-09-10 11:10:29,387 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:10:29,403 - INFO - Generated prompt for 'сол': High quality "An illustration of a traditional Kazakh musical instrument called 'сол' (Dombra), on a...
+2025-09-10 11:10:29,403 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh musical instrument called 'сол' (Dombra), on a...
+2025-09-10 11:10:47,642 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:10:47,658 - INFO - [OK] Generated image URL for 'сол'
+2025-09-10 11:10:50,364 - INFO - Downloaded image for 'сол': 1006.1 KB
+2025-09-10 11:10:51,061 - INFO - [OK] Saved image for 'сол' (ID: 1059)
+2025-09-10 11:10:51,061 - INFO - [SUCCESS] Successfully processed 'сол'
+2025-09-10 11:10:51,061 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:10:54,065 - INFO - 
+[18/20] Processing: сату (ID: 1127)
+2025-09-10 11:10:54,065 - INFO - Generating image for: сату
+2025-09-10 11:10:56,115 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:10:56,115 - INFO - Generated prompt for 'сату': High quality "An illustrated scene of a traditional Kazakh marketplace, highlighting the act of buyi...
+2025-09-10 11:10:56,115 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated scene of a traditional Kazakh marketplace, highlighting the act of buyi...
+2025-09-10 11:11:12,015 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:11:12,015 - INFO - [OK] Generated image URL for 'сату'
+2025-09-10 11:11:15,546 - INFO - Downloaded image for 'сату': 2145.6 KB
+2025-09-10 11:11:16,109 - INFO - [OK] Saved image for 'сату' (ID: 1127)
+2025-09-10 11:11:16,109 - INFO - [SUCCESS] Successfully processed 'сату'
+2025-09-10 11:11:16,109 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:11:19,114 - INFO - 
+[19/20] Processing: мата (ID: 1034)
+2025-09-10 11:11:19,114 - INFO - Generating image for: мата
+2025-09-10 11:11:20,726 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 503 Service Unavailable"
+2025-09-10 11:11:20,726 - INFO - Retrying request to /chat/completions in 0.404395 seconds
+2025-09-10 11:11:22,536 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:11:22,536 - INFO - Generated prompt for 'мата': High quality "An illustration of a traditional Kazakh yurt, known as 'мата', on a white background, ...
+2025-09-10 11:11:22,536 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh yurt, known as 'мата', on a white background, ...
+2025-09-10 11:11:37,201 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:11:37,201 - INFO - [OK] Generated image URL for 'мата'
+2025-09-10 11:11:39,543 - INFO - Downloaded image for 'мата': 1151.6 KB
+2025-09-10 11:11:40,012 - INFO - [OK] Saved image for 'мата' (ID: 1034)
+2025-09-10 11:11:40,012 - INFO - [SUCCESS] Successfully processed 'мата'
+2025-09-10 11:11:40,012 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:11:43,019 - INFO - 
+[20/20] Processing: орыс тілі (ID: 989)
+2025-09-10 11:11:43,019 - INFO - Generating image for: орыс тілі
+2025-09-10 11:11:45,114 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:11:45,130 - INFO - Generated prompt for 'орыс тілі': High quality "A high-quality, realistic illustration of a Kazakh man and woman having a friendly con...
+2025-09-10 11:11:45,130 - INFO - Calling DALL-E 3 with prompt: High quality "A high-quality, realistic illustration of a Kazakh man and woman having a friendly con...
+2025-09-10 11:12:03,026 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:12:03,026 - INFO - [OK] Generated image URL for 'орыс тілі'
+2025-09-10 11:12:06,194 - INFO - Downloaded image for 'орыс тілі': 2153.0 KB
+2025-09-10 11:12:06,729 - INFO - [OK] Saved image for 'орыс тілі' (ID: 989)
+2025-09-10 11:12:06,730 - INFO - [SUCCESS] Successfully processed 'орыс тілі'
+2025-09-10 11:12:06,730 - INFO - [PROGRESS] 20/20 | Success: 20 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-10 11:12:06,730 - INFO - 
+============================================================
+2025-09-10 11:12:06,730 - INFO - [COMPLETE] IMAGE GENERATION FINISHED!
+2025-09-10 11:12:06,730 - INFO - ============================================================
+2025-09-10 11:12:06,730 - INFO - [STATS] Total words: 20
+2025-09-10 11:12:06,730 - INFO - [STATS] Successful: 20
+2025-09-10 11:12:06,730 - INFO - [STATS] Failed: 0
+2025-09-10 11:12:06,730 - INFO - [STATS] Skipped: 0
+2025-09-10 11:12:06,730 - INFO - [STATS] Success rate: 100.0%
+2025-09-10 11:12:06,730 - INFO - ============================================================
+2025-09-10 11:29:39,708 - INFO - ============================================================
+2025-09-10 11:29:39,708 - INFO - [START] DALL-E 3 Image Generation for Kazakh Words
+2025-09-10 11:29:39,708 - INFO - ============================================================
+2025-09-10 11:29:39,708 - INFO - [CONFIG] API URL: http://localhost:8000
+2025-09-10 11:29:39,708 - INFO - [CONFIG] Max words: 20
+2025-09-10 11:29:39,708 - INFO - [CONFIG] Delay: 3.0s
+2025-09-10 11:29:39,708 - INFO - ============================================================
+2025-09-10 11:29:40,075 - INFO - [OK] OpenAI client initialized
+2025-09-10 11:29:40,075 - INFO - Testing connection to http://localhost:8000
+2025-09-10 11:29:40,358 - INFO - [OK] API connection successful
+2025-09-10 11:29:40,358 - INFO - Testing OpenAI connection...
+2025-09-10 11:29:41,701 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:29:41,708 - INFO - [OK] OpenAI connection successful
+2025-09-10 11:29:41,708 - INFO - Fetching words without images (limit: 20)
+2025-09-10 11:29:41,708 - INFO - [OK] Found 7 words without images
+2025-09-10 11:29:41,708 - INFO - Processing 7 words with 3.0s delay between requests
+2025-09-10 11:29:41,708 - INFO - ============================================================
+2025-09-10 11:29:41,708 - INFO - 
+[1/7] Processing: Сізбен (ID: 972)
+2025-09-10 11:29:41,708 - INFO - Generating image for: Сізбен
+2025-09-10 11:29:43,708 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:29:43,708 - INFO - Generated prompt for 'Сізбен': High quality "An illustrated image of two friendly people engaging in a conversation, embodying the ...
+2025-09-10 11:29:43,708 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated image of two friendly people engaging in a conversation, embodying the ...
+2025-09-10 11:29:58,324 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:29:58,325 - INFO - [OK] Generated image URL for 'Сізбен'
+2025-09-10 11:30:01,458 - INFO - Downloaded image for 'Сізбен': 1400.0 KB
+2025-09-10 11:30:02,440 - INFO - [OK] Saved image for 'Сізбен' (ID: 972)
+2025-09-10 11:30:02,441 - INFO - [SUCCESS] Successfully processed 'Сізбен'
+2025-09-10 11:30:02,441 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:30:05,454 - INFO - 
+[2/7] Processing: Сізге (ID: 943)
+2025-09-10 11:30:05,454 - INFO - Generating image for: Сізге
+2025-09-10 11:30:07,345 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:30:07,345 - INFO - Generated prompt for 'Сізге': High quality "An illustrated hand gesture of giving, as if offering something to someone else, symbo...
+2025-09-10 11:30:07,345 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated hand gesture of giving, as if offering something to someone else, symbo...
+2025-09-10 11:30:22,727 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:30:22,728 - INFO - [OK] Generated image URL for 'Сізге'
+2025-09-10 11:30:25,703 - INFO - Downloaded image for 'Сізге': 2236.0 KB
+2025-09-10 11:30:26,233 - INFO - [OK] Saved image for 'Сізге' (ID: 943)
+2025-09-10 11:30:26,233 - INFO - [SUCCESS] Successfully processed 'Сізге'
+2025-09-10 11:30:26,233 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:30:29,242 - INFO - 
+[3/7] Processing: қораз (ID: 926)
+2025-09-10 11:30:29,242 - INFO - Generating image for: қораз
+2025-09-10 11:30:30,698 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:30:30,711 - INFO - Generated prompt for 'қораз': High quality "An illustration of a traditional Kazakh 'қораз' (saddle), in photorealistic style, on ...
+2025-09-10 11:30:30,711 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh 'қораз' (saddle), in photorealistic style, on ...
+2025-09-10 11:30:51,306 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:30:51,307 - INFO - [OK] Generated image URL for 'қораз'
+2025-09-10 11:30:53,831 - INFO - Downloaded image for 'қораз': 1459.8 KB
+2025-09-10 11:30:54,792 - INFO - [OK] Saved image for 'қораз' (ID: 926)
+2025-09-10 11:30:54,793 - INFO - [SUCCESS] Successfully processed 'қораз'
+2025-09-10 11:30:54,793 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:30:57,796 - INFO - 
+[4/7] Processing: жайын (ID: 908)
+2025-09-10 11:30:57,796 - INFO - Generating image for: жайын
+2025-09-10 11:30:59,951 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:30:59,959 - INFO - Generated prompt for 'жайын': High quality "An illustration of a traditional Kazakh yurt, known as 'жайын', on a white background,...
+2025-09-10 11:30:59,959 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh yurt, known as 'жайын', on a white background,...
+2025-09-10 11:31:16,036 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:31:16,037 - INFO - [OK] Generated image URL for 'жайын'
+2025-09-10 11:31:19,311 - INFO - Downloaded image for 'жайын': 1140.2 KB
+2025-09-10 11:31:19,887 - INFO - [OK] Saved image for 'жайын' (ID: 908)
+2025-09-10 11:31:19,887 - INFO - [SUCCESS] Successfully processed 'жайын'
+2025-09-10 11:31:19,887 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:31:22,901 - INFO - 
+[5/7] Processing: қызық (ID: 1084)
+2025-09-10 11:31:22,901 - INFO - Generating image for: қызық
+2025-09-10 11:31:25,833 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:31:25,842 - INFO - Generated prompt for 'қызық': High quality "Generate an image of a person showing an expression of curiosity, reflecting the Kazak...
+2025-09-10 11:31:25,842 - INFO - Calling DALL-E 3 with prompt: High quality "Generate an image of a person showing an expression of curiosity, reflecting the Kazak...
+2025-09-10 11:31:41,840 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:31:41,841 - INFO - [OK] Generated image URL for 'қызық'
+2025-09-10 11:31:45,484 - INFO - Downloaded image for 'қызық': 1744.2 KB
+2025-09-10 11:31:46,198 - INFO - [OK] Saved image for 'қызық' (ID: 1084)
+2025-09-10 11:31:46,198 - INFO - [SUCCESS] Successfully processed 'қызық'
+2025-09-10 11:31:46,198 - INFO - [PROGRESS] 5/7 | Success: 5 (100.0%) | Failed: 0 | Skipped: 0
+2025-09-10 11:31:46,198 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:31:49,208 - INFO - 
+[6/7] Processing: тауық (ID: 925)
+2025-09-10 11:31:49,208 - INFO - Generating image for: тауық
+2025-09-10 11:31:50,811 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:31:50,819 - INFO - Generated prompt for 'тауық': High quality "An illustration of a traditional Kazakh тауық (chicken) in a natural setting, with a s...
+2025-09-10 11:31:50,819 - INFO - Calling DALL-E 3 with prompt: High quality "An illustration of a traditional Kazakh тауық (chicken) in a natural setting, with a s...
+2025-09-10 11:32:01,597 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:32:01,598 - INFO - [OK] Generated image URL for 'тауық'
+2025-09-10 11:32:04,057 - INFO - Downloaded image for 'тауық': 1357.2 KB
+2025-09-10 11:32:04,657 - INFO - [OK] Saved image for 'тауық' (ID: 925)
+2025-09-10 11:32:04,657 - INFO - [SUCCESS] Successfully processed 'тауық'
+2025-09-10 11:32:04,658 - INFO - Waiting 3.0s before next request...
+2025-09-10 11:32:07,668 - INFO - 
+[7/7] Processing: айту (ID: 1119)
+2025-09-10 11:32:07,668 - INFO - Generating image for: айту
+2025-09-10 11:32:09,353 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:32:09,353 - INFO - Generated prompt for 'айту': High quality "An illustrated image of a person from Kazakhstan in traditional dress, standing under ...
+2025-09-10 11:32:09,354 - INFO - Calling DALL-E 3 with prompt: High quality "An illustrated image of a person from Kazakhstan in traditional dress, standing under ...
+2025-09-10 11:32:22,988 - INFO - HTTP Request: POST https://api.openai.com/v1/images/generations "HTTP/1.1 200 OK"
+2025-09-10 11:32:22,989 - INFO - [OK] Generated image URL for 'айту'
+2025-09-10 11:32:25,873 - INFO - Downloaded image for 'айту': 1427.2 KB
+2025-09-10 11:32:26,785 - INFO - [OK] Saved image for 'айту' (ID: 1119)
+2025-09-10 11:32:26,785 - INFO - [SUCCESS] Successfully processed 'айту'
+2025-09-10 11:32:26,786 - INFO - 
+============================================================
+2025-09-10 11:32:26,786 - INFO - [COMPLETE] IMAGE GENERATION FINISHED!
+2025-09-10 11:32:26,786 - INFO - ============================================================
+2025-09-10 11:32:26,786 - INFO - [STATS] Total words: 7
+2025-09-10 11:32:26,786 - INFO - [STATS] Successful: 7
+2025-09-10 11:32:26,786 - INFO - [STATS] Failed: 0
+2025-09-10 11:32:26,786 - INFO - [STATS] Skipped: 0
+2025-09-10 11:32:26,786 - INFO - [STATS] Success rate: 100.0%
+2025-09-10 11:32:26,786 - INFO - ============================================================
+2025-09-10 11:34:14,674 - INFO - ============================================================
+2025-09-10 11:34:14,674 - INFO - [START] DALL-E 3 Image Generation for Kazakh Words
+2025-09-10 11:34:14,674 - INFO - ============================================================
+2025-09-10 11:34:14,674 - INFO - [CONFIG] API URL: http://localhost:8000
+2025-09-10 11:34:14,675 - INFO - [CONFIG] Max words: 20
+2025-09-10 11:34:14,675 - INFO - [CONFIG] Delay: 3.0s
+2025-09-10 11:34:14,675 - INFO - ============================================================
+2025-09-10 11:34:14,998 - INFO - [OK] OpenAI client initialized
+2025-09-10 11:34:14,999 - INFO - Testing connection to http://localhost:8000
+2025-09-10 11:34:15,268 - INFO - [OK] API connection successful
+2025-09-10 11:34:15,268 - INFO - Testing OpenAI connection...
+2025-09-10 11:34:16,224 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-10 11:34:16,253 - INFO - [OK] OpenAI connection successful
+2025-09-10 11:34:16,253 - INFO - Fetching words without images (limit: 20)
+2025-09-10 11:34:16,261 - INFO - [OK] Found 0 words without images
+2025-09-10 11:34:16,261 - INFO - No words found without images
+2025-09-10 11:34:16,261 - INFO - 
+============================================================
+2025-09-10 11:34:16,261 - INFO - [COMPLETE] IMAGE GENERATION FINISHED!
+2025-09-10 11:34:16,261 - INFO - ============================================================
+2025-09-10 11:34:16,261 - INFO - [STATS] Total words: 0
+2025-09-10 11:34:16,261 - INFO - [STATS] Successful: 0
+2025-09-10 11:34:16,261 - INFO - [STATS] Failed: 0
+2025-09-10 11:34:16,261 - INFO - [STATS] Skipped: 0
+2025-09-10 11:34:16,261 - INFO - ============================================================
