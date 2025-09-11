@@ -13,7 +13,9 @@ from .dependencies import security
 # Configuration
 TOKEN_REFRESH_THRESHOLD_MINUTES = 60  # Refresh if token expires in less than 15 minutes
 AUTO_REFRESH_ON_ACTIVITY = True  # Enable automatic refresh on user activity
-
+# минимальное время между обновлениями токена
+# Это предотвращает слишком частые обновления
+MIN_TIME_BETWEEN_REFRESHES_MINUTES = 15
 
 async def check_and_refresh_token(
         credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -34,6 +36,7 @@ async def check_and_refresh_token(
         user_id = payload.get("user_id")
         jti = payload.get("jti")
         exp = payload.get("exp")
+        iat = payload.get("iat")  # ✅ Время создания токена
 
         if not username or not user_id or not jti or not exp:
             raise HTTPException(
@@ -60,38 +63,54 @@ async def check_and_refresh_token(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-        # Check if token needs refresh
-        token_exp_time = datetime.fromtimestamp(exp)
-        time_until_expiry = token_exp_time - datetime.utcnow()
+        # ✅ УЛУЧШЕННАЯ ЛОГИКА ОБНОВЛЕНИЯ ТОКЕНА
+        if AUTO_REFRESH_ON_ACTIVITY:
+            token_exp_time = datetime.fromtimestamp(exp)
+            token_issued_time = datetime.fromtimestamp(iat) if iat else None
+            current_time = datetime.utcnow()
+            
+            time_until_expiry = token_exp_time - current_time
+            
+            # Проверяем, нужно ли обновлять токен
+            should_refresh = time_until_expiry.total_seconds() < (TOKEN_REFRESH_THRESHOLD_MINUTES * 60)
+            
+            # ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: не обновляем слишком часто
+            if should_refresh and token_issued_time:
+                time_since_issued = current_time - token_issued_time
+                if time_since_issued.total_seconds() < (MIN_TIME_BETWEEN_REFRESHES_MINUTES * 60):
+                    print(f"DEBUG: Token was issued {time_since_issued} ago, skipping refresh (too soon)")
+                    should_refresh = False
+            
+            if should_refresh:
+                print(f"DEBUG: Token expires in {time_until_expiry}, refreshing...")
 
-        # If token expires soon, create a new one
-        if AUTO_REFRESH_ON_ACTIVITY and time_until_expiry.total_seconds() < (TOKEN_REFRESH_THRESHOLD_MINUTES * 60):
-            print(f"DEBUG: Token expires in {time_until_expiry}, refreshing...")
+                # Create new session
+                new_expires_at = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                new_session = await UserSessionCRUD.create_session(db, user.id, new_expires_at)
 
-            # Create new session
-            new_expires_at = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            new_session = await UserSessionCRUD.create_session(db, user.id, new_expires_at)
+                # Create new token with current timestamp
+                new_token = create_access_token(
+                    data={
+                        "sub": user.username,
+                        "user_id": user.id,
+                        "role": user.role.value,
+                        "jti": new_session.token_jti,
+                        "iat": int(datetime.utcnow().timestamp())  # ✅ Добавляем время создания
+                    }
+                )
 
-            # Create new token
-            new_token = create_access_token(
-                data={
-                    "sub": user.username,
-                    "user_id": user.id,
-                    "role": user.role.value,
-                    "jti": new_session.token_jti
-                }
-            )
+                # Revoke old session
+                await UserSessionCRUD.revoke_session(db, jti)
 
-            # Revoke old session
-            await UserSessionCRUD.revoke_session(db, jti)
-
-            return user, new_token
+                print(f"DEBUG: Token successfully refreshed for user {user.username}")
+                return user, new_token
 
         return user, None
 
     except HTTPException:
         raise
     except Exception as e:
+        print(f"DEBUG: Token refresh error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",

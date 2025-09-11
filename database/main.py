@@ -52,7 +52,7 @@ from admin_routes import admin_router
 from user_preferences_routes import router as user_preferences_router
 from ai_routes import router as ai_router
 from documentation_routes import router as doc_router
-
+from auth.heartbeat import heartbeat_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -136,6 +136,7 @@ app.include_router(admin_router)
 app.include_router(user_preferences_router)
 app.include_router(ai_router)
 app.include_router(doc_router)
+app.include_router(heartbeat_router)
 
 
 # Initialize database on startup
