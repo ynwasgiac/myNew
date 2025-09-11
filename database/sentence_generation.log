@@ -4535,3 +4535,259 @@
 2025-09-08 12:02:30,496 - __main__ - INFO - Success rate: 100.0%
 2025-09-08 12:02:30,496 - __main__ - INFO - Translation rate: 100.0%
 2025-09-09 14:54:51,465 - __main__ - INFO - No words found without sentences
+2025-09-10 16:17:08,235 - __main__ - INFO - Found 41 words without sentences. Starting processing...
+2025-09-10 16:17:08,235 - __main__ - INFO - Processing word: бару (ID: 1171)
+2025-09-10 16:17:13,156 - __main__ - INFO - Created sentence for бару: Мен дүкенге бару керек.
+2025-09-10 16:17:16,720 - __main__ - INFO - Created English translation: I need to go to the store.
+2025-09-10 16:17:21,290 - __main__ - INFO - Created Russian translation: Мне нужно идти в магазин.
+2025-09-10 16:17:26,572 - __main__ - INFO - Created Chinese translation: 我需要去商店。
+2025-09-10 16:17:26,572 - __main__ - INFO - Progress: 1/41 processed
+2025-09-10 16:17:28,586 - __main__ - INFO - Processing word: орындау (ID: 1146)
+2025-09-10 16:17:32,594 - __main__ - INFO - Created sentence for орындау: Ол үй тапсырмасын орындауда.
+2025-09-10 16:17:36,111 - __main__ - INFO - Created English translation: He is doing his homework.
+2025-09-10 16:17:41,490 - __main__ - INFO - Created Russian translation: Он выполняет домашнее задание.
+2025-09-10 16:17:46,583 - __main__ - INFO - Created Chinese translation: 他在做家庭作业。
+2025-09-10 16:17:46,584 - __main__ - INFO - Progress: 2/41 processed
+2025-09-10 16:17:48,596 - __main__ - INFO - Processing word: әзірлеу (ID: 1175)
+2025-09-10 16:17:55,243 - __main__ - INFO - Created sentence for әзірлеу: Мен кешке көкөніс салатын әзірлеймін.
+2025-09-10 16:18:00,566 - __main__ - INFO - Created English translation: I will prepare a vegetable salad for dinner.
+2025-09-10 16:18:07,800 - __main__ - INFO - Created Russian translation: Я приготовлю на ужин салат из овощей.
+2025-09-10 16:18:13,426 - __main__ - INFO - Created Chinese translation: 我晚上会准备蔬菜沙拉。
+2025-09-10 16:18:13,426 - __main__ - INFO - Progress: 3/41 processed
+2025-09-10 16:18:15,436 - __main__ - INFO - Processing word: кіру (ID: 1153)
+2025-09-10 16:18:21,412 - __main__ - INFO - Created sentence for кіру: Мен мейрамханаға кіру үшін күтемін.
+2025-09-10 16:18:26,596 - __main__ - INFO - Created English translation: I am waiting to enter the restaurant.
+2025-09-10 16:18:31,994 - __main__ - INFO - Created Russian translation: Я жду, чтобы войти в ресторан.
+2025-09-10 16:18:36,520 - __main__ - INFO - Created Chinese translation: 我在等着进餐厅。
+2025-09-10 16:18:36,520 - __main__ - INFO - Progress: 4/41 processed
+2025-09-10 16:18:38,535 - __main__ - INFO - Processing word: еске сақтау (ID: 1164)
+2025-09-10 16:18:42,614 - __main__ - INFO - Created sentence for еске сақтау: Мен сенің атыңды еске сақтадым.
+2025-09-10 16:18:49,846 - __main__ - INFO - Created English translation: I remembered your name.
+2025-09-10 16:18:53,112 - __main__ - INFO - Created Russian translation: Я запомнил твоё имя.
+2025-09-10 16:18:58,420 - __main__ - INFO - Created Chinese translation: 我记住了你的名字。
+2025-09-10 16:18:58,420 - __main__ - INFO - Progress: 5/41 processed
+2025-09-10 16:19:00,427 - __main__ - INFO - Processing word: аталу (ID: 1180)
+2025-09-10 16:19:04,539 - __main__ - INFO - Created sentence for аталу: Ол кісі мұғалім болып аталады.
+2025-09-10 16:19:09,487 - __main__ - INFO - Created English translation: He is referred to as a teacher.
+2025-09-10 16:19:16,873 - __main__ - INFO - Created Russian translation: Этого человека называют учителем.
+2025-09-10 16:19:23,058 - __main__ - INFO - Created Chinese translation: 他被称为老师。
+2025-09-10 16:19:23,058 - __main__ - INFO - Progress: 6/41 processed
+2025-09-10 16:19:25,066 - __main__ - INFO - Processing word: келу (ID: 1156)
+2025-09-10 16:19:29,857 - __main__ - INFO - Created sentence for келу: Сен ертең келуің керек.
+2025-09-10 16:19:33,155 - __main__ - INFO - Created English translation: You need to come tomorrow.
+2025-09-10 16:19:37,684 - __main__ - INFO - Created Russian translation: Тебе нужно прийти завтра.
+2025-09-10 16:19:42,526 - __main__ - INFO - Created Chinese translation: 你明天需要来。
+2025-09-10 16:19:42,526 - __main__ - INFO - Progress: 7/41 processed
+2025-09-10 16:19:44,542 - __main__ - INFO - Processing word: апару (ID: 1181)
+2025-09-10 16:19:48,329 - __main__ - INFO - Created sentence for апару: Мен сені мектепке апарамын.
+2025-09-10 16:19:54,475 - __main__ - INFO - Created English translation: I will take you to school.
+2025-09-10 16:19:59,635 - __main__ - INFO - Created Russian translation: Я отведу тебя в школу.
+2025-09-10 16:20:04,288 - __main__ - INFO - Created Chinese translation: 我会送你去学校。
+2025-09-10 16:20:04,288 - __main__ - INFO - Progress: 8/41 processed
+2025-09-10 16:20:06,292 - __main__ - INFO - Processing word: аяқтау (ID: 1176)
+2025-09-10 16:20:11,493 - __main__ - INFO - Created sentence for аяқтау: Мен жұмысымды аяқтадым.
+2025-09-10 16:20:15,541 - __main__ - INFO - Created English translation: I have finished my work.
+2025-09-10 16:20:19,772 - __main__ - INFO - Created Russian translation: Я закончил свою работу.
+2025-09-10 16:20:23,247 - __main__ - INFO - Created Chinese translation: 我完成了我的工作。
+2025-09-10 16:20:23,247 - __main__ - INFO - Progress: 9/41 processed
+2025-09-10 16:20:25,250 - __main__ - INFO - Processing word: белгілеу (ID: 1169)
+2025-09-10 16:20:29,699 - __main__ - INFO - Created sentence for белгілеу: Мен кездесу уақытын белгіледім.
+2025-09-10 16:20:34,032 - __main__ - INFO - Created English translation: I have set the meeting time.
+2025-09-10 16:20:38,637 - __main__ - INFO - Created Russian translation: Я назначил время встречи.
+2025-09-10 16:20:42,191 - __main__ - INFO - Created Chinese translation: 我确定了见面的时间。
+2025-09-10 16:20:42,191 - __main__ - INFO - Progress: 10/41 processed
+2025-09-10 16:20:44,197 - __main__ - INFO - Processing word: есептеу (ID: 1165)
+2025-09-10 16:20:49,424 - __main__ - INFO - Created sentence for есептеу: Мен ақшаны есептеу керек.
+2025-09-10 16:20:54,068 - __main__ - INFO - Created English translation: I need to count the money.
+2025-09-10 16:20:58,883 - __main__ - INFO - Created Russian translation: Мне нужно посчитать деньги.
+2025-09-10 16:21:03,730 - __main__ - INFO - Created Chinese translation: 我需要计算钱。
+2025-09-10 16:21:03,731 - __main__ - INFO - Progress: 11/41 processed
+2025-09-10 16:21:05,741 - __main__ - INFO - Processing word: ескерту (ID: 1163)
+2025-09-10 16:21:11,539 - __main__ - INFO - Created sentence for ескерту: Мен саған ескерту жасадым.
+2025-09-10 16:21:16,053 - __main__ - INFO - Created English translation: I gave you a warning.
+2025-09-10 16:21:21,422 - __main__ - INFO - Created Russian translation: Я тебе сделал предупреждение.
+2025-09-10 16:21:26,982 - __main__ - INFO - Created Chinese translation: 我提醒了你。
+2025-09-10 16:21:26,982 - __main__ - INFO - Progress: 12/41 processed
+2025-09-10 16:21:28,986 - __main__ - INFO - Processing word: алу (ID: 1182)
+2025-09-10 16:21:33,357 - __main__ - INFO - Created sentence for алу: Мен кітап алу үшін дүкенге барамын.
+2025-09-10 16:21:38,596 - __main__ - INFO - Created English translation: I'm going to the store to buy a book.
+2025-09-10 16:21:42,382 - __main__ - INFO - Created Russian translation: Я иду в магазин за книгой.
+2025-09-10 16:21:45,978 - __main__ - INFO - Created Chinese translation: 我去书店是为了买书。
+2025-09-10 16:21:45,978 - __main__ - INFO - Progress: 13/41 processed
+2025-09-10 16:21:47,992 - __main__ - INFO - Processing word: жаттап алу (ID: 1158)
+2025-09-10 16:21:54,225 - __main__ - INFO - Created sentence for жаттап алу: Мен бүгін жаңа сөздерді жаттап алдым.
+2025-09-10 16:21:59,667 - __main__ - INFO - Created English translation: I memorized new words today.
+2025-09-10 16:22:03,858 - __main__ - INFO - Created Russian translation: Сегодня я выучил новые слова.
+2025-09-10 16:22:09,039 - __main__ - INFO - Created Chinese translation: 我今天背了一些新单词。
+2025-09-10 16:22:09,039 - __main__ - INFO - Progress: 14/41 processed
+2025-09-10 16:22:11,053 - __main__ - INFO - Processing word: көру (ID: 1155)
+2025-09-10 16:22:16,072 - __main__ - INFO - Created sentence for көру: Мен сені көру үшін келдім.
+2025-09-10 16:22:21,307 - __main__ - INFO - Created English translation: I came to see you.
+2025-09-10 16:22:25,998 - __main__ - INFO - Created Russian translation: Я пришел, чтобы увидеть тебя.
+2025-09-10 16:22:30,586 - __main__ - INFO - Created Chinese translation: 我是为了见你而来的。
+2025-09-10 16:22:30,586 - __main__ - INFO - Progress: 15/41 processed
+2025-09-10 16:22:32,592 - __main__ - INFO - Processing word: орналасу (ID: 1147)
+2025-09-10 16:22:38,409 - __main__ - INFO - Created sentence for орналасу: Дүкен орталықта орналасқан.
+2025-09-10 16:22:41,841 - __main__ - INFO - Created English translation: The store is located in the center.
+2025-09-10 16:22:47,551 - __main__ - INFO - Created Russian translation: Магазин находится в центре.
+2025-09-10 16:22:52,559 - __main__ - INFO - Created Chinese translation: 商店位于市中心。
+2025-09-10 16:22:52,559 - __main__ - INFO - Progress: 16/41 processed
+2025-09-10 16:22:54,568 - __main__ - INFO - Processing word: бейнелеу (ID: 1170)
+2025-09-10 16:22:59,437 - __main__ - INFO - Created sentence for бейнелеу: Ол бейнелеу сабағын ұнатады.
+2025-09-10 16:23:05,925 - __main__ - INFO - Created English translation: He likes art class.
+2025-09-10 16:23:10,889 - __main__ - INFO - Created Russian translation: Он любит уроки рисования.
+2025-09-10 16:23:17,404 - __main__ - INFO - Created Chinese translation: 他喜欢上美术课。
+2025-09-10 16:23:17,405 - __main__ - INFO - Progress: 17/41 processed
+2025-09-10 16:23:19,417 - __main__ - INFO - Processing word: бақылау (ID: 1172)
+2025-09-10 16:23:25,367 - __main__ - INFO - Created sentence for бақылау: Мұғалім есепті бақылауда.
+2025-09-10 16:23:30,306 - __main__ - INFO - Created English translation: The teacher is checking the homework.
+2025-09-10 16:23:35,233 - __main__ - INFO - Created Russian translation: Учитель проверяет задание.
+2025-09-10 16:23:39,780 - __main__ - INFO - Created Chinese translation: 老师在检查作业。
+2025-09-10 16:23:39,780 - __main__ - INFO - Progress: 18/41 processed
+2025-09-10 16:23:41,781 - __main__ - INFO - Processing word: ойлау (ID: 1149)
+2025-09-10 16:23:47,154 - __main__ - INFO - Created sentence for ойлау: Мен демалыс жоспарымды ойлап жатырмын.
+2025-09-10 16:23:52,291 - __main__ - INFO - Created English translation: I am thinking about my vacation plans.
+2025-09-10 16:23:56,426 - __main__ - INFO - Created Russian translation: Я планирую свой отпуск.
+2025-09-10 16:24:00,883 - __main__ - INFO - Created Chinese translation: 我在计划我的假期。
+2025-09-10 16:24:00,883 - __main__ - INFO - Progress: 19/41 processed
+2025-09-10 16:24:02,898 - __main__ - INFO - Processing word: атау (ID: 1179)
+2025-09-10 16:24:08,538 - __main__ - INFO - Created sentence for атау: Менің атым Айдар деп атау керек.
+2025-09-10 16:24:13,438 - __main__ - INFO - Created English translation: My name should be called Aidar.
+2025-09-10 16:24:18,760 - __main__ - INFO - Created Russian translation: Меня нужно называть Айдар.
+2025-09-10 16:24:23,090 - __main__ - INFO - Created Chinese translation: 我的名字应该被叫做艾达尔。
+2025-09-10 16:24:23,090 - __main__ - INFO - Progress: 20/41 processed
+2025-09-10 16:24:25,104 - __main__ - INFO - Processing word: түзету (ID: 1145)
+2025-09-10 16:24:29,747 - __main__ - INFO - Created sentence for түзету: Мен мұнда қатені түзетемін.
+2025-09-10 16:24:44,378 - __main__ - INFO - Created English translation: I will correct the mistake here.
+2025-09-10 16:24:49,720 - __main__ - INFO - Created Russian translation: Я здесь исправлю ошибку.
+2025-09-10 16:24:53,923 - __main__ - INFO - Created Chinese translation: 我在这里改正错误。
+2025-09-10 16:24:53,923 - __main__ - INFO - Progress: 21/41 processed
+2025-09-10 16:24:55,938 - __main__ - INFO - Processing word: жасыру (ID: 1159)
+2025-09-10 16:25:01,465 - __main__ - INFO - Created sentence for жасыру: Ол сыйлығын жасыру үшін шкафқа салды.
+2025-09-10 16:25:04,624 - __main__ - INFO - Created English translation: He hid the gift in the closet.
+2025-09-10 16:25:09,442 - __main__ - INFO - Created Russian translation: Он спрятал свой подарок в шкаф.
+2025-09-10 16:25:14,548 - __main__ - INFO - Created Chinese translation: 他把礼物藏在了柜子里。
+2025-09-10 16:25:14,548 - __main__ - INFO - Progress: 22/41 processed
+2025-09-10 16:25:16,556 - __main__ - INFO - Processing word: әсер ету (ID: 1173)
+2025-09-10 16:25:22,149 - __main__ - INFO - Created sentence for әсер ету: Музыка көңіл-күйге әсер етеді.
+2025-09-10 16:25:25,152 - __main__ - INFO - Created English translation: Music affects mood.
+2025-09-10 16:25:31,788 - __main__ - INFO - Created Russian translation: Музыка влияет на настроение.
+2025-09-10 16:25:35,476 - __main__ - INFO - Created Chinese translation: 音乐能影响心情。
+2025-09-10 16:25:35,476 - __main__ - INFO - Progress: 23/41 processed
+2025-09-10 16:25:37,488 - __main__ - INFO - Processing word: болу (ID: 1167)
+2025-09-10 16:25:43,230 - __main__ - INFO - Created sentence for болу: Сенің атың кім болу?
+2025-09-10 16:25:48,504 - __main__ - INFO - Created English translation: What is your name?
+2025-09-10 16:25:53,310 - __main__ - INFO - Created Russian translation: Как тебя зовут?
+2025-09-10 16:25:58,506 - __main__ - INFO - Created Chinese translation: 你叫什么名字？
+2025-09-10 16:25:58,506 - __main__ - INFO - Progress: 24/41 processed
+2025-09-10 16:26:00,522 - __main__ - INFO - Processing word: калым (ID: 1143)
+2025-09-10 16:26:05,877 - __main__ - INFO - Created sentence for калым: Қазақстанда калым салты әлі күнге сақталған.
+2025-09-10 16:26:11,643 - __main__ - INFO - Created English translation: The tradition of bride price is still preserved in Kazakhstan today.
+2025-09-10 16:26:17,475 - __main__ - INFO - Created Russian translation: В Казахстане до сих пор сохраняется традиция выкупа невесты.
+2025-09-10 16:26:23,704 - __main__ - INFO - Created Chinese translation: 哈萨克斯坦至今仍保留着聘礼的习俗。
+2025-09-10 16:26:23,705 - __main__ - INFO - Progress: 25/41 processed
+2025-09-10 16:26:25,721 - __main__ - INFO - Processing word: әңгімелеу (ID: 1174)
+2025-09-10 16:26:32,358 - __main__ - INFO - Created sentence for әңгімелеу: Ол демалыс туралы әңгімеледі.
+2025-09-10 16:26:38,232 - __main__ - INFO - Created English translation: He talked about the vacation.
+2025-09-10 16:26:42,980 - __main__ - INFO - Created Russian translation: Он рассказывал о отпуске.
+2025-09-10 16:26:48,310 - __main__ - INFO - Created Chinese translation: 他谈到了休假的事。
+2025-09-10 16:26:48,310 - __main__ - INFO - Progress: 26/41 processed
+2025-09-10 16:26:50,323 - __main__ - INFO - Processing word: ескеру (ID: 1162)
+2025-09-10 16:26:54,962 - __main__ - INFO - Created sentence for ескеру: Туған күніңізді ескеремін.
+2025-09-10 16:26:59,771 - __main__ - INFO - Created English translation: I remember your birthday.
+2025-09-10 16:27:05,902 - __main__ - INFO - Created Russian translation: Я помню ваш день рождения.
+2025-09-10 16:27:10,302 - __main__ - INFO - Created Chinese translation: 我会记得你的生日。
+2025-09-10 16:27:10,302 - __main__ - INFO - Progress: 27/41 processed
+2025-09-10 16:27:12,304 - __main__ - INFO - Processing word: ауыстыру (ID: 1178)
+2025-09-10 16:27:16,936 - __main__ - INFO - Created sentence for ауыстыру: Мен кітапты үстел үстіне ауыстырдым.
+2025-09-10 16:27:21,268 - __main__ - INFO - Created English translation: I moved the book onto the table.
+2025-09-10 16:27:26,275 - __main__ - INFO - Created Russian translation: Я переложил книгу на стол.
+2025-09-10 16:27:31,787 - __main__ - INFO - Created Chinese translation: 我把书移到了桌子上。
+2025-09-10 16:27:31,787 - __main__ - INFO - Progress: 28/41 processed
+2025-09-10 16:27:33,797 - __main__ - INFO - Processing word: ойлану (ID: 1150)
+2025-09-10 16:27:39,922 - __main__ - INFO - Created sentence for ойлану: Мен бүгін не істеймін деп ойланып жатырмын.
+2025-09-10 16:27:43,344 - __main__ - INFO - Created English translation: I'm thinking about what to do today.
+2025-09-10 16:27:47,573 - __main__ - INFO - Created Russian translation: Я думаю, что мне делать сегодня.
+2025-09-10 16:27:52,169 - __main__ - INFO - Created Chinese translation: 我在考虑今天要做些什么。
+2025-09-10 16:27:52,169 - __main__ - INFO - Progress: 29/41 processed
+2025-09-10 16:27:54,185 - __main__ - INFO - Processing word: қосу (ID: 1152)
+2025-09-10 16:27:58,204 - __main__ - INFO - Created sentence for қосу: Шайға қант қосыңыз.
+2025-09-10 16:28:03,693 - __main__ - INFO - Created English translation: Please add sugar to the tea.
+2025-09-10 16:28:08,794 - __main__ - INFO - Created Russian translation: Добавьте сахар в чай.
+2025-09-10 16:28:14,293 - __main__ - INFO - Created Chinese translation: 请给茶里加点糖。
+2025-09-10 16:28:14,293 - __main__ - INFO - Progress: 30/41 processed
+2025-09-10 16:28:16,299 - __main__ - INFO - Processing word: орналастыру (ID: 1148)
+2025-09-10 16:28:22,478 - __main__ - INFO - Created sentence for орналастыру: Біз бөлмеде жиһазды қайта орналастырдық.
+2025-09-10 16:28:27,270 - __main__ - INFO - Created English translation: We rearranged the furniture in the room.
+2025-09-10 16:28:32,547 - __main__ - INFO - Created Russian translation: Мы переставили мебель в комнате.
+2025-09-10 16:28:38,224 - __main__ - INFO - Created Chinese translation: 我们在房间里重新摆放了家具。
+2025-09-10 16:28:38,224 - __main__ - INFO - Progress: 31/41 processed
+2025-09-10 16:28:40,236 - __main__ - INFO - Processing word: алмастыру (ID: 1183)
+2025-09-10 16:28:45,535 - __main__ - INFO - Created sentence for алмастыру: Мен сағатымды жаңасына алмастырдым.
+2025-09-10 16:28:50,216 - __main__ - INFO - Created English translation: I replaced my watch with a new one.
+2025-09-10 16:28:57,305 - __main__ - INFO - Created Russian translation: Я поменял свои часы на новые.
+2025-09-10 16:29:02,003 - __main__ - INFO - Created Chinese translation: 我把我的手表换成了新的。
+2025-09-10 16:29:02,003 - __main__ - INFO - Progress: 32/41 processed
+2025-09-10 16:29:04,014 - __main__ - INFO - Processing word: жаттау (ID: 1157)
+2025-09-10 16:29:09,771 - __main__ - INFO - Created sentence for жаттау: Мен жаңа сөздерді жаттап жатырмын.
+2025-09-10 16:29:13,154 - __main__ - INFO - Created English translation: I am memorizing new words.
+2025-09-10 16:29:17,587 - __main__ - INFO - Created Russian translation: Я запоминаю новые слова.
+2025-09-10 16:29:23,468 - __main__ - INFO - Created Chinese translation: 我正在背新单词。
+2025-09-10 16:29:23,468 - __main__ - INFO - Progress: 33/41 processed
+2025-09-10 16:29:25,479 - __main__ - INFO - Processing word: назар аудару (ID: 1151)
+2025-09-10 16:29:30,673 - __main__ - INFO - Created sentence for назар аудару: Мұғалім сабаққа назар аудар.
+2025-09-10 16:29:35,577 - __main__ - INFO - Created English translation: Pay attention to the lesson.
+2025-09-10 16:29:39,887 - __main__ - INFO - Created Russian translation: Учитель, обрати внимание на урок.
+2025-09-10 16:29:45,720 - __main__ - INFO - Created Chinese translation: 老师，请注意课堂。
+2025-09-10 16:29:45,720 - __main__ - INFO - Progress: 34/41 processed
+2025-09-10 16:29:47,734 - __main__ - INFO - Processing word: көшіру (ID: 1154)
+2025-09-10 16:29:52,095 - __main__ - INFO - Created sentence for көшіру: Маған бұл құжатты көшіру керек.
+2025-09-10 16:29:56,908 - __main__ - INFO - Created English translation: I need to copy this document.
+2025-09-10 16:29:59,769 - __main__ - INFO - Created Russian translation: Мне нужно скопировать этот документ.
+2025-09-10 16:30:05,128 - __main__ - INFO - Created Chinese translation: 我需要复印这份文件。
+2025-09-10 16:30:05,128 - __main__ - INFO - Progress: 35/41 processed
+2025-09-10 16:30:07,143 - __main__ - INFO - Processing word: дайындау (ID: 1166)
+2025-09-10 16:30:12,493 - __main__ - INFO - Created sentence for дайындау: Мен кешке киноға дайындап жатырмын.
+2025-09-10 16:30:16,574 - __main__ - INFO - Created English translation: I am preparing to go to the movies tonight.
+2025-09-10 16:30:21,733 - __main__ - INFO - Created Russian translation: Я готовлюсь к походу в кино вечером.
+2025-09-10 16:30:26,474 - __main__ - INFO - Created Chinese translation: 我正在准备晚上去看电影。
+2025-09-10 16:30:26,474 - __main__ - INFO - Progress: 36/41 processed
+2025-09-10 16:30:28,482 - __main__ - INFO - Processing word: өзгерту (ID: 1144)
+2025-09-10 16:30:33,102 - __main__ - INFO - Created sentence for өзгерту: Мен жұмыста кестемді өзгерттім.
+2025-09-10 16:30:38,164 - __main__ - INFO - Created English translation: I changed my schedule at work.
+2025-09-10 16:30:42,015 - __main__ - INFO - Created Russian translation: Я изменил свой график на работе.
+2025-09-10 16:30:46,302 - __main__ - INFO - Created Chinese translation: 我在工作中调整了我的日程安排。
+2025-09-10 16:30:46,302 - __main__ - INFO - Progress: 37/41 processed
+2025-09-10 16:30:48,311 - __main__ - INFO - Processing word: беру (ID: 1168)
+2025-09-10 16:30:52,771 - __main__ - INFO - Created sentence for беру: Маған қалам бер, өтінемін.
+2025-09-10 16:30:57,411 - __main__ - INFO - Created English translation: Please give me a pen.
+2025-09-10 16:31:02,496 - __main__ - INFO - Created Russian translation: Дай мне, пожалуйста, ручку.
+2025-09-10 16:31:05,798 - __main__ - INFO - Created Chinese translation: 请给我一支笔。
+2025-09-10 16:31:05,798 - __main__ - INFO - Progress: 38/41 processed
+2025-09-10 16:31:07,810 - __main__ - INFO - Processing word: ашулану (ID: 1177)
+2025-09-10 16:31:13,030 - __main__ - INFO - Created sentence for ашулану: Ол кешіккені үшін ашуланды.
+2025-09-10 16:31:16,508 - __main__ - INFO - Created English translation: He got angry because he was late.
+2025-09-10 16:31:20,810 - __main__ - INFO - Created Russian translation: Он рассердился из-за опоздания.
+2025-09-10 16:31:24,677 - __main__ - INFO - Created Chinese translation: 他因为迟到而生气。
+2025-09-10 16:31:24,677 - __main__ - INFO - Progress: 39/41 processed
+2025-09-10 16:31:26,685 - __main__ - INFO - Processing word: жасау (ID: 1160)
+2025-09-10 16:31:31,232 - __main__ - INFO - Created sentence for жасау: Мен кеше торт жасадым.
+2025-09-10 16:31:34,587 - __main__ - INFO - Created English translation: I made a cake yesterday.
+2025-09-10 16:31:46,963 - __main__ - INFO - Created Russian translation: Вчера я испекла торт.
+2025-09-10 16:31:51,314 - __main__ - INFO - Created Chinese translation: 我昨天做了蛋糕。
+2025-09-10 16:31:51,314 - __main__ - INFO - Progress: 40/41 processed
+2025-09-10 16:31:53,329 - __main__ - INFO - Processing word: жалғау (ID: 1161)
+2025-09-10 16:31:59,865 - __main__ - INFO - Created sentence for жалғау: Бұл сөйлемнің соңына жалғау қосыңыз.
+2025-09-10 16:32:03,164 - __main__ - INFO - Created English translation: Add an ending to this sentence.
+2025-09-10 16:32:07,455 - __main__ - INFO - Created Russian translation: Добавьте окончание к этому предложению.
+2025-09-10 16:32:13,488 - __main__ - INFO - Created Chinese translation: 请在这句话的末尾加上后缀。
+2025-09-10 16:32:13,489 - __main__ - INFO - Progress: 41/41 processed
+2025-09-10 16:32:13,489 - __main__ - INFO - ==================================================
+2025-09-10 16:32:13,489 - __main__ - INFO - SENTENCE GENERATION WITH TRANSLATIONS COMPLETE!
+2025-09-10 16:32:13,489 - __main__ - INFO - Total words: 41
+2025-09-10 16:32:13,489 - __main__ - INFO - Processed: 41
+2025-09-10 16:32:13,489 - __main__ - INFO - Sentences created: 41
+2025-09-10 16:32:13,489 - __main__ - INFO - Translations created: 123
+2025-09-10 16:32:13,489 - __main__ - INFO - Failed: 0
+2025-09-10 16:32:13,489 - __main__ - INFO - Success rate: 100.0%
+2025-09-10 16:32:13,489 - __main__ - INFO - Translation rate: 100.0%

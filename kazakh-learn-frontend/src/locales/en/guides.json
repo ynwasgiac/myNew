@@ -1,101 +1,48 @@
 {
-  "page": {
-    "title": "Learning Guides",
-    "subtitle": "Structured paths for learning the Kazakh language",
-    "description": "Choose a guide to study specific topics in Kazakh. Each guide contains carefully selected vocabulary and interactive exercises."
-  },
-  "search": {
-    "placeholder": "Search guides...",
-    "noResults": "No guides found",
-    "noResultsDescription": "Try changing the search parameters"
-  },
-  "difficulty": {
-    "all": "All levels",
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced"
-  },
-  "filters": {
-    "difficulty": "Difficulty level"
-  },
   "guides": {
-    "greetings": {
-      "title": "Greetings and Introductions",
-      "description": "Basic phrases for meeting and greeting",
-      "topics": ["Greetings", "Introductions", "Politeness"]
+    "header": {
+      "title": "Learning Guides",
+      "subtitle": "Structured learning paths to help you master Kazakh vocabulary effectively"
     },
-    "family": {
-      "title": "Family and Relatives",
-      "description": "Words to describe family relationships",
-      "topics": ["Family", "Relatives", "Relationships"]
+    "search": {
+      "placeholder": "Search guides..."
     },
-    "home": {
-      "title": "Home and Daily Life",
-      "description": "Household items and rooms",
-      "topics": ["Home", "Furniture", "Rooms", "Everyday life"]
+    "difficulty": {
+      "all": "All",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
     },
-    "food": {
-      "title": "Food and Drinks",
-      "description": "Names of dishes, products, and drinks",
-      "topics": ["Food", "Drinks", "Cuisine", "Restaurants"]
+    "actions": {
+      "starting": "Starting...",
+      "start": "Start Learning",
+      "continue": "Continue Learning",
+      "completed": "Completed"
     },
-    "transport": {
-      "title": "Transport and Travel",
-      "description": "Types of transport and words for trips",
-      "topics": ["Transport", "Travel", "Road"]
+    "empty": {
+      "title": "No guides found",
+      "filtered": "Try adjusting your filters",
+      "none": "No learning guides available yet"
     },
-    "work": {
-      "title": "Work and Professions",
-      "description": "Names of professions and work vocabulary",
-      "topics": ["Professions", "Work", "Office", "Career"]
+    "progress": {
+      "title": "Learning progress",
+      "words": "words",
+      "percentCompleted": "{{percent}}% completed"
     },
-    "education": {
-      "title": "Education and Study",
-      "description": "School and university vocabulary",
-      "topics": ["School", "University", "Science", "Study"]
+    "labels": {
+      "estimatedTime": "Estimated time",
+      "wordCountShort": "words"
     },
-    "time": {
-      "title": "Time and Calendar",
-      "description": "Days of the week, months, times of day",
-      "topics": ["Time", "Calendar", "Days of the week", "Months"]
+    "toasts": {
+      "loginRequired": "Please login to start learning",
+      "refreshHint": "If you don't see new words, please refresh the page.",
+      "startFailed": "Failed to start guide"
     }
   },
-  "status": {
-    "not_started": "Not started",
-    "in_progress": "In progress",
-    "completed": "Completed"
-  },
-  "actions": {
-    "start": "Start learning",
-    "continue": "Continue learning",
-    "completed": "Completed",
-    "starting": "Starting..."
-  },
-  "stats": {
-    "estimatedTime": "Estimated time",
-    "wordCount": "words",
-    "progress": "Progress",
-    "wordsCompleted": "words learned"
-  },
-  "messages": {
-    "guideStarted": "Guide {title} started!",
-    "wordsAdded": "{count} words added",
-    "startError": "Failed to start the guide",
-    "loadError": "Failed to load guides",
-    "noGuides": "No available guides",
-    "checkLater": "Check back later or contact the administrator"
-  },
-  "header": {
-    "title": "Learning Guides",
-    "subtitle": "Structured learning paths to help you effectively master Kazakh vocabulary"
-  },
-  "progress": {
-    "learning": "Learning progress",
-    "completed": "completed"
-  },
-  "empty": {
-    "title": "No guides found",
-    "filtered": "Try changing the filters",
-    "none": "No guides available yet"
+  "learning": {
+    "error": {
+      "loadFailed": "Failed to load guides",
+      "tryAgain": "Please try again later"
+    }
   }
 }

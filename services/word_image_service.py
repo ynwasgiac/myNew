@@ -91,6 +91,37 @@ class WordImageService:
             logger.error(f"Error getting words without images: {e}")
             raise
 
+    def debug_log_word_data(self, word_data: Dict, kazakh_word: str) -> None:
+    """Логирует структуру данных слова для отладки"""
+    logger.info(f"=== DEBUG: Word data for '{kazakh_word}' ===")
+    logger.info(f"Available keys: {list(word_data.keys())}")
+    
+    # Логируем переводы
+    translations = word_data.get('translations', [])
+    if translations:
+        logger.info(f"Translations found: {len(translations)}")
+        for i, trans in enumerate(translations):
+            if isinstance(trans, dict):
+                lang_code = trans.get('language_code', 'unknown')
+                translation_text = trans.get('translation', 'no text')
+                logger.info(f"  Translation {i+1}: {lang_code} -> '{translation_text}'")
+    else:
+        logger.info("No translations array found")
+    
+    # Логируем прямые поля переводов
+    direct_ru = word_data.get('russian_translation')
+    direct_en = word_data.get('english_translation')
+    fallback_trans = word_data.get('translation')
+    
+    logger.info(f"Direct russian_translation: {direct_ru}")
+    logger.info(f"Direct english_translation: {direct_en}")
+    logger.info(f"Fallback translation: {fallback_trans}")
+    
+    # Категория
+    category = word_data.get('category') or word_data.get('category_name')
+    logger.info(f"Category: {category}")
+    logger.info("=== END DEBUG ===")
+
     async def generate_image_prompt(self, word_data: Dict) -> str:
         """
         Generate an image description prompt using GPT-4

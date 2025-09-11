@@ -19,6 +19,7 @@ import RecentActivity from '../components/dashboard/RecentActivity';
 import LearningGoals from '../components/dashboard/LearningGoals';
 import WordsToReview from '../components/dashboard/WordsToReview';
 import WordsAvailableBreakdown from '../components/learning/WordsAvailableBreakdown';
+import { BookCheckIcon } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation('dashboard');
@@ -57,7 +58,7 @@ const DashboardPage: React.FC = () => {
     {
       name: t('quickActions.startLearning.name'),
       description: t('quickActions.startLearning.description'),
-      href: '/app/learn',
+      href: '/app/learning-module',
       icon: AcademicCapIcon,
       color: 'bg-blue-500',
     },
@@ -80,6 +81,13 @@ const DashboardPage: React.FC = () => {
       description: t('quickActions.browseWords.description'),
       href: '/app/words',
       icon: BookOpenIcon,
+      color: 'bg-purple-500',
+    },
+    {
+      name: t('quickActions.browseGuides.name'),
+      description: t('quickActions.browseGuides.description'),
+      href: '/app/guides',
+      icon: BookCheckIcon,
       color: 'bg-purple-500',
     },
   ];
@@ -146,7 +154,7 @@ const DashboardPage: React.FC = () => {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quickActions.title')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {quickActions.map((action) => (
             <Link
               key={action.name}

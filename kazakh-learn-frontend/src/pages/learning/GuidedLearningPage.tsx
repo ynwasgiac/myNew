@@ -75,6 +75,7 @@ const startGuide = async (guideId: number) => {
 
 // Progress indicator component
 const ProgressIndicator: React.FC<{ guide: Guide }> = ({ guide }) => {
+  const { t } = useTranslation();
   const { progress } = guide;
   
   if (guide.status === 'not_started' || progress.total_words_added === 0) {
@@ -84,9 +85,9 @@ const ProgressIndicator: React.FC<{ guide: Guide }> = ({ guide }) => {
   return (
     <div className="mt-3 space-y-2">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-600">Прогресс изучения</span>
+        <span className="text-gray-600">{t('guides.progress.title')}</span>
         <span className="font-medium text-gray-900">
-          {progress.words_completed}/{progress.total_words_added} слов
+          {progress.words_completed}/{progress.total_words_added} {t('guides.progress.words')}
         </span>
       </div>
       
@@ -100,7 +101,7 @@ const ProgressIndicator: React.FC<{ guide: Guide }> = ({ guide }) => {
       
       <div className="flex items-center text-xs text-gray-500">
         <TrendingUp className="h-3 w-3 mr-1" />
-        <span>{Math.round(progress.completion_percentage)}% завершено</span>
+        <span>{t('guides.progress.percentCompleted', { percent: Math.round(progress.completion_percentage) })}</span>
       </div>
     </div>
   );
@@ -144,7 +145,7 @@ const GuidedLearningPage = () => {
   const startGuideMutation = useMutation({
     mutationFn: startGuide,
     onSuccess: async (data) => {
-      toast.success(`${data.guide_title} started! Added ${data.words_added} new words.`);
+      toast.success(`${data.guide_title} ${t('guides.toasts.startSuccess', { words: data.words_added })}`);
       
       // ✅ Устанавливаем флаг для принудительного обновления в LearningModulePage
       sessionStorage.setItem('refreshLearningData', 'true');
@@ -158,18 +159,18 @@ const GuidedLearningPage = () => {
       } catch (error) {
         console.error('❌ Error invalidating caches:', error);
         navigate('/app/learning-module');
-        toast('If you don\'t see new words, please refresh the page.');
+        toast(t('guides.toasts.refreshHint'));
       }
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to start guide');
+      toast.error(error.response?.data?.detail || t('guides.toasts.startFailed'));
     },
   });
 
   // Handle start guide - добавляет слова в WANT_TO_LEARN и перенаправляет
   const handleStartGuide = async (guideId: number) => {
     if (!user) {
-      toast.error('Please login to start learning');
+      toast.error(t('guides.toasts.loginRequired'));
       return;
     }
 
@@ -209,10 +210,10 @@ const GuidedLearningPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {t('learning:error.loadFailed', 'Failed to load guides')}
+              {t('learning.error.loadFailed')}
             </h2>
             <p className="text-gray-600">
-              {t('learning:error.tryAgain', 'Please try again later')}
+              {t('learning.error.tryAgain')}
             </p>
           </div>
         </div>
@@ -223,20 +224,20 @@ const GuidedLearningPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+      {/* <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative max-w-7xl mx-auto py-16 px-6">
           <div className="text-center">
             <Map className="h-16 w-16 text-white mx-auto mb-6" />
             <h1 className="text-4xl font-bold mb-4">
-              {t('guides:header.title', 'Learning Guides')}
+              {t('guides.header.title')}
             </h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              {t('guides:header.subtitle', 'Structured learning paths to help you master Kazakh vocabulary effectively')}
+              {t('guides.header.subtitle')}
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="max-w-7xl mx-auto py-8 px-6">
         {/* Filters */}
@@ -247,7 +248,7 @@ const GuidedLearningPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder={t('guides:search.placeholder', 'Search guides...')}
+                placeholder={t('guides.search.placeholder')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -266,7 +267,7 @@ const GuidedLearningPage = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {t(`guides:difficulty.${difficulty}`, difficulty.charAt(0).toUpperCase() + difficulty.slice(1))}
+                  {t(`guides.difficulty.${difficulty}`)}
                 </button>
               ))}
             </div>
@@ -292,7 +293,7 @@ const GuidedLearningPage = () => {
                       guide.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {t(`guides:difficulty.${guide.difficulty}`, guide.difficulty)}
+                      {t(`guides.difficulty.${guide.difficulty}`)}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold mt-4 mb-2">{guide.title}</h3>
@@ -309,7 +310,7 @@ const GuidedLearningPage = () => {
                     </div>
                     <div className="flex items-center">
                       <BookOpen className="h-4 w-4 mr-1" />
-                      <span>{guide.word_count} words</span>
+                      <span>{guide.word_count} {t('guides.labels.wordCountShort')}</span>
                     </div>
                   </div>
 
@@ -373,12 +374,12 @@ const GuidedLearningPage = () => {
                         {startGuideMutation.isPending ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {t('guides:actions.starting', 'Starting...')}
+                            {t('guides.actions.starting')}
                           </>
                         ) : (
                           <>
                             <Play className="h-4 w-4 mr-2" />
-                            {t('guides:actions.start', 'Start Learning')}
+                            {t('guides.actions.start')}
                           </>
                         )}
                       </button>
@@ -389,8 +390,8 @@ const GuidedLearningPage = () => {
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         {guide.status === 'completed' 
-                          ? t('guides:actions.completed', 'Completed') 
-                          : t('guides:actions.continue', 'Continue Learning')
+                          ? t('guides.actions.completed')
+                          : t('guides.actions.continue')
                         }
                       </button>
                     )}
@@ -410,8 +411,8 @@ const GuidedLearningPage = () => {
             </h3>
             <p className="text-gray-600">
               {searchTerm || selectedDifficulty !== 'all' 
-                ? t('guides:empty.filtered', 'Try adjusting your filters')
-                : t('guides:empty.none', 'No learning guides available yet')
+                ? t('guides.empty.filtered')
+                : t('guides.empty.none')
               }
             </p>
           </div>

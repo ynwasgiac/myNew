@@ -32,11 +32,11 @@ const Sidebar: React.FC = () => {
       href: '/app/dashboard',
       icon: HomeIcon,
     },
-    {
-      name: 'Learning',
-      href: '/app/learning',
-      icon: BookOpenIcon,
-    },
+    // {
+    //   name: 'Learning',
+    //   href: '/app/learning',
+    //   icon: BookOpenIcon,
+    // },
     {
       name: 'Learning Module',
       href: '/app/learning-module',

@@ -153,8 +153,8 @@ class ImageGenerationService:
         try:
             # Prepare the word information
             word_info = f'"{word}"'
-            if word_cyrillic and word_cyrillic != word:
-                word_info = f'"{word}" (Cyrillic: "{word_cyrillic}")'
+            # if word_cyrillic and word_cyrillic != word:
+            #     word_info = f'"{word}" (Cyrillic: "{word_cyrillic}")'
 
             # Generate prompt using GPT-4
             response = await self.openai_client.chat.completions.create(
@@ -201,7 +201,7 @@ Return only the prompt text, maximum 200 characters."""
 
     async def generate_image(self, word_data: Dict) -> Optional[Dict[str, Any]]:
         """Generate an image using DALL-E 3"""
-        word = word_data.get('kazakh_word', 'unknown')
+        word = word_data.get('russian_translation', 'unknown')
         word_cyrillic = word_data.get('kazakh_cyrillic')
 
         try:
@@ -466,7 +466,7 @@ Examples:
     parser.add_argument(
         '--max-words',
         type=int,
-        default=20,
+        default=2,
         help='Maximum number of words to process (default: 20)'
     )
     parser.add_argument(

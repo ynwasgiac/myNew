@@ -1670,15 +1670,7 @@ async def upload_word_image(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_admin)
 ):
-    """Upload image file for a word (admin only) with detailed error handling"""
-
-    logger.info(f"Upload request for word {word_id}")
-    logger.info(f"User: {current_user.username}")
-    logger.info(f"File: {file.filename}, size: {file.size if hasattr(file, 'size') else 'unknown'}")
-
     try:
-        # Get word and category info
-        logger.info("Fetching word from database...")
         word_result = await db.execute(
             select(KazakhWord)
             .options(joinedload(KazakhWord.category))
@@ -1690,8 +1682,6 @@ async def upload_word_image(
             logger.error(f"Word {word_id} not found")
             raise HTTPException(status_code=404, detail="Word not found")
 
-        logger.info(f"Word found: {word.kazakh_word}, category: {word.category.category_name} (ID: {word.category_id})")
-
         # Save file
         logger.info("Saving file...")
         file_path, file_url = await MediaFileManager.save_image_file(
@@ -1701,7 +1691,6 @@ async def upload_word_image(
 
         # If this is set as primary, remove primary status from other images
         if is_primary:
-            logger.info("Setting as primary image, removing primary status from others...")
             await db.execute(
                 update(WordImage)
                 .where(WordImage.kazakh_word_id == word_id)
@@ -4349,12 +4338,16 @@ async def get_words_without_images(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    """Get words that don't have images"""
+    """Get words that don't have images with Russian translations only"""
     
-    from database import WordImage
+    from database import WordImage, Translation
+    from sqlalchemy.orm import selectinload
     
-    # Query for words without images
-    query = select(KazakhWord).outerjoin(
+    # Query for words without images, включая переводы и языки
+    query = select(KazakhWord).options(
+        selectinload(KazakhWord.translations).selectinload(Translation.language),  # Загружаем переводы с языками
+        selectinload(KazakhWord.category)       # Загружаем категорию
+    ).outerjoin(
         WordImage,
         KazakhWord.id == WordImage.kazakh_word_id
     ).where(
@@ -4364,21 +4357,43 @@ async def get_words_without_images(
     result = await db.execute(query)
     words = result.scalars().all()
     
-    # Format response
+    # Format response with only Russian translations
     word_list = []
     for word in words:
+        # Собираем только русские переводы
+        russian_translation = None
+        
+        if word.translations:
+            for trans in word.translations:
+                # Используем связь с Language для получения language_code
+                if trans.language and trans.language.language_code.lower() == "ru":
+                    russian_translation = trans.translation
+                    break  # Берем первый русский перевод
+        
         word_data = {
             "id": word.id,
             "kazakh_word": word.kazakh_word,
             "kazakh_cyrillic": word.kazakh_cyrillic if hasattr(word, 'kazakh_cyrillic') else None,
-            "category_id": word.category_id if hasattr(word, 'category_id') else None
+            "category_id": word.category_id if hasattr(word, 'category_id') else None,
+            "category_name": word.category.category_name if word.category else None,
+            "russian_translation": russian_translation  # Только русский перевод
         }
+        
         word_list.append(word_data)
+    
+    # Статистика по русским переводам
+    words_with_russian = sum(1 for word in word_list if word["russian_translation"])
+    words_without_russian = len(word_list) - words_with_russian
     
     return {
         "words": word_list,
         "total": len(word_list),
-        "limit": limit
+        "limit": limit,
+        "statistics": {
+            "words_with_russian_translation": words_with_russian,
+            "words_without_russian_translation": words_without_russian,
+            "message": f"{words_without_russian} words without Russian translation will be skipped"
+        }
     }
 
 

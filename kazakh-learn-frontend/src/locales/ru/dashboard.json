@@ -27,11 +27,15 @@
       },
       "reviewWords": {
         "name": "Повторить слова",
-        "description": "Практиковать сохраненные слова"
+        "description": "Практиковать слова"
       },
       "browseWords": {
         "name": "Просмотреть слова",
         "description": "Изучить словарь"
+      },
+      "browseGuides": {
+        "name": "Просмотреть гайды",
+        "description": "Сгрупированные слова"
       }
     },
     "learningProgress": {
