@@ -8,6 +8,9 @@
       "noReviewWords": "No words available for review",
       "tryLearningFirst": "Try learning some words first, then come back to practice!"
     },
+    "navigation": {
+      "goToLearning": "Go to Learning"
+    },
     "session": {
       "title": "session",
       "types": {

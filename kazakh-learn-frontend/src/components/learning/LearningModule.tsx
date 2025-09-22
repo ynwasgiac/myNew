@@ -150,11 +150,11 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
             }
           }
           
-          console.log('📈 Batch update completed:', {
-            totalWords: cycle.currentWords.length,
-            successfulUpdates: updatedCount,
-            results: updateResults
-          });
+          // console.log('📈 Batch update completed:', {
+          //   totalWords: cycle.currentWords.length,
+          //   successfulUpdates: updatedCount,
+          //   results: updateResults
+          // });
           
           if (updatedCount > 0) {
             // console.log(`✅ SUCCESS: ${updatedCount}/${cycle.currentWords.length} words automatically moved to LEARNING status!`);

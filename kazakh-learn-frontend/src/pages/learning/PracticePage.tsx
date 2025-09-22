@@ -86,14 +86,14 @@ const PracticePage: React.FC = () => {
   const practiceMethod: PracticeMethod = (userPreferences as any)?.practice_method || 'kaz_to_translation';
   const wordCount = userPreferences?.practice_word_count || 9;
 
-  console.log('🎯 Practice method from settings:', practiceMethod);
+  // console.log('🎯 Practice method from settings:', practiceMethod);
 
   // Start session mutation - using getLearnedWords
   const startSessionMutation = useMutation({
     mutationFn: async () => {
-      console.log('🔍 Starting practice with practiceType:', practiceType);
-      console.log('Category filter:', categoryId);
-      console.log('Word count from settings:', wordCount);
+      // console.log('🔍 Starting practice with practiceType:', practiceType);
+      // console.log('Category filter:', categoryId);
+      // console.log('Word count from settings:', wordCount);
       
       try {
         const userLanguage = user?.main_language?.language_code || 'en';
@@ -210,7 +210,7 @@ const PracticePage: React.FC = () => {
           language_code: userLanguage
         });
         
-        console.log('📊 Learned words response:', learnedWordsResponse);
+        // console.log('📊 Learned words response:', learnedWordsResponse);
         console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
         
         if (learnedWordsResponse.length === 0) {
@@ -263,7 +263,7 @@ const PracticePage: React.FC = () => {
           })
           .filter(q => q !== null) as ScenarioQuestion[];
 
-        console.log('✨ Generated scenario questions:', questions);
+        // console.log('✨ Generated scenario questions:', questions);
         console.log('📊 Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
 
         if (questions.length === 0) {
@@ -278,7 +278,7 @@ const PracticePage: React.FC = () => {
           language_code: userLanguage
         });
 
-        console.log('✅ Practice session created:', sessionData);
+        // console.log('✅ Practice session created:', sessionData);
 
         setSessionId(sessionData.session_id);
         setScenarioQuestions(questions);
@@ -296,7 +296,7 @@ const PracticePage: React.FC = () => {
       toast.error(error.message || t('practice.errors.sessionFailed'));
     },
     onSuccess: (data) => {
-      console.log('✅ Session started successfully:', data);
+      // console.log('✅ Session started successfully:', data);
       const message = practiceType === 'review' ? t('practice.messages.reviewStarted') : t('practice.status.starting');
       toast.success(message);
     }

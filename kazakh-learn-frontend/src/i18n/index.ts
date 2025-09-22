@@ -8,7 +8,7 @@ const getUserLanguage = (): string => {
   // 1. First priority: Check localStorage for user's language preference
   const savedLanguage = localStorage.getItem('user-language');
   if (savedLanguage && ['en', 'kk', 'ru'].includes(savedLanguage)) {
-    console.log(`Found saved language: ${savedLanguage}`);
+    // console.log(`Found saved language: ${savedLanguage}`);
     return savedLanguage;
   }
 
@@ -19,7 +19,7 @@ const getUserLanguage = (): string => {
       const userData = JSON.parse(userDataString);
       if (userData.main_language?.language_code) {
         const userLang = userData.main_language.language_code;
-        console.log(`Found user language from stored data: ${userLang}`);
+        // console.log(`Found user language from stored data: ${userLang}`);
         // Store it for future use
         localStorage.setItem('user-language', userLang);
         return userLang;
@@ -33,14 +33,14 @@ const getUserLanguage = (): string => {
   const urlParams = new URLSearchParams(window.location.search);
   const urlLang = urlParams.get('lang');
   if (urlLang && ['en', 'kk', 'ru'].includes(urlLang)) {
-    console.log(`Found language from URL: ${urlLang}`);
+    // console.log(`Found language from URL: ${urlLang}`);
     return urlLang;
   }
 
   // 4. Fourth priority: Browser language detection
   const browserLang = navigator.language.split('-')[0];
   if (['en', 'kk', 'ru'].includes(browserLang)) {
-    console.log(`Using browser language: ${browserLang}`);
+    // console.log(`Using browser language: ${browserLang}`);
     return browserLang;
   }
 

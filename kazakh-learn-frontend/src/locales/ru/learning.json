@@ -320,7 +320,8 @@
         "changeMethod": "Изменить метод",
         "settings": "Настройки",
         "exit": "Выход",
-        "continue": "Продолжить"
+        "continue": "Продолжить",
+        "goToLearning": "Перейти к обучению"
       },
       "errors": {
         "sessionFailed": "Не удалось запустить сессию практики",

@@ -333,7 +333,8 @@
         "changeMethod": "Change Method",
         "settings": "Settings",
         "exit": "Exit",
-        "continue": "Continue"
+        "continue": "Continue",
+        "goToLearning": "Go to Learning"
       },
       "errors": {
         "sessionFailed": "Failed to start practice session",

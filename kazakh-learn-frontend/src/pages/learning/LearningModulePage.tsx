@@ -235,10 +235,10 @@ const LearningModulePage: React.FC = () => {
 
     setShowModule(true);
     // Track learning session start
-    trackEvent('learning_session_started', {
-      words_available: wordsAvailable.total,
-      daily_goal: dailyGoal
-    });
+    // trackEvent('learning_session_started', {
+    //   words_available: wordsAvailable.total,
+    //   daily_goal: dailyGoal
+    // });
   };
 
   // Handle module completion
@@ -251,16 +251,16 @@ const LearningModulePage: React.FC = () => {
     toast.success(t('dailyProgress.sessionComplete'));
     
     // Track completion
-    trackEvent('learning_session_completed', {
-      daily_goal: dailyGoal
-    });
+    // trackEvent('learning_session_completed', {
+    //   daily_goal: dailyGoal
+    // });
   };
 
   // Simple event tracking (you can replace with your analytics)
-  const trackEvent = (eventName: string, properties: any) => {
-    console.log('Analytics Event:', eventName, properties);
-    // Replace with your analytics service (Google Analytics, Mixpanel, etc.)
-  };
+  // const trackEvent = (eventName: string, properties: any) => {
+  //   console.log('Analytics Event:', eventName, properties);
+  //   // Replace with your analytics service (Google Analytics, Mixpanel, etc.)
+  // };
 
   // Estimate session time
   const estimateSessionTime = () => {

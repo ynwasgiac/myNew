@@ -50,7 +50,8 @@
       "changeMethod": "Әдісті өзгерту",
       "settings": "Баптаулар",
       "exit": "Шығу",
-      "continue": "Жалғастыру"
+      "continue": "Жалғастыру",
+      "goToLearning": "Оқуға өту"
     },
     "errors": {
       "sessionFailed": "Жаттығу сессиясын бастау мүмкін болмады",

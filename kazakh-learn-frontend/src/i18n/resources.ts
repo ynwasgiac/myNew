@@ -19,6 +19,7 @@ import recentActivityEn from '../locales/en/recentActivity.json';
 import wordsToReviewEn from '../locales/en/wordsToReview.json';
 import navigationEn from '../locales/en/navigation.json';
 import guidesEn from '../locales/en/guides.json';
+import commonEn from '../locales/en/common.json';
 
 import categoriesKk from '../locales/kk/categories.json';
 import wordsKk from '../locales/kk/words.json';
@@ -38,6 +39,7 @@ import recentActivityKk from '../locales/kk/recentActivity.json';
 import wordsToReviewKk from '../locales/kk/wordsToReview.json';
 import navigationKk from '../locales/kk/navigation.json';
 import guidesKk from '../locales/kk/guides.json';
+import commonKk from '../locales/kk/common.json';
 
 import categoriesRu from '../locales/ru/categories.json';
 import wordsRu from '../locales/ru/words.json';
@@ -57,6 +59,7 @@ import recentActivityRu from '../locales/ru/recentActivity.json';
 import wordsToReviewRu from '../locales/ru/wordsToReview.json';
 import navigationRu from '../locales/ru/navigation.json';
 import guidesRu from '../locales/ru/guides.json';
+import commonRu from '../locales/ru/common.json';
 
 // Create the base resources
 const baseResources = {
@@ -79,6 +82,7 @@ const baseResources = {
     wordsToReview: wordsToReviewEn,
     navigation: navigationEn,
     guides: guidesEn,
+    common: commonEn,
   },
   kk: {
     categories: categoriesKk,
@@ -99,6 +103,7 @@ const baseResources = {
     wordsToReview: wordsToReviewKk,
     navigation: navigationKk,
     guides: guidesKk,
+    common: commonKk,
   },
   ru: {
     categories: categoriesRu,
@@ -119,6 +124,7 @@ const baseResources = {
     wordsToReview: wordsToReviewRu,
     navigation: navigationRu,
     guides: guidesRu,
+    common: commonRu,
   },
 };
 

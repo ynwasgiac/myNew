@@ -8,6 +8,9 @@
       "noReviewWords": "Нет слов для повторения", 
       "tryLearningFirst": "Сначала выучите несколько слов, а затем возвращайтесь к практике!"
     },
+    "navigation": {
+      "goToLearning": "Перейти к обучению"
+    },
     "session": {
       "title": "сессия",
       "types": {

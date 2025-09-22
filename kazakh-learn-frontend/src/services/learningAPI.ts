@@ -233,7 +233,7 @@ export const learningAPI = {
     const response = await api.get(`/learning-module/words/learned?${params.toString()}`);
     
     // 🔍 DEBUG: Log the raw response to see the actual structure
-    console.log('🔍 Raw backend response:', JSON.stringify(response.data, null, 2));
+    // console.log('🔍 Raw backend response:', JSON.stringify(response.data, null, 2));
     
     // The backend returns an object with { words: [], total_words: number, ... }
     // We need to extract the words array
