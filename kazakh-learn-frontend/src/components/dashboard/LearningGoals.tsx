@@ -178,7 +178,7 @@ const LearningGoals: React.FC = () => {
           
           {/* Horizontal container for goals */}
           <div className="flex gap-4 overflow-x-auto pb-4">
-            {mockGoals.map((goal) => {
+            {/* {mockGoals.map((goal) => {
               const progressPercentage = getProgressPercentage(goal.current_value, goal.target_value);
               
               return (
@@ -231,10 +231,10 @@ const LearningGoals: React.FC = () => {
                   </div>
                 </div>
               );
-            })}
+            })} */}
             
             {/* Add Goal Card */}
-            {!showAddGoal && (
+            {/* {!showAddGoal && (
               <div
                 onClick={() => setShowAddGoal(true)}
                 className="flex-shrink-0 w-64 p-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group"
@@ -249,7 +249,7 @@ const LearningGoals: React.FC = () => {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       ) : (

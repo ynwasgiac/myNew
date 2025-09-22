@@ -1,6 +1,8 @@
 {
     "title": "Цели обучения",
     "addNewGoal": "Добавить новую цель",
+    "addGoal": "Добавить новую цель",
+    "otherGoals": "Дополнительные цели",
     "goalTypes": {
       "daily_words": "Ежедневные слова",
       "weekly_practice": "Еженедельная практика",
@@ -10,6 +12,9 @@
     "goalUnits": {
       "words": "слов",
       "sessions": "сессий"
+    },
+    "units": {
+      "days": "дни"
     },
     "progress": {
       "title": "Прогресс",

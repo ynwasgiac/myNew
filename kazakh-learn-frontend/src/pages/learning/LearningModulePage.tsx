@@ -79,13 +79,13 @@ const LearningModulePage: React.FC = () => {
   const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
     queryKey: ['userPreferences'],
     queryFn: async () => {
-      console.log('🔍 Fetching user preferences...');
+      // console.log('🔍 Fetching user preferences...');
       try {
         const data = await getUserPreferences();
-        console.log('✅ Preferences loaded successfully:', data);
+        // console.log('✅ Preferences loaded successfully:', data);
         return data;
       } catch (error) {
-        console.error('❌ Error fetching preferences:', error);
+        // console.error('❌ Error fetching preferences:', error);
         throw error;
       }
     },

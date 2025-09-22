@@ -1,6 +1,8 @@
 {
     "title": "Оқыту мақсаттары",
     "addNewGoal": "Жаңа мақсат қосу",
+    "addGoal": "Жаңа мақсат қосу",
+    "otherGoals": "Қосымша мақсаттар",
     "goalTypes": {
       "daily_words": "Күнделікті сөздер",
       "weekly_practice": "Апталық жаттығу",
@@ -10,6 +12,9 @@
     "goalUnits": {
       "words": "сөз",
       "sessions": "сессия"
+    },
+    "units": {
+      "days": "күндер"
     },
     "progress": {
       "title": "Прогресс",

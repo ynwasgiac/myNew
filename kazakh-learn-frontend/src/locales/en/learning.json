@@ -151,7 +151,8 @@
       "almostThere": "Almost there! Just {{remaining}} more words to go!",
       "greatProgress": "Great progress! {{remaining}} words remaining.",
       "goodStart": "Good start! {{remaining}} words left to reach your goal.",
-      "readyToLearn": "Ready to learn? {{remaining}} words to reach your daily goal!"
+      "readyToLearn": "Ready to learn? {{remaining}} words to reach your daily goal!",
+      "inProgress":"In progress"
     },
     "learningStats": {
       "title": "Learning Stats",

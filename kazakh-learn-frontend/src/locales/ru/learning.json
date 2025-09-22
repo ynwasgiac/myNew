@@ -133,7 +133,8 @@
       "almostThere": "Почти готово! Осталось всего {{remaining}} слов!",
       "greatProgress": "Отличный прогресс! Осталось {{remaining}} слов.",
       "goodStart": "Хорошее начало! {{remaining}} слов до достижения цели.",
-      "readyToLearn": "Готовы учиться? {{remaining}} слов до достижения ежедневной цели!"
+      "readyToLearn": "Готовы учиться? {{remaining}} слов до достижения ежедневной цели!",
+      "inProgress":"В процессе"
     },
     "learningStats": {
       "title": "Статистика обучения",

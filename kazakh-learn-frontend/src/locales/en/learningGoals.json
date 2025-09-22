@@ -1,6 +1,8 @@
 {
     "title": "Learning Goals",
     "addNewGoal": "Add new goal",
+    "addGoal": "Add new goal",
+    "otherGoals": "Additional Goals",
     "goalTypes": {
       "daily_words": "Daily Words",
       "weekly_practice": "Weekly Practice",
@@ -10,6 +12,9 @@
     "goalUnits": {
       "words": "words",
       "sessions": "sessions"
+    },
+    "units": {
+      "days": "days"
     },
     "progress": {
       "title": "Progress",

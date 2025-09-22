@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user-language', userLang);
       localStorage.setItem('user-data', JSON.stringify(userData));
       
-      console.log(`Language synced: ${userLang} for user ${userData.username}`);
+      // console.log(`Language synced: ${userLang} for user ${userData.username}`);
     }
   };
 

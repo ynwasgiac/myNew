@@ -76,7 +76,7 @@ i18n
 
 // Language change event handler for debugging
 i18n.on('languageChanged', (lng) => {
-  console.log(`Language changed to: ${lng}`);
+  // console.log(`Language changed to: ${lng}`);
   document.documentElement.lang = lng;
 });
 

@@ -7,7 +7,7 @@ from .token_refresh import get_current_user_with_refresh, TokenRefreshResponse
 
 heartbeat_router = APIRouter(prefix="/auth", tags=["Heartbeat"])
 
-@router.post("/heartbeat") 
+@heartbeat_router.post("/heartbeat")
 async def heartbeat(
     response: Response,
     db: AsyncSession = Depends(get_db),

@@ -89,20 +89,20 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
   });
 
   useEffect(() => {
-    console.log('🔍 useEffect triggered:', {
-      phase: cycle.phase,
-      currentBatch: cycle.currentBatch,
-      wordsLength: cycle.currentWords.length,
-      words: cycle.currentWords.map(w => ({ id: w.id, kazakh_word: w.kazakh_word }))
-    });
+    // console.log('🔍 useEffect triggered:', {
+    //   phase: cycle.phase,
+    //   currentBatch: cycle.currentBatch,
+    //   wordsLength: cycle.currentWords.length,
+    //   words: cycle.currentWords.map(w => ({ id: w.id, kazakh_word: w.kazakh_word }))
+    // });
   
     // Auto-update word status for Batch 1 when words are first shown
     if (cycle.phase === 'overview' && 
         cycle.currentBatch === 1 && 
         cycle.currentWords.length === 3) {
       
-      console.log('🎯 Batch 1 words displayed - automatically setting to learning status');
-      console.log('📋 Word IDs to update:', cycle.currentWords.map(w => w.id));
+      // console.log('🎯 Batch 1 words displayed - automatically setting to learning status');
+      // console.log('📋 Word IDs to update:', cycle.currentWords.map(w => w.id));
       
       const updateWordStatus = async () => {
         try {
@@ -119,11 +119,11 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
                 status: LEARNING_STATUSES.LEARNING // Этот тип правильный: 'learning'
               };
               
-              console.log('📦 Sending request data:', requestData);
+              // console.log('📦 Sending request data:', requestData);
               
               const result = await learningAPI.updateWordProgress(word.id, requestData);
               
-              console.log(`✅ Successfully updated word ${word.id}:`, result);
+              // console.log(`✅ Successfully updated word ${word.id}:`, result);
               updatedCount++;
               updateResults.push({
                 word_id: word.id,
@@ -157,7 +157,7 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
           });
           
           if (updatedCount > 0) {
-            console.log(`✅ SUCCESS: ${updatedCount}/${cycle.currentWords.length} words automatically moved to LEARNING status!`);
+            // console.log(`✅ SUCCESS: ${updatedCount}/${cycle.currentWords.length} words automatically moved to LEARNING status!`);
             
             // Optional: Show a subtle success message
             // toast.success(`🚀 ${updatedCount} words added to your learning list!`, { duration: 3000 });
@@ -171,9 +171,9 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
       };
       
       // Small delay to ensure UI is rendered and data is loaded
-      console.log('⏰ Setting 1000ms timeout for API calls...');
+      // console.log('⏰ Setting 1000ms timeout for API calls...');
       const timer = setTimeout(() => {
-        console.log('⏰ Timeout triggered, calling updateWordStatus()');
+        // console.log('⏰ Timeout triggered, calling updateWordStatus()');
         updateWordStatus();
       }, 1000);
       
@@ -182,11 +182,11 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
         clearTimeout(timer);
       };
     } else {
-      console.log('❌ Conditions not met for status update:', {
-        isOverview: cycle.phase === 'overview',
-        isBatch1: cycle.currentBatch === 1,  
-        hasThreeWords: cycle.currentWords.length === 3
-      });
+      // console.log('❌ Conditions not met for status update:', {
+      //   isOverview: cycle.phase === 'overview',
+      //   isBatch1: cycle.currentBatch === 1,  
+      //   hasThreeWords: cycle.currentWords.length === 3
+      // });
     }
   }, [cycle.phase, cycle.currentBatch, cycle.currentWords]);
 
@@ -204,18 +204,18 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
     queryKey: ['words-to-learn', dailyGoal, user?.main_language?.language_code],
     queryFn: async (): Promise<LearningWord[]> => {
       try {
-        console.log('🔍 Fetching words using learningModuleAPI...');
+        // console.log('🔍 Fetching words using learningModuleAPI...');
         
         // Use the correct learning module API
         const response = await learningModuleAPI.getWordsNotLearned(dailyGoal);
         
-        console.log('📝 Learning module API response:', response);
+        // console.log('📝 Learning module API response:', response);
         
         // The API returns { total_words: number, batches: WordBatch[], ... }
         // Extract words from batches
         const words = response.batches?.flatMap(batch => batch.words) || [];
         
-        console.log('📝 Extracted words from batches:', words);
+        // console.log('📝 Extracted words from batches:', words);
         
         // Words are already in the correct format from the learning module API
         return words;
@@ -230,16 +230,16 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
   // Debug: Add logging to see what language is being used
   useEffect(() => {
     const userLanguage = user?.main_language?.language_code;
-    console.log('🌐 User language code:', userLanguage);
-    console.log('👤 User object:', user);
+    // console.log('🌐 User language code:', userLanguage);
+    // console.log('👤 User object:', user);
     
-    if (wordsToLearn && wordsToLearn.length > 0) {
-      console.log('📝 First word translation:', wordsToLearn[0]?.translation);
-      console.log('🔤 All words:', wordsToLearn.map(w => ({ 
-        kazakh: w.kazakh_word, 
-        translation: w.translation 
-      })));
-    }
+    // if (wordsToLearn && wordsToLearn.length > 0) {
+    //   // console.log('📝 First word translation:', wordsToLearn[0]?.translation);
+    //   console.log('🔤 All words:', wordsToLearn.map(w => ({ 
+    //     kazakh: w.kazakh_word, 
+    //     translation: w.translation 
+    //   })));
+    // }
   }, [user, wordsToLearn]);
 
   // Initialize learning cycle when words are loaded
@@ -255,30 +255,30 @@ const LearningModule: React.FC<LearningModuleProps> = ({ onComplete }) => {
     }
   }, [wordsToLearn, dailyGoal]);
 
-  useEffect(() => {
-    if (wordsToLearn && wordsToLearn.length > 0) {
-      console.log('📝 ВСЕ СЛОВА В СЕССИИ:');
-      wordsToLearn.forEach((word, index) => {
-        console.log(`${index + 1}. ID: ${word.id}, Казахский: "${word.kazakh_word}", Перевод: "${word.translation}"`);
-      });
+  // useEffect(() => {
+  //   if (wordsToLearn && wordsToLearn.length > 0) {
+  //     console.log('📝 ВСЕ СЛОВА В СЕССИИ:');
+  //     wordsToLearn.forEach((word, index) => {
+  //       console.log(`${index + 1}. ID: ${word.id}, Казахский: "${word.kazakh_word}", Перевод: "${word.translation}"`);
+  //     });
       
-      // Проверяем наличие слова "ақ"
-      const akWord = wordsToLearn.find(w => w.kazakh_word === 'ақ');
-      if (akWord) {
-        console.log('🎯 Найдено слово "ақ":', akWord);
-        console.log('✅ Правильный перевод для "ақ":', akWord.translation);
-      } else {
-        console.log('❌ Слово "ақ" НЕ найдено в списке');
-      }
+  //     // Проверяем наличие слова "ақ"
+  //     const akWord = wordsToLearn.find(w => w.kazakh_word === 'ақ');
+  //     if (akWord) {
+  //       console.log('🎯 Найдено слово "ақ":', akWord);
+  //       console.log('✅ Правильный перевод для "ақ":', akWord.translation);
+  //     } else {
+  //       console.log('❌ Слово "ақ" НЕ найдено в списке');
+  //     }
       
-      // Проверяем наличие слова "абысын"
-      const abysynWord = wordsToLearn.find(w => w.kazakh_word === 'абысын');
-      if (abysynWord) {
-        console.log('🎯 Найдено слово "абысын":', abysynWord);
-        console.log('✅ Правильный перевод для "абысын":', abysynWord.translation);
-      }
-    }
-  }, [wordsToLearn]);
+  //     // Проверяем наличие слова "абысын"
+  //     const abysynWord = wordsToLearn.find(w => w.kazakh_word === 'абысын');
+  //     if (abysynWord) {
+  //       console.log('🎯 Найдено слово "абысын":', abysynWord);
+  //       console.log('✅ Правильный перевод для "абысын":', abysynWord.translation);
+  //     }
+  //   }
+  // }, [wordsToLearn]);
 
   // Start Practice Session for current batch
   const startPracticeMutation = useMutation({
@@ -813,19 +813,19 @@ const OverviewPhase: React.FC<{
     // 1. ✅ ПРИОРИТЕТ: Извлеченный primary_image
     if (primaryImage) {
       sources.push(primaryImage);
-      console.log(`🔍 Adding extracted primary_image: ${primaryImage}`);
+      // console.log(`🔍 Adding extracted primary_image: ${primaryImage}`);
     }
     
     // 2. ✅ ПРИОРИТЕТ: image_url из API (основное поле)
     if (word.image_url && word.image_url !== primaryImage) {
       sources.push(word.image_url);
-      console.log(`🔍 Adding image_url: ${word.image_url}`);
+      // console.log(`🔍 Adding image_url: ${word.image_url}`);
     }
     
     // 3. ✅ ПРИОРИТЕТ: primary_image (дополнительное поле)
     if (word.primary_image && word.primary_image !== primaryImage && word.primary_image !== word.image_url) {
       sources.push(word.primary_image);
-      console.log(`🔍 Adding primary_image: ${word.primary_image}`);
+      // console.log(`🔍 Adding primary_image: ${word.primary_image}`);
     }
     
     // console.log(`🔍 Generated ${sources.length} image sources for word ${word.id} (${word.kazakh_word}):`, sources);
@@ -922,12 +922,12 @@ const OverviewPhase: React.FC<{
           {words.map((word, index) => {
             const imageSrc = getCurrentImageSource(word);
             
-            console.log(`🖼️ Word ${word.id} "${word.kazakh_word}":`, {
-              imageSrc,
-              fallbackLevel: fallbackLevels[word.id] || 0,
-              hasError: imageErrors[word.id] || false,
-              sources: getImageSources(word)
-            });
+            // console.log(`🖼️ Word ${word.id} "${word.kazakh_word}":`, {
+            //   imageSrc,
+            //   fallbackLevel: fallbackLevels[word.id] || 0,
+            //   hasError: imageErrors[word.id] || false,
+            //   sources: getImageSources(word)
+            // });
             
             return (
               <div 
@@ -942,7 +942,7 @@ const OverviewPhase: React.FC<{
                       alt={`Изображение для слова: ${word.kazakh_word}`}
                       className="w-full h-full object-cover"
                       onError={() => handleImageError(word.id)}
-                      onLoad={() => console.log(`✅ Image loaded successfully for word ${word.id}: ${imageSrc}`)}
+                      // onLoad={() => console.log(`✅ Image loaded successfully for word ${word.id}: ${imageSrc}`)}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

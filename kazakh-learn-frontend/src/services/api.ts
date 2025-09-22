@@ -58,6 +58,7 @@ api.interceptors.response.use(
     // Check for token refresh header
     const newToken = response.headers['x-new-token'];
     if (newToken) {
+      console.log('Token refreshed:', newToken.substring(0, 20) + '...');
       tokenService.setToken(newToken);
       toast.success('Session refreshed automatically');
     }
