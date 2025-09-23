@@ -1,5 +1,5 @@
 # learning/routes.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -7,7 +7,7 @@ from datetime import datetime
 from database.guide_crud import (
     LearningGuideCRUD, UserGuideCRUD, GuideWordSearchCRUD
 )
-from database.learning_models import LearningStatus, DifficultyRating, GuideStatus
+from database.learning_models import LearningStatus, DifficultyRating, GuideStatus, QuizSubmissionRequest
 
 from database import get_db
 from database.learning_crud import (
@@ -2150,3 +2150,166 @@ async def sync_guide_progress_from_learning_module(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to sync guide progress")
+
+
+# ===== QUIZ ENDPOINTS =====
+@router.post("/quiz/start")
+async def start_quiz_session(
+        category_id: Optional[int] = None,
+        difficulty_level_id: Optional[int] = None,
+        question_count: int = 10,
+        language_code: str = "en",
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Start a new quiz session"""
+    try:
+        # Create a new learning session for quiz
+        session = await UserLearningSessionCRUD.create_session(
+            db, current_user.id, "quiz", category_id, difficulty_level_id
+        )
+
+        # Get learned words for quiz
+        learned_words = await UserWordProgressCRUD.get_user_learned_words(
+            db, current_user.id, category_id, difficulty_level_id, question_count * 3
+        )
+
+        if len(learned_words) < question_count:
+            raise HTTPException(
+                status_code=400,
+                detail="Not enough learned words for quiz"
+            )
+
+        # Generate quiz questions from learned words
+        quiz_questions = []
+        selected_words = learned_words[:question_count]
+
+        for word in selected_words:
+            # Get correct translation
+            correct_translation = "Unknown"
+            if word.kazakh_word.translations:
+                for translation in word.kazakh_word.translations:
+                    if translation.language.language_code == language_code:
+                        correct_translation = translation.translation
+                        break
+                if correct_translation == "Unknown" and word.kazakh_word.translations:
+                    correct_translation = word.kazakh_word.translations[0].translation
+
+            # Generate wrong options
+            wrong_options = []
+            for other_word in learned_words[question_count:question_count + 3]:
+                if other_word.kazakh_word.translations:
+                    for translation in other_word.kazakh_word.translations:
+                        if translation.language.language_code == language_code:
+                            wrong_options.append(translation.translation)
+                            break
+
+            # Ensure we have at least 3 wrong options
+            while len(wrong_options) < 3:
+                wrong_options.append("Option " + str(len(wrong_options) + 1))
+
+            # Create options (1 correct + 3 wrong)
+            all_options = [correct_translation] + wrong_options[:3]
+            import random
+            random.shuffle(all_options)
+            correct_answer_index = all_options.index(correct_translation)
+
+            quiz_questions.append({
+                "id": word.kazakh_word_id,
+                "kazakh_word": word.kazakh_word.kazakh_word,
+                "kazakh_cyrillic": word.kazakh_word.kazakh_cyrillic,
+                "options": all_options,
+                "correct_answer_index": correct_answer_index,
+                "correct_answer": correct_translation
+            })
+
+        return {
+            "session_id": session.id,
+            "questions": quiz_questions
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error starting quiz session: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to start quiz: {str(e)}")
+
+
+@router.post("/quiz/{session_id}/submit")
+async def submit_quiz_results(
+        session_id: int,
+        request: QuizSubmissionRequest,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Submit quiz results"""
+    try:
+        print(f"🎯 Submitting quiz results for session {session_id}")
+        print(f"📊 Received {len(request.answers)} answers")
+
+        # Validate session exists and belongs to user
+        session = await UserLearningSessionCRUD.get_session(db, session_id, current_user.id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Quiz session not found")
+
+        # Process each answer
+        correct_count = 0
+        total_count = len(request.answers)
+
+        for answer in request.answers:
+            if answer.is_correct:
+                correct_count += 1
+
+            # Add session detail
+            try:
+                await UserLearningSessionCRUD.add_session_detail(
+                    db, session_id, answer.question_id, answer.is_correct, "quiz",
+                    str(answer.selected_answer), None, answer.time_spent
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to add session detail for question {answer.question_id}: {e}")
+
+            # Update word progress
+            try:
+                await UserWordProgressCRUD.update_word_progress(
+                    db, current_user.id, answer.question_id, was_correct=answer.is_correct
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to update word progress for word {answer.question_id}: {e}")
+
+        # Finish the session
+        try:
+            await UserLearningSessionCRUD.finish_session(db, session_id)
+        except Exception as e:
+            print(f"⚠️ Failed to finish session: {e}")
+
+        # Calculate score
+        score = round((correct_count / total_count) * 100) if total_count > 0 else 0
+
+        # Update streak if good performance
+        if score >= 80:  # 80% or better
+            try:
+                await UserStreakCRUD.update_streak(db, current_user.id)
+            except Exception as e:
+                print(f"⚠️ Failed to update streak: {e}")
+
+        print(f"✅ Quiz submission successful: {correct_count}/{total_count} correct ({score}%)")
+
+        return {
+            "success": True,
+            "score": score,
+            "total_questions": total_count,
+            "correct_answers": correct_count,
+            "session_id": session_id,
+            "message": "Quiz completed successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error submitting quiz results: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to submit quiz results: {str(e)}")
