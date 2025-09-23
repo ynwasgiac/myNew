@@ -1,5 +1,8 @@
 # learning/routes.py
+from operator import and_
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Response, Body
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -7,7 +10,7 @@ from datetime import datetime
 from database.guide_crud import (
     LearningGuideCRUD, UserGuideCRUD, GuideWordSearchCRUD
 )
-from database.learning_models import LearningStatus, DifficultyRating, GuideStatus, QuizSubmissionRequest
+from database.learning_models import LearningStatus, DifficultyRating, GuideStatus, UserLearningSession
 
 from database import get_db
 from database.learning_crud import (
@@ -39,7 +42,7 @@ from database.learning_schemas import (
     AddWordsToListRequest, RemoveWordsFromListRequest, LearningListFilters,
 
     # Dashboard schemas
-    LearningDashboardResponse, SpacedRepetitionSettings, ReviewScheduleResponse
+    LearningDashboardResponse, SpacedRepetitionSettings, ReviewScheduleResponse, QuizSubmissionRequest
 )
 from database.learning_models import LearningStatus, DifficultyRating
 from database.auth_models import User
@@ -2249,8 +2252,17 @@ async def submit_quiz_results(
         print(f"🎯 Submitting quiz results for session {session_id}")
         print(f"📊 Received {len(request.answers)} answers")
 
-        # Validate session exists and belongs to user
-        session = await UserLearningSessionCRUD.get_session(db, session_id, current_user.id)
+        # Get session directly using SQLAlchemy
+        result = await db.execute(
+            select(UserLearningSession).where(
+                and_(
+                    UserLearningSession.id == session_id,
+                    UserLearningSession.user_id == current_user.id
+                )
+            )
+        )
+        session = result.scalar_one_or_none()
+
         if not session:
             raise HTTPException(status_code=404, detail="Quiz session not found")
 

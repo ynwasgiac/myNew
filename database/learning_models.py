@@ -413,14 +413,3 @@ class GuideWordMapping(Base):
         Index('idx_guide_words', 'guide_id', 'is_active'),
         Index('idx_guide_word_order', 'guide_id', 'order_in_guide'),
     )
-
-class QuizAnswerSubmission(Base):
-    question_id: int
-    selected_answer: int
-    is_correct: bool
-    time_spent: int
-
-class QuizSubmissionRequest(Base):
-    session_id: int
-    answers: List[QuizAnswerSubmission]
-    language_code: str = "en"

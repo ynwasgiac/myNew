@@ -985,3 +985,30 @@ async def update_word_progress(
     result = await db.execute(stmt)
     await db.commit()
     return result.scalar_one_or_none()
+
+
+@staticmethod
+async def get_session_by_id(
+        db: AsyncSession,
+        session_id: int,
+        user_id: Optional[int] = None
+) -> Optional[UserLearningSession]:
+    """Get a learning session by ID, optionally filtered by user"""
+    query = select(UserLearningSession).where(UserLearningSession.id == session_id)
+
+    if user_id:
+        query = query.where(UserLearningSession.user_id == user_id)
+
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
+
+
+# Alternative method name for backward compatibility
+@staticmethod
+async def get_session(
+        db: AsyncSession,
+        session_id: int,
+        user_id: Optional[int] = None
+) -> Optional[UserLearningSession]:
+    """Get a learning session by ID - alias for get_session_by_id"""
+    return await UserLearningSessionCRUD.get_session_by_id(db, session_id, user_id)

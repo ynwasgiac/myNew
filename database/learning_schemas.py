@@ -347,3 +347,14 @@ class ReviewScheduleResponse(BaseModel):
     due_this_week: int
     overdue: int
     next_review_date: Optional[datetime] = None
+
+class QuizAnswerSubmission(BaseModel):
+    question_id: int
+    selected_answer: int
+    is_correct: bool
+    time_spent: int
+
+class QuizSubmissionRequest(BaseModel):
+    session_id: int
+    answers: List[QuizAnswerSubmission]
+    language_code: str = "en"
