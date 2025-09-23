@@ -40,7 +40,7 @@ interface ScenarioQuestion {
 const PracticePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation(['learning', 'common']);
+  const { t } = useTranslation(['practice', 'common']);
   const [searchParams] = useSearchParams();
   
   // Session state

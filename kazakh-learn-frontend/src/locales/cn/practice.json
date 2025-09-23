@@ -1,0 +1,83 @@
+{
+  "practice": {
+    "title": "练习",
+    "description": "练习单词并提升您的哈萨克语技能",
+    "questions": {
+      "whatMeans": "“{{word}}”是什么意思？",
+      "howToSay": "“{{translation}}”用哈萨克语怎么说？"
+    },
+    "methods": {
+      "recognition": "🇰🇿 → 🌍 识别",
+      "production": "🌍 → 🇰🇿 生成",
+      "recognitionDescription": "识别模式：查看哈萨克语单词并输入其含义。适合扩展词汇量。",
+      "productionDescription": "生成模式：查看含义并输入哈萨克语单词。更具挑战性，有助于培养主动表达能力。"
+    },
+    "session": {
+      "question": "问题 {{current}} / {{total}}",
+      "timeElapsed": "已用时间",
+      "score": "得分",
+      "hint": "提示",
+      "showHint": "显示提示",
+      "nextQuestion": "下一个问题",
+      "checkAnswer": "检查答案",
+      "yourAnswer": "你的答案",
+      "correctAnswer": "正确答案",
+      "type": "请输入你的答案...",
+      "skip": "跳过",
+      "progress": "练习进度",
+      "translateToEnglish": "翻译成英文：",
+      "translateToKazakh": "翻译成哈萨克语：",
+      "practiceMode": "练习模式：",
+      "means": "意思是"
+    },
+    "results": {
+      "title": "练习结果",
+      "completed": "完成练习",
+      "score": "你的成绩：{{correct}} / {{total}}",
+      "accuracy": "准确率：{{percentage}}%",
+      "totalTime": "总时间：{{time}}",
+      "averageTime": "每题平均时间：{{time}}",
+      "backToDashboard": "返回控制面板",
+      "practiceAgain": "再练一次",
+      "reviewMistakes": "查看错误"
+    },
+    "status": {
+      "correct": "正确！",
+      "incorrect": "错误",
+      "loading": "正在加载练习...",
+      "starting": "正在开始练习...",
+      "noWords": "没有可供练习的单词",
+      "sessionComplete": "练习已完成"
+    },
+    "stats": {
+      "correct": "正确",
+      "incorrect": "错误",
+      "accuracy": "准确率",
+      "totalQuestions": "问题总数"
+    },
+    "hints": {
+      "title": "字母提示：",
+      "description": "点击提示按钮逐一揭示字母。",
+      "letterRevealed": "已揭示字母",
+      "allLettersRevealed": "所有字母已揭示",
+      "enterKey": "ENTER"
+    },
+    "navigation": {
+      "changeMethod": "更改模式",
+      "settings": "设置",
+      "exit": "退出",
+      "continue": "继续",
+      "goToLearning": "进入学习"
+    },
+    "errors": {
+      "sessionFailed": "无法启动练习",
+      "loadingFailed": "无法加载练习数据",
+      "noWordsAvailable": "没有可供练习的单词。请先添加单词到学习列表。",
+      "sessionNotFound": "未找到练习",
+      "submitFailed": "提交答案失败"
+    },
+    "messages": {
+      "reviewStarted": "复习开始！"
+    }
+  }
+}

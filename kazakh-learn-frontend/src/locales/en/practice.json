@@ -1,64 +1,83 @@
 {
-    "loading": {
-      "startingSession": "Starting your practice session..."
+  "practice": {
+    "title": "Practice",
+    "description": "Practice words and improve your Kazakh language skills",
+    "questions": {
+      "whatMeans": "What does \"{{word}}\" mean?",
+      "howToSay": "How do you say \"{{translation}}\" in Kazakh?"
     },
-    "errors": {
-      "unableToStart": "Unable to start practice session",
-      "tryAgain": "Please try again or check your learning list.",
-      "noReviewWords": "No words available for review",
-      "tryLearningFirst": "Try learning some words first, then come back to practice!"
-    },
-    "navigation": {
-      "goToLearning": "Go to Learning"
+    "methods": {
+      "recognition": "🇰🇿 → 🌍 Recognition",
+      "production": "🌍 → 🇰🇿 Production",
+      "recognitionDescription": "Recognition mode: see Kazakh words, enter meanings. Good for expanding vocabulary.",
+      "productionDescription": "Production mode: see meanings, enter Kazakh words. More difficult, develops active skills."
     },
     "session": {
-      "title": "session",
-      "types": {
-        "practice": "Practice",
-        "review": "Review",
-        "random": "Random",
-        "category": "Category",
-        "mixed": "Mixed",
-        "learning": "Learning"
-      },
-      "questionProgress": "Question {{current}} of {{total}}",
-      "correct": "Correct: {{correct}} / {{total}}",
-      "pause": "Pause session",
-      "resume": "Resume session"
-    },
-    "word": {
-      "level": "Level {{level}}"
-    },
-    "question": {
-      "prompt": "What does this word mean in English?",
-      "placeholder": "Type your answer..."
-    },
-    "actions": {
-      "backToLearning": "Back to Learning",
-      "playAudio": "Play audio",
-      "skip": "Skip",
-      "submitAnswer": "Submit Answer",
-      "nextWord": "Next Word",
-      "finishSession": "Finish Session"
-    },
-    "result": {
-      "correct": "Correct!",
-      "incorrect": "Not quite right",
-      "means": "means",
+      "question": "Question {{current}} of {{total}}",
+      "timeElapsed": "Time elapsed",
+      "score": "Score",
+      "hint": "Hint",
+      "showHint": "Show hint",
+      "nextQuestion": "Next question",
+      "checkAnswer": "Check answer",
       "yourAnswer": "Your answer",
-      "correctAnswer": "Correct answer"
+      "correctAnswer": "Correct answer",
+      "type": "Type your answer...",
+      "skip": "Skip",
+      "progress": "Session progress",
+      "translateToEnglish": "Translate into English:",
+      "translateToKazakh": "Translate into Kazakh:",
+      "practiceMode": "Practice mode:",
+      "means": "means"
+    },
+    "results": {
+      "title": "Session results",
+      "completed": "Finish session",
+      "score": "Your result: {{correct}} of {{total}}",
+      "accuracy": "Accuracy: {{percentage}}%",
+      "totalTime": "Total time: {{time}}",
+      "averageTime": "Average time per question: {{time}}",
+      "backToDashboard": "Back to dashboard",
+      "practiceAgain": "Practice again",
+      "reviewMistakes": "Review mistakes"
+    },
+    "status": {
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "loading": "Loading practice session...",
+      "starting": "Starting session...",
+      "noWords": "No words to practice",
+      "sessionComplete": "Session complete"
     },
     "stats": {
-      "title": "Session Progress",
-      "current": "Current",
       "correct": "Correct",
-      "incorrect": "Incorrect"
+      "incorrect": "Incorrect",
+      "accuracy": "Accuracy",
+      "totalQuestions": "Total questions"
+    },
+    "hints": {
+      "title": "Letter hints:",
+      "description": "Press the hint button to reveal letters one by one.",
+      "letterRevealed": "Letter revealed",
+      "allLettersRevealed": "All letters revealed",
+      "enterKey": "ENTER"
+    },
+    "navigation": {
+      "changeMethod": "Change method",
+      "settings": "Settings",
+      "exit": "Exit",
+      "continue": "Continue",
+      "goToLearning": "Go to learning"
+    },
+    "errors": {
+      "sessionFailed": "Failed to start practice session",
+      "loadingFailed": "Failed to load practice data",
+      "noWordsAvailable": "No words available for practice. Add words to your study list.",
+      "sessionNotFound": "Session not found",
+      "submitFailed": "Failed to submit answer"
     },
     "messages": {
-      "sessionStarted": "Practice session started!",
-      "sessionStartError": "Failed to start practice session",
-      "submitAnswerError": "Failed to submit answer",
-      "audioComingSoon": "Audio feature coming soon!"
+      "reviewStarted": "Review session started!"
     }
   }
-  
+}
