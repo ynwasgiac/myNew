@@ -42,7 +42,7 @@ from database.learning_schemas import (
     AddWordsToListRequest, RemoveWordsFromListRequest, LearningListFilters,
 
     # Dashboard schemas
-    LearningDashboardResponse, SpacedRepetitionSettings, ReviewScheduleResponse, QuizSubmissionRequest
+    LearningDashboardResponse, SpacedRepetitionSettings, ReviewScheduleResponse
 )
 from database.learning_models import LearningStatus, DifficultyRating
 from database.auth_models import User
@@ -50,6 +50,7 @@ from auth.dependencies import get_current_user
 from auth.token_refresh import get_current_user_with_refresh, TokenRefreshResponse
 import random
 from database.learning_models import LearningStatus, DifficultyRating, GuideStatus
+from database.learning_schemas import QuizSubmissionRequest, QuizAnswerSubmission
 
 router = APIRouter(prefix="/learning", tags=["Learning Progress"])
 
