@@ -1,0 +1,9 @@
+{
+  "quickActions": {
+    "quickPractice": "Quick practice",
+    "quickPracticeDesc": "Review words using flashcards and exercises",
+    "takeQuiz": "Take a test",
+    "takeQuizDesc": "Check your knowledge with interactive quizzes",
+    "visitCategories": "Browse categories"
+  }
+}

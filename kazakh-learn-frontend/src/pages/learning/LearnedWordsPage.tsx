@@ -23,7 +23,7 @@ interface LearnedWord {
 }
 
 const LearnedWordsPage: React.FC = () => {
-  const { t } = useTranslation(['learning', 'common']);
+  const { t } = useTranslation(['learnedWords', 'common']);
   const { user } = useAuth();
   const queryClient = useQueryClient();
   

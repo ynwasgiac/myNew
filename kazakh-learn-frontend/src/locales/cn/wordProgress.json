@@ -1,0 +1,22 @@
+{
+  "wordProgress": {
+    "title": "单词学习进度",
+    "goalReached": "目标达成！🎉",
+    "inProgress": "进行中",
+    "breakdown": "学习细分",
+    "learned": "已学会",
+    "learning": "学习中",
+    "wantToLearn": "想要学习",
+    "remaining": "剩余",
+    "detailedBreakdown": "详细状态",
+    "statusLearned": "已学会",
+    "statusMastered": "已掌握",
+    "congratulations": "恭喜！",
+    "firstGoalReached": "你已经学会了前 {{count}} 个单词！现在的目标是 100！",
+    "nextGoalReached": "太棒了！你已经学会了 {{count}} 个单词！下一个目标：{{next}} 个单词。",
+    "almostThere": "快完成了！",
+    "keepGoing": "继续加油！",
+    "firstGoalMessage": "你的目标：学会前 {{target}} 个单词！还剩 {{remaining}} 个。",
+    "nextGoalMessage": "当前目标：{{target}} 个单词！距离达成还差 {{remaining}} 个。"
+  }
+}

@@ -60,8 +60,8 @@ i18n
       'kk-KZ': ['kk', 'en'],
       'default': ['en']
     },
-    ns: ['common', 'categories', 'words', 'wordDetail', 'categoryDetail', 
-         'learning', 'practice', 'progress', 'quiz', 'notFound'],
+    ns: ['common', 'categories', 'words', 'wordDetail', 'categoryDetail', 'quickActions',
+         'learning', 'practice', 'progress', 'quiz', 'notFound', 'learnedWords', 'weeklyProgress', 'wordProgress', 'dailyProgress','wordsAvailable'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false,

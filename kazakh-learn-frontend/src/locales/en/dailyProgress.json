@@ -1,0 +1,12 @@
+{
+  "dailyProgress": {
+    "title": "Daily Progress",
+    "wordsCount": "{{learned}}/{{goal}} words",
+    "goalComplete": "🎉 Daily goal achieved! Fantastic work!",
+    "almostThere": "Almost done! Only {{remaining}} words left!",
+    "greatProgress": "Great progress! {{remaining}} words remaining.",
+    "goodStart": "Good start! {{remaining}} words to reach the goal.",
+    "readyToLearn": "Ready to learn? {{remaining}} words to reach the daily goal!",
+    "inProgress": "In progress"
+  }
+}

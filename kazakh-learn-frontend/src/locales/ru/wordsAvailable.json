@@ -1,0 +1,12 @@
+{
+  "wordsAvailable": {
+    "title": "Доступные слова",
+    "wantToLearn": "Хочу изучить",
+    "learning": "Изучаю",
+    "review": "Повторение",
+    "total": "Всего",
+    "readyForBatches": "Готово для {{batches}} учебных блоков",
+    "estimatedTime": "Примерное время: {{time}}",
+    "noWordsAvailable": "Нет доступных слов для изучения"
+  }
+}

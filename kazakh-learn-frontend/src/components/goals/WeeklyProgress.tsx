@@ -24,7 +24,7 @@ interface WeeklyProgressData {
 }
 
 const WeeklyProgress: React.FC = () => {
-  const { t } = useTranslation('learning');
+  const { t } = useTranslation('weeklyProgress');
 
   // Fetch weekly progress from API
   const { 

@@ -21,7 +21,7 @@ interface WordProgressData {
 }
 
 const WordProgress: React.FC = () => {
-  const { t } = useTranslation('learning');
+  const { t } = useTranslation('wordProgress');
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   // Fetch user's learning progress

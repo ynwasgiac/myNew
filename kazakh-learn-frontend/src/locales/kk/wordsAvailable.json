@@ -1,0 +1,12 @@
+{
+  "wordsAvailable": {
+    "title": "Қолжетімді сөздер",
+    "wantToLearn": "Үйренгім келеді",
+    "learning": "Үйреніп жүрмін",
+    "review": "Қайталау",
+    "total": "Барлығы",
+    "readyForBatches": "{{batches}} оқу блогына дайын",
+    "estimatedTime": "Шамамен уақыт: {{time}}",
+    "noWordsAvailable": "Үйренуге қолжетімді сөздер жоқ"
+  }
+}

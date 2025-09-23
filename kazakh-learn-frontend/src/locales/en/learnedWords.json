@@ -1,98 +1,50 @@
 {
-    "page": {
-      "title": "Learned Words",
-      "description": "Review and manage the words you've successfully learned and mastered."
+  "learnedWords": {
+    "title": "Learned Words",
+    "description": "View and manage the words you have successfully learned and mastered",
+    "searchPlaceholder": "Search learned words...",
+    "filters": {
+      "statusFilter": "Filter by status",
+      "allStatuses": "All statuses",
+      "showKazakh": "Show Kazakh words",
+      "showTranslation": "Show translations"
     },
-    "loading": {
-      "learnedWords": "Loading your learned words..."
-    },
-    "errors": {
-      "loadingFailed": "Failed to load learned words",
-      "tryAgain": "Please try again later",
-      "statusUpdateFailed": "Failed to update word status",
-      "favoriteUpdateFailed": "Failed to update favorite status"
-    },
-    "messages": {
-      "statusUpdated": "Word status updated successfully",
-      "favoriteUpdated": "Favorite status updated"
+    "bulkActions": {
+      "selectedCount": "{{count}} words selected",
+      "selectedCount_one": "{{count}} word selected",
+      "selectedCount_other": "{{count}} words selected",
+      "bulkUpdate": "Choose action"
     },
     "stats": {
-      "totalLearned": "Total Learned",
-      "learned": "Learned",
-      "mastered": "Mastered", 
-      "favorites": "Favorites"
+      "totalWords": "words learned",
+      "totalCorrect": "Total correct",
+      "totalIncorrect": "Total incorrect",
+      "averageAccuracy": "Average accuracy",
+      "summaryStatistics": "Summary statistics"
     },
-    "filters": {
-      "search": {
-        "placeholder": "Search learned words...",
-        "noResults": "No words found matching your search"
-      },
-      "category": {
-        "all": "All Categories",
-        "selectCategory": "Select Category"
-      },
-      "status": {
-        "all": "All Statuses",
-        "learned": "Learned",
-        "mastered": "Mastered"
-      },
-      "showFavoritesOnly": "Show favorites only",
-      "clearFilters": "Clear all filters"
-    },
-    "actions": {
-      "markAsFavorite": "Mark as favorite",
-      "removeFromFavorites": "Remove from favorites",
-      "resetToLearning": "Reset to learning",
-      "practice": "Practice this word",
-      "viewDetails": "View details",
-      "bulkActions": "Bulk actions",
-      "exportList": "Export list"
+    "table": {
+      "kazakhWord": "Kazakh word",
+      "translation": "Translation",
+      "status": "Status",
+      "timesCorrect": "Correct answers",
+      "timesIncorrect": "Incorrect answers",
+      "lastPracticed": "Last practiced",
+      "never": "Never"
     },
     "status": {
+      "wantToLearn": "Want to learn",
+      "learning": "Learning",
       "learned": "Learned",
       "mastered": "Mastered",
-      "changeStatus": "Change status"
+      "review": "Review"
     },
-    "wordCard": {
-      "addedOn": "Added on {{date}}",
-      "learnedOn": "Learned on {{date}}",
-      "lastPracticed": "Last practiced {{date}}",
-      "accuracy": "Accuracy: {{percentage}}%",
-      "practiceCount": "{{count}} practice session",
-      "practiceCount_plural": "{{count}} practice sessions",
-      "noTranslation": "No translation available",
-      "showMore": "Show more",
-      "showLess": "Show less"
-    },
-    "emptyState": {
-      "noLearnedWords": {
-        "title": "No learned words yet",
-        "message": "Keep practicing! Words you mark as 'learned' or 'mastered' will appear here.",
-        "actionText": "Start learning words"
-      },
-      "noFilterResults": {
-        "title": "No words match your filters",
-        "message": "Try adjusting your search terms or filter criteria.",
-        "actionText": "Clear filters"
-      }
-    },
-    "viewModes": {
-      "grid": "Grid view",
-      "list": "List view"
-    },
-    "sorting": {
-      "newest": "Newest first",
-      "oldest": "Oldest first", 
-      "alphabetical": "Alphabetical",
-      "mostPracticed": "Most practiced",
-      "leastPracticed": "Least practiced",
-      "highestAccuracy": "Highest accuracy",
-      "lowestAccuracy": "Lowest accuracy"
-    },
-    "achievements": {
-      "firstLearnedWord": "First word learned!",
-      "learningStreak": "{{days}} day learning streak",
-      "wordsThisWeek": "{{count}} words learned this week",
-      "perfectAccuracy": "Perfect accuracy on recent practices"
+    "messages": {
+      "noWords": "You don’t have any learned words yet",
+      "noFilteredWords": "No words found for the selected filters",
+      "updateSuccess": "Word status successfully updated",
+      "updateError": "Failed to update word status",
+      "bulkUpdateSuccess": "Words successfully updated",
+      "bulkUpdateError": "Failed to update words"
     }
   }
+}

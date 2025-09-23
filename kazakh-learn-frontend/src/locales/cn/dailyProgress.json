@@ -1,0 +1,12 @@
+{
+  "dailyProgress": {
+    "title": "每日进度",
+    "wordsCount": "{{learned}}/{{goal}} 个词",
+    "goalComplete": "🎉 每日目标达成！太棒了！",
+    "almostThere": "快完成了！只剩 {{remaining}} 个词！",
+    "greatProgress": "进展很好！还剩 {{remaining}} 个词。",
+    "goodStart": "良好的开始！距离目标还差 {{remaining}} 个词。",
+    "readyToLearn": "准备好学习了吗？距离每日目标还差 {{remaining}} 个词！",
+    "inProgress": "进行中"
+  }
+}

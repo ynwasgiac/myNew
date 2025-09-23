@@ -1,0 +1,12 @@
+{
+  "wordsAvailable": {
+    "title": "Available Words",
+    "wantToLearn": "Want to learn",
+    "learning": "Learning",
+    "review": "Review",
+    "total": "Total",
+    "readyForBatches": "Ready for {{batches}} study blocks",
+    "estimatedTime": "Estimated time: {{time}}",
+    "noWordsAvailable": "No words available for learning"
+  }
+}

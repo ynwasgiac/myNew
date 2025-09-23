@@ -1,0 +1,15 @@
+{
+  "weeklyProgress": {
+    "title": "Weekly Practice Goal",
+    "goalReached": "Weekly goal achieved! 🎉",
+    "inProgress": "In progress",
+    "weekRange": "Week: {{startDate}} - {{endDate}}",
+    "sessionBreakdown": "Breakdown by sessions",
+    "goalComplete": "Weekly practice goal completed!",
+    "sessionsRemaining": "{{count}} sessions left to reach the weekly goal",
+    "sessionsRemaining_one": "{{count}} session left to reach the weekly goal",
+    "sessionsRemaining_few": "{{count}} sessions left to reach the weekly goal",
+    "sessionsRemaining_many": "{{count}} sessions left to reach the weekly goal",
+    "getStarted": "Start the week actively! Complete the first session."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "wordsAvailable": {
+    "title": "可用单词",
+    "wantToLearn": "想学习",
+    "learning": "正在学习",
+    "review": "复习",
+    "total": "总数",
+    "readyForBatches": "已准备好 {{batches}} 个学习单元",
+    "estimatedTime": "预计时间：{{time}}",
+    "noWordsAvailable": "没有可学习的单词"
+  }
+}

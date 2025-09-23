@@ -14,7 +14,7 @@ interface WordsAvailableBreakdownProps {
 const WordsAvailableBreakdown: React.FC<WordsAvailableBreakdownProps> = ({ 
   className = '' 
 }) => {
-  const { t } = useTranslation('learning');
+  const { t } = useTranslation('wordsAvailable');
   
   const {
     data: stats,

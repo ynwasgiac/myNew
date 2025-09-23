@@ -1,0 +1,15 @@
+{
+  "weeklyProgress": {
+    "title": "每周练习目标",
+    "goalReached": "每周目标已达成！🎉",
+    "inProgress": "进行中",
+    "weekRange": "周: {{startDate}} - {{endDate}}",
+    "sessionBreakdown": "按课程分解",
+    "goalComplete": "每周练习目标已完成！",
+    "sessionsRemaining": "距离每周目标还差 {{count}} 节课",
+    "sessionsRemaining_one": "距离每周目标还差 {{count}} 节课",
+    "sessionsRemaining_few": "距离每周目标还差 {{count}} 节课",
+    "sessionsRemaining_many": "距离每周目标还差 {{count}} 节课",
+    "getStarted": "积极开始这一周！完成第一节课。"
+  }
+}

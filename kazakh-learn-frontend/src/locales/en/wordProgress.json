@@ -1,0 +1,22 @@
+{
+  "wordProgress": {
+    "title": "Word Learning Progress",
+    "goalReached": "Goal reached! 🎉",
+    "inProgress": "In progress",
+    "breakdown": "Learning breakdown",
+    "learned": "Learned",
+    "learning": "Learning",
+    "wantToLearn": "Want to learn",
+    "remaining": "Remaining",
+    "detailedBreakdown": "Detailed status",
+    "statusLearned": "Learned",
+    "statusMastered": "Mastered",
+    "congratulations": "Congratulations!",
+    "firstGoalReached": "You learned the first {{count}} words! Now the goal is 100!",
+    "nextGoalReached": "Awesome! You learned {{count}} words! Next goal: {{next}} words.",
+    "almostThere": "Almost there!",
+    "keepGoing": "Keep going!",
+    "firstGoalMessage": "Your goal: learn the first {{target}} words! {{remaining}} left.",
+    "nextGoalMessage": "Current goal: {{target}} words! {{remaining}} more to reach this milestone."
+  }
+}

@@ -16,7 +16,7 @@
     "newWords": {
       "title": "Learn new words",
       "description": "Discover and add new Kazakh words to your vocabulary",
-      "action": "View words",
+      "action": "Browse words",
       "info": "Expand your vocabulary"
     },
     "practice": {
@@ -27,9 +27,9 @@
     },
     "review": {
       "title": "Words to review",
-      "description": "Practice words that need to be repeated using spaced repetition",
+      "description": "Practice words that need review based on spaced repetition",
       "action": "Review now",
-      "wordsNeedReview": "{{count}} words need to be reviewed"
+      "wordsNeedReview": "{{count}} words need review"
     },
     "quiz": {
       "title": "Take a quiz",
@@ -42,8 +42,8 @@
     "title": "Today's learning plan",
     "learn": {
       "title": "Learning",
-      "description": "Add 5–10 new words to your learning list",
-      "action": "View words"
+      "description": "Add 5–10 new words to your study list",
+      "action": "Browse words"
     },
     "practice": {
       "title": "Practice",
@@ -70,71 +70,13 @@
     "ready": "Ready to learn!",
     "inProgress": "Session in progress",
     "completed": "Great work today!",
-    "goalReached": "Daily goal achieved! 🎉"
-  },
-  "learnedWords": {
-    "title": "Learned words",
-    "description": "View and manage words you have successfully learned and mastered",
-    "searchPlaceholder": "Search learned words...",
-    "filters": {
-      "statusFilter": "Filter by status",
-      "allStatuses": "All statuses",
-      "showKazakh": "Show Kazakh words",
-      "showTranslation": "Show translations"
-    },
-    "bulkActions": {
-      "selectedCount": "{{count}} words selected",
-      "selectedCount_one": "{{count}} word selected",
-      "selectedCount_other": "{{count}} words selected",
-      "bulkUpdate": "Choose action"
-    },
-    "stats": {
-      "totalWords": "words learned",
-      "totalCorrect": "Total correct",
-      "totalIncorrect": "Total incorrect",
-      "averageAccuracy": "Average accuracy",
-      "summaryStatistics": "Summary statistics"
-    },
-    "table": {
-      "kazakhWord": "Kazakh word",
-      "translation": "Translation",
-      "status": "Status",
-      "timesCorrect": "Correct answers",
-      "timesIncorrect": "Incorrect answers",
-      "lastPracticed": "Last practiced",
-      "never": "Never"
-    },
-    "status": {
-      "wantToLearn": "Want to learn",
-      "learning": "In progress",
-      "learned": "Learned",
-      "mastered": "Mastered",
-      "review": "Review"
-    },
-    "messages": {
-      "noWords": "You don't have any learned words yet",
-      "noFilteredWords": "No words found for selected filters",
-      "updateSuccess": "Word status successfully updated",
-      "updateError": "Failed to update word status",
-      "bulkUpdateSuccess": "Words successfully updated",
-      "bulkUpdateError": "Failed to update words"
-    }
+    "goalReached": "Daily goal reached! 🎉"
   },
   "page": {
-    "title": "Ready to learn Kazakh, {{name}}?",
+    "title": "Ready to study Kazakh, {{name}}?",
     "subtitle": "Grow your vocabulary through structured study sessions",
     "loading": "Loading your learning dashboard...",
     "error": "Failed to load learning data. Please try again."
-  },
-  "dailyProgress": {
-    "title": "Daily progress",
-    "wordsCount": "{{learned}}/{{goal}} words",
-    "goalComplete": "🎉 Daily goal achieved! Fantastic job!",
-    "almostThere": "Almost there! Just {{remaining}} words left!",
-    "greatProgress": "Great progress! {{remaining}} words remaining.",
-    "goodStart": "Good start! {{remaining}} words to reach your goal.",
-    "readyToLearn": "Ready to learn? {{remaining}} words to daily goal!",
-    "inProgress":"In progress"
   },
   "learningStats": {
     "title": "Learning statistics",
@@ -144,35 +86,18 @@
     "accuracy": "Accuracy:",
     "days": "days"
   },
-  "wordsAvailable": {
-    "title": "Available words",
-    "wantToLearn": "Want to learn",
-    "learning": "Learning",
-    "review": "Review",
-    "total": "Total",
-    "readyForBatches": "Ready for {{batches}} learning batches",
-    "estimatedTime": "Estimated time: {{time}}",
-    "noWordsAvailable": "No available words to learn"
-  },
   "mainAction": {
     "readyToStart": "Ready to start learning?",
     "wordsReady": "You have {{total}} words ready to learn in {{batches}} batches",
     "startLearning": "Start learning session",
     "estimatedInfo": "Estimated time: {{time}} • 3 words per batch",
-    "noWords": "No available words",
+    "noWords": "No words available",
     "needMoreWords": "Need more words",
-    "noWordsMessage": "Add words to your learning list to start practice!",
-    "needMoreMessage": "At least 3 words are needed to start a learning session. You currently have {{count}}",
+    "noWordsMessage": "Add words to your learning list to start practicing!",
+    "needMoreMessage": "At least 3 words are required to start a learning session. You currently have {{count}}",
     "addingWords": "Adding words...",
     "addRandomWords": "Add random words",
-    "randomWordsHelp": "Let us choose words for you based on your daily goal and current settings. Only words with translations into your language will be added!"
-  },
-  "quickActions": {
-    "quickPractice": "Quick practice",
-    "quickPracticeDesc": "Review words using flashcards and exercises",
-    "takeQuiz": "Take a quiz",
-    "takeQuizDesc": "Test your knowledge with interactive quizzes",
-    "visitCategories": "Visit categories"
+    "randomWordsHelp": "We will select words for you based on your daily goal and current settings. Only words with translations into your language will be added!"
   },
   "learningTips": {
     "title": "Learning tips",
@@ -187,21 +112,21 @@
   },
   "motivation": {
     "title": "💪 Stay motivated",
-    "quote": "Every learned word brings you closer to fluency. Keep going!"
+    "quote": "Each word you learn brings you closer to fluency. Keep going!"
   },
   "messages": {
-    "noWordsError": "No available words to learn. Add words to your learning list.",
-    "needMoreWordsError": "You need at least 3 words to start a learning session. Add more words to your list.",
+    "noWordsError": "No words available to learn. Add words to your study list.",
+    "needMoreWordsError": "At least 3 words are required to start a session. Add more words to your study list.",
     "sessionComplete": "🎉 Great job! Your learning session is complete.",
     "loginRequired": "Please log in to add words",
     "wordsAdded": "{{count}} words successfully added!",
-    "partialWordsAdded": "{{added}} out of {{requested}} requested words added.",
+    "partialWordsAdded": "{{added}} out of {{requested}} words added.",
     "addWordsError": "Failed to add random words",
     "statusUpdated": "Word status successfully updated",
     "favoriteUpdated": "Favorite status successfully updated"
   },
   "buttons": {
-    "learnAction": "View words",
+    "learnAction": "Browse words",
     "startSession": "Start learning session"
   },
   "module": {
@@ -209,23 +134,23 @@
     "subtitle": "Intensive modular learning sessions",
     "noWords": {
       "title": "No words to learn today! 🎉",
-      "message": "You have mastered all available words. Add more to continue learning.",
-      "browseWords": "View words"
+      "message": "You’ve mastered all available words. Add more words to your study list to continue.",
+      "browseWords": "Browse words"
     }
   },
   "phases": {
-    "overview": "Ready to learn {{count}} new words? Let's start with an overview!",
+    "overview": "Ready to learn {{count}} new words? Let’s start with an overview!",
     "practice": "Practice session",
     "quiz": "Quiz time",
-    "complete": "Batch complete!"
+    "complete": "Block complete!"
   },
   "progress": {
-    "batchOf": "Learning batch {{current}} of {{total}}",
+    "batchOf": "Learning block {{current}} of {{total}}",
     "questionOf": "Question {{current}} of {{total}}"
   },
   "overview": {
     "title": "📚 Words to learn today",
-    "subtitle": "Carefully review these words before practice",
+    "subtitle": "Review these words carefully before starting practice",
     "difficultyLevel": "Level {{level}}",
     "seenTimes": "Seen {{count}} times",
     "process": {
@@ -240,14 +165,14 @@
       },
       "quiz": {
         "title": "3. Quiz",
-        "description": "Multiple-choice questions"
+        "description": "Answer multiple-choice questions"
       }
     },
-    "successCriteria": "💡 Answer correctly in both practice AND quiz for the words to be marked as learned!",
+    "successCriteria": "💡 To mark words as learned, answer correctly in both practice and quiz!",
     "studyTips": {
       "title": "📝 Study tips:",
-      "tip1": "Look at the image and say the word aloud",
-      "tip2": "Connect the visual with the meaning",
+      "tip1": "Look at the picture and say the word out loud",
+      "tip2": "Connect the visual with its meaning",
       "tip3": "Practice pronunciation",
       "tip4": "Remember: image + word + meaning"
     },
@@ -264,12 +189,12 @@
   },
   "complete": {
     "title": {
-      "batch": "🎉 Batch complete!",
+      "batch": "🎉 Block complete!",
       "session": "🎉 Learning session complete!"
     },
     "subtitle": {
-      "batch": "Great job! Ready for the next batch?",
-      "session": "Excellent work! You completed all batches."
+      "batch": "Great job! Ready for the next block?",
+      "session": "Excellent work! You’ve completed all blocks."
     },
     "stats": {
       "wordsLearned": "Words learned: {{count}}",
@@ -278,13 +203,13 @@
       "accuracy": "Overall accuracy: {{percentage}}%"
     },
     "actions": {
-      "nextBatch": "Go to next batch",
+      "nextBatch": "Go to next block",
       "backToDashboard": "Back to dashboard",
       "reviewWords": "Review learned words"
     },
     "batchResults": {
-      "title": "Batch results:",
-      "batchNumber": "Batch {{number}}",
+      "title": "Block results:",
+      "batchNumber": "Block {{number}}",
       "learned": "{{count}} learned"
     }
   },
@@ -298,45 +223,12 @@
     "favoriteUpdateFailed": "Failed to update favorite status",
     "failedToLoadWeeklyProgress": "Failed to load weekly progress data"
   },
-  "weeklyProgress": {
-    "title": "Weekly practice goal",
-    "goalReached": "Weekly goal achieved! 🎉",
-    "inProgress": "In progress",
-    "weekRange": "Week: {{startDate}} - {{endDate}}",
-    "sessionBreakdown": "Session breakdown",
-    "goalComplete": "Weekly practice goal completed!",
-    "sessionsRemaining": "{{count}} sessions left to reach weekly goal",
-    "sessionsRemaining_one": "{{count}} session left to reach weekly goal",
-    "sessionsRemaining_few": "{{count}} sessions left to reach weekly goal",
-    "sessionsRemaining_many": "{{count}} sessions left to reach weekly goal",
-    "getStarted": "Start the week strong! Complete your first session."
-  },
   "loading": {
-    "words": "Loading words to learn...",
+    "words": "Loading words for learning...",
     "startingPractice": "Starting practice session...",
     "submittingAnswer": "Submitting answer...",
     "loadingQuiz": "Loading quiz...",
     "dashboard": "Loading your learning dashboard...",
     "learnedWords": "Loading your learned words..."
-  },
-  "wordProgress": {
-    "title": "Word mastery progress",
-    "goalReached": "Mastery goal achieved! 🎉",
-    "inProgress": "In progress",
-    "breakdown": "Learning breakdown",
-    "learned": "Learned",
-    "learning": "Learning",
-    "wantToLearn": "Want to learn",
-    "remaining": "Remaining",
-    "detailedBreakdown": "Detailed status",
-    "statusLearned": "Learned",
-    "statusMastered": "Mastered",
-    "congratulations": "Congratulations!",
-    "firstGoalReached": "You learned your first {{count}} words! Next goal: 100!",
-    "nextGoalReached": "Amazing! You learned {{count}} words! Next goal: {{next}} words.",
-    "almostThere": "Almost there!",
-    "keepGoing": "Keep going!",
-    "firstGoalMessage": "Your goal: learn the first {{target}} words! {{remaining}} left.",
-    "nextGoalMessage": "Current goal: {{target}} words! {{remaining}} more to reach this milestone."
   }
 }

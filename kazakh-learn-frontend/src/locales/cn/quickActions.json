@@ -1,0 +1,9 @@
+{
+  "quickActions": {
+    "quickPractice": "快速练习",
+    "quickPracticeDesc": "通过卡片和练习复习单词",
+    "takeQuiz": "参加测试",
+    "takeQuizDesc": "通过互动测验检查您的知识",
+    "visitCategories": "浏览分类"
+  }
+}

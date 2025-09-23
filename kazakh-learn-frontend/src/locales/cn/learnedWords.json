@@ -1,0 +1,50 @@
+{
+  "learnedWords": {
+    "title": "已学单词",
+    "description": "查看和管理您已成功学习和掌握的单词",
+    "searchPlaceholder": "搜索已学单词...",
+    "filters": {
+      "statusFilter": "按状态筛选",
+      "allStatuses": "所有状态",
+      "showKazakh": "显示哈萨克语单词",
+      "showTranslation": "显示翻译"
+    },
+    "bulkActions": {
+      "selectedCount": "已选择 {{count}} 个单词",
+      "selectedCount_one": "已选择 {{count}} 个单词",
+      "selectedCount_other": "已选择 {{count}} 个单词",
+      "bulkUpdate": "选择操作"
+    },
+    "stats": {
+      "totalWords": "个单词已学",
+      "totalCorrect": "正确总数",
+      "totalIncorrect": "错误总数",
+      "averageAccuracy": "平均准确率",
+      "summaryStatistics": "汇总统计"
+    },
+    "table": {
+      "kazakhWord": "哈萨克语单词",
+      "translation": "翻译",
+      "status": "状态",
+      "timesCorrect": "正确次数",
+      "timesIncorrect": "错误次数",
+      "lastPracticed": "最后练习",
+      "never": "从未"
+    },
+    "status": {
+      "wantToLearn": "想学习",
+      "learning": "学习中",
+      "learned": "已学",
+      "mastered": "已掌握",
+      "review": "复习"
+    },
+    "messages": {
+      "noWords": "您还没有已学的单词",
+      "noFilteredWords": "所选筛选条件下没有找到单词",
+      "updateSuccess": "单词状态更新成功",
+      "updateError": "单词状态更新失败",
+      "bulkUpdateSuccess": "单词批量更新成功",
+      "bulkUpdateError": "单词批量更新失败"
+    }
+  }
+}

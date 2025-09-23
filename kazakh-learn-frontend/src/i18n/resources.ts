@@ -20,6 +20,12 @@ import wordsToReviewEn from '../locales/en/wordsToReview.json';
 import navigationEn from '../locales/en/navigation.json';
 import guidesEn from '../locales/en/guides.json';
 import commonEn from '../locales/en/common.json';
+import learnedWordsEn from '../locales/en/learnedWords.json';
+import weeklyProgressEn from '../locales/en/weeklyProgress.json';
+import wordProgressEn from '../locales/en/wordProgress.json';
+import dailyProgressEn from '../locales/en/dailyProgress.json';
+import wordsAvailableEn from '../locales/en/wordsAvailable.json';
+import quickActionsEn from '../locales/en/quickActions.json';
 
 import categoriesKk from '../locales/kk/categories.json';
 import wordsKk from '../locales/kk/words.json';
@@ -40,6 +46,12 @@ import wordsToReviewKk from '../locales/kk/wordsToReview.json';
 import navigationKk from '../locales/kk/navigation.json';
 import guidesKk from '../locales/kk/guides.json';
 import commonKk from '../locales/kk/common.json';
+import learnedWordsKk from '../locales/kk/learnedWords.json';
+import weeklyProgressKk from '../locales/kk/weeklyProgress.json';
+import wordProgressKk from '../locales/kk/wordProgress.json';
+import dailyProgressKk from '../locales/kk/dailyProgress.json';
+import wordsAvailableKk from '../locales/kk/wordsAvailable.json';
+import quickActionsKk from '../locales/kk/quickActions.json';
 
 import categoriesRu from '../locales/ru/categories.json';
 import wordsRu from '../locales/ru/words.json';
@@ -60,6 +72,12 @@ import wordsToReviewRu from '../locales/ru/wordsToReview.json';
 import navigationRu from '../locales/ru/navigation.json';
 import guidesRu from '../locales/ru/guides.json';
 import commonRu from '../locales/ru/common.json';
+import learnedWordsRu from '../locales/ru/learnedWords.json';
+import weeklyProgressRu from '../locales/ru/weeklyProgress.json';
+import wordProgressRu from '../locales/ru/wordProgress.json';
+import dailyProgressRu from '../locales/ru/dailyProgress.json';
+import wordsAvailableRu from '../locales/ru/wordsAvailable.json';
+import quickActionsRu from '../locales/ru/quickActions.json';
 
 // Create the base resources
 const baseResources = {
@@ -83,6 +101,12 @@ const baseResources = {
     navigation: navigationEn,
     guides: guidesEn,
     common: commonEn,
+    learnedWords: learnedWordsEn,
+    weeklyProgress: weeklyProgressEn,
+    wordProgress: wordProgressEn,
+    dailyProgress: dailyProgressEn,
+    wordsAvailable: wordsAvailableEn,
+    quickActions: quickActionsEn
   },
   kk: {
     categories: categoriesKk,
@@ -104,6 +128,12 @@ const baseResources = {
     navigation: navigationKk,
     guides: guidesKk,
     common: commonKk,
+    learnedWords: learnedWordsKk,
+    weeklyProgress: weeklyProgressKk,
+    wordProgress: wordProgressKk,
+    dailyProgress: dailyProgressKk,
+    wordsAvailable: wordsAvailableKk,
+    quickActions: quickActionsKk
   },
   ru: {
     categories: categoriesRu,
@@ -125,6 +155,12 @@ const baseResources = {
     navigation: navigationRu,
     guides: guidesRu,
     common: commonRu,
+    learnedWords: learnedWordsRu,
+    weeklyProgress: weeklyProgressRu,
+    wordProgress: wordProgressRu,
+    dailyProgress: dailyProgressRu,
+    wordsAvailable: wordsAvailableRu,
+    quickActions: quickActionsRu
   },
 };
 

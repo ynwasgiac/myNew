@@ -1,98 +1,50 @@
 {
-    "page": {
-      "title": "Изученные слова",
-      "description": "Просматривайте и управляйте словами, которые вы успешно изучили и освоили."
+  "learnedWords": {
+    "title": "Үйренілген сөздер",
+    "description": "Сіз сәтті үйреніп, меңгерген сөздерді көру және басқару",
+    "searchPlaceholder": "Үйренілген сөздерді іздеу...",
+    "filters": {
+      "statusFilter": "Күйі бойынша сүзгі",
+      "allStatuses": "Барлық күйлер",
+      "showKazakh": "Қазақ сөздерін көрсету",
+      "showTranslation": "Аудармаларды көрсету"
     },
-    "loading": {
-      "learnedWords": "Загрузка ваших изученных слов..."
-    },
-    "errors": {
-      "loadingFailed": "Не удалось загрузить изученные слова",
-      "tryAgain": "Пожалуйста, попробуйте позже",
-      "statusUpdateFailed": "Не удалось обновить статус слова",
-      "favoriteUpdateFailed": "Не удалось обновить статус избранного"
-    },
-    "messages": {
-      "statusUpdated": "Статус слова успешно обновлен",
-      "favoriteUpdated": "Статус избранного обновлен"
+    "bulkActions": {
+      "selectedCount": "{{count}} сөз таңдалды",
+      "selectedCount_one": "{{count}} сөз таңдалды",
+      "selectedCount_other": "{{count}} сөз таңдалды",
+      "bulkUpdate": "Әрекетті таңдаңыз"
     },
     "stats": {
-      "totalLearned": "Всего изучено",
-      "learned": "Изучено",
-      "mastered": "Освоено",
-      "favorites": "Избранные"
+      "totalWords": "сөз үйренілді",
+      "totalCorrect": "Барлығы дұрыс",
+      "totalIncorrect": "Барлығы қате",
+      "averageAccuracy": "Орташа дәлдік",
+      "summaryStatistics": "Жалпы статистика"
     },
-    "filters": {
-      "search": {
-        "placeholder": "Поиск изученных слов...",
-        "noResults": "Не найдено слов, соответствующих вашему поиску"
-      },
-      "category": {
-        "all": "Все категории",
-        "selectCategory": "Выберите категорию"
-      },
-      "status": {
-        "all": "Все статусы",
-        "learned": "Изучено",
-        "mastered": "Освоено"
-      },
-      "showFavoritesOnly": "Показать только избранные",
-      "clearFilters": "Очистить все фильтры"
-    },
-    "actions": {
-      "markAsFavorite": "Отметить как избранное",
-      "removeFromFavorites": "Удалить из избранного",
-      "resetToLearning": "Вернуть к изучению",
-      "practice": "Практиковать это слово",
-      "viewDetails": "Просмотреть детали",
-      "bulkActions": "Массовые действия",
-      "exportList": "Экспортировать список"
+    "table": {
+      "kazakhWord": "Қазақ сөзі",
+      "translation": "Аударма",
+      "status": "Күйі",
+      "timesCorrect": "Дұрыс жауаптар",
+      "timesIncorrect": "Қате жауаптар",
+      "lastPracticed": "Соңғы тәжірибе",
+      "never": "Ешқашан"
     },
     "status": {
-      "learned": "Изучено",
-      "mastered": "Освоено",
-      "changeStatus": "Изменить статус"
+      "wantToLearn": "Үйренгім келеді",
+      "learning": "Үйрену үстінде",
+      "learned": "Үйренілді",
+      "mastered": "Толық меңгерілді",
+      "review": "Қайталау"
     },
-    "wordCard": {
-      "addedOn": "Добавлено {{date}}",
-      "learnedOn": "Изучено {{date}}",
-      "lastPracticed": "Последняя практика {{date}}",
-      "accuracy": "Точность: {{percentage}}%",
-      "practiceCount": "{{count}} практическая сессия",
-      "practiceCount_plural": "{{count}} практических сессий",
-      "noTranslation": "Перевод недоступен",
-      "showMore": "Показать больше",
-      "showLess": "Показать меньше"
-    },
-    "emptyState": {
-      "noLearnedWords": {
-        "title": "Изученных слов пока нет",
-        "message": "Продолжайте практиковаться! Слова, которые вы отметите как 'изученные' или 'освоенные', появятся здесь.",
-        "actionText": "Начать изучение слов"
-      },
-      "noFilterResults": {
-        "title": "Нет слов, соответствующих вашим фильтрам",
-        "message": "Попробуйте изменить поисковые термины или критерии фильтра.",
-        "actionText": "Очистить фильтры"
-      }
-    },
-    "viewModes": {
-      "grid": "Вид сетки",
-      "list": "Вид списка"
-    },
-    "sorting": {
-      "newest": "Сначала новые",
-      "oldest": "Сначала старые",
-      "alphabetical": "По алфавиту",
-      "mostPracticed": "Наиболее практикуемые",
-      "leastPracticed": "Наименее практикуемые",
-      "highestAccuracy": "Самая высокая точность",
-      "lowestAccuracy": "Самая низкая точность"
-    },
-    "achievements": {
-      "firstLearnedWord": "Первое слово изучено!",
-      "learningStreak": "{{days}} дней подряд обучения",
-      "wordsThisWeek": "{{count}} слов изучено на этой неделе",
-      "perfectAccuracy": "Идеальная точность в последних практиках"
+    "messages": {
+      "noWords": "Сізде әзірге үйренілген сөздер жоқ",
+      "noFilteredWords": "Таңдалған сүзгілер бойынша сөздер табылмады",
+      "updateSuccess": "Сөздің күйі сәтті жаңартылды",
+      "updateError": "Сөздің күйін жаңарту мүмкін болмады",
+      "bulkUpdateSuccess": "Сөздер сәтті жаңартылды",
+      "bulkUpdateError": "Сөздерді жаңарту мүмкін болмады"
     }
   }
+}

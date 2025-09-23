@@ -1,7 +1,6 @@
 {
     "page": {
-      "title": "Ваш профиль",
-      "loading": "Загрузка..."
+      "title": "Ваш профиль"
     },
     "sections": {
       "accountDetails": "Данные аккаунта",

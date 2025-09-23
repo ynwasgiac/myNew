@@ -1,199 +1,50 @@
-# English (en/learnedWords.json)
 {
-  "page": {
-    "title": "Learned Words",
-    "description": "Review and manage the words you've successfully learned and mastered."
-  },
-  "loading": {
-    "learnedWords": "Loading your learned words..."
-  },
-  "errors": {
-    "loadingFailed": "Failed to load learned words",
-    "tryAgain": "Please try again later",
-    "statusUpdateFailed": "Failed to update word status",
-    "favoriteUpdateFailed": "Failed to update favorite status"
-  },
-  "messages": {
-    "statusUpdated": "Word status updated successfully",
-    "favoriteUpdated": "Favorite status updated"
-  },
-  "stats": {
-    "totalLearned": "Total Learned",
-    "learned": "Learned",
-    "mastered": "Mastered", 
-    "favorites": "Favorites"
-  },
-  "filters": {
-    "search": {
-      "placeholder": "Search learned words...",
-      "noResults": "No words found matching your search"
+  "learnedWords": {
+    "title": "Выученные слова",
+    "description": "Просмотр и управление словами, которые вы успешно выучили и освоили",
+    "searchPlaceholder": "Поиск выученных слов...",
+    "filters": {
+      "statusFilter": "Фильтр по статусу",
+      "allStatuses": "Все статусы",
+      "showKazakh": "Показать казахские слова",
+      "showTranslation": "Показать переводы"
     },
-    "category": {
-      "all": "All Categories",
-      "selectCategory": "Select Category"
+    "bulkActions": {
+      "selectedCount": "{{count}} слов выбрано",
+      "selectedCount_one": "{{count}} слово выбрано",
+      "selectedCount_other": "{{count}} слов выбрано",
+      "bulkUpdate": "Выберите действие"
+    },
+    "stats": {
+      "totalWords": "слов выучено",
+      "totalCorrect": "Всего правильных",
+      "totalIncorrect": "Всего ошибок",
+      "averageAccuracy": "Средняя точность",
+      "summaryStatistics": "Сводная статистика"
+    },
+    "table": {
+      "kazakhWord": "Казахское слово",
+      "translation": "Перевод",
+      "status": "Статус",
+      "timesCorrect": "Правильные ответы",
+      "timesIncorrect": "Ошибочные ответы",
+      "lastPracticed": "Последняя практика",
+      "never": "Никогда"
     },
     "status": {
-      "all": "All Statuses",
-      "learned": "Learned",
-      "mastered": "Mastered"
+      "wantToLearn": "Хочу выучить",
+      "learning": "В процессе",
+      "learned": "Выучено",
+      "mastered": "Освоено",
+      "review": "Повторение"
     },
-    "showFavoritesOnly": "Show favorites only",
-    "clearFilters": "Clear all filters"
-  },
-  "actions": {
-    "markAsFavorite": "Mark as favorite",
-    "removeFromFavorites": "Remove from favorites",
-    "resetToLearning": "Reset to learning",
-    "practice": "Practice this word",
-    "viewDetails": "View details",
-    "bulkActions": "Bulk actions",
-    "exportList": "Export list"
-  },
-  "status": {
-    "learned": "Learned",
-    "mastered": "Mastered",
-    "changeStatus": "Change status"
-  },
-  "wordCard": {
-    "addedOn": "Added on {{date}}",
-    "learnedOn": "Learned on {{date}}",
-    "lastPracticed": "Last practiced {{date}}",
-    "accuracy": "Accuracy: {{percentage}}%",
-    "practiceCount": "{{count}} practice session",
-    "practiceCount_plural": "{{count}} practice sessions",
-    "noTranslation": "No translation available",
-    "showMore": "Show more",
-    "showLess": "Show less"
-  },
-  "emptyState": {
-    "noLearnedWords": {
-      "title": "No learned words yet",
-      "message": "Keep practicing! Words you mark as 'learned' or 'mastered' will appear here.",
-      "actionText": "Start learning words"
-    },
-    "noFilterResults": {
-      "title": "No words match your filters",
-      "message": "Try adjusting your search terms or filter criteria.",
-      "actionText": "Clear filters"
+    "messages": {
+      "noWords": "У вас пока нет выученных слов",
+      "noFilteredWords": "По выбранным фильтрам слова не найдены",
+      "updateSuccess": "Статус слова успешно обновлен",
+      "updateError": "Не удалось обновить статус слова",
+      "bulkUpdateSuccess": "Слова успешно обновлены",
+      "bulkUpdateError": "Не удалось обновить слова"
     }
-  },
-  "viewModes": {
-    "grid": "Grid view",
-    "list": "List view"
-  },
-  "sorting": {
-    "newest": "Newest first",
-    "oldest": "Oldest first", 
-    "alphabetical": "Alphabetical",
-    "mostPracticed": "Most practiced",
-    "leastPracticed": "Least practiced",
-    "highestAccuracy": "Highest accuracy",
-    "lowestAccuracy": "Lowest accuracy"
-  },
-  "achievements": {
-    "firstLearnedWord": "First word learned!",
-    "learningStreak": "{{days}} day learning streak",
-    "wordsThisWeek": "{{count}} words learned this week",
-    "perfectAccuracy": "Perfect accuracy on recent practices"
-  }
-}
-
-# Kazakh (kk/learnedWords.json)
-{
-  "page": {
-    "title": "Үйренілген сөздер",
-    "description": "Сәтті үйренген және меңгерген сөздеріңізді қарап шығыңыз және басқарыңыз."
-  },
-  "loading": {
-    "learnedWords": "Үйренілген сөздеріңіз жүктелуде..."
-  },
-  "errors": {
-    "loadingFailed": "Үйренілген сөздерді жүктеу сәтсіз аяқталды",
-    "tryAgain": "Кейінірек қайталап көріңіз",
-    "statusUpdateFailed": "Сөз күйін жаңарту сәтсіз аяқталды",
-    "favoriteUpdateFailed": "Таңдаулы күйін жаңарту сәтсіз аяқталды"
-  },
-  "messages": {
-    "statusUpdated": "Сөз күйі сәтті жаңартылды",
-    "favoriteUpdated": "Таңдаулы күйі жаңартылды"
-  },
-  "stats": {
-    "totalLearned": "Барлығы үйренілген",
-    "learned": "Үйренілген",
-    "mastered": "Меңгерілген",
-    "favorites": "Таңдаулылар"
-  },
-  "filters": {
-    "search": {
-      "placeholder": "Үйренілген сөздерді іздеу...",
-      "noResults": "Іздеуіңізге сәйкес сөздер табылмады"
-    },
-    "category": {
-      "all": "Барлық санаттар",
-      "selectCategory": "Санатты таңдау"
-    },
-    "status": {
-      "all": "Барлық күйлер",
-      "learned": "Үйренілген",
-      "mastered": "Меңгерілген"
-    },
-    "showFavoritesOnly": "Тек таңдаулыларды көрсету",
-    "clearFilters": "Барлық сүзгілерді тазалау"
-  },
-  "actions": {
-    "markAsFavorite": "Таңдаулы деп белгілеу",
-    "removeFromFavorites": "Таңдаулылардан алып тастау",
-    "resetToLearning": "Үйренуге қайтару",
-    "practice": "Бұл сөзді жаттығу",
-    "viewDetails": "Толығырақ қарау",
-    "bulkActions": "Жаппай әрекеттер",
-    "exportList": "Тізімді экспорттау"
-  },
-  "status": {
-    "learned": "Үйренілген",
-    "mastered": "Меңгерілген",
-    "changeStatus": "Күйін өзгерту"
-  },
-  "wordCard": {
-    "addedOn": "{{date}} қосылды",
-    "learnedOn": "{{date}} үйренілді",
-    "lastPracticed": "Соңғы жаттығу {{date}}",
-    "accuracy": "Дәлдік: {{percentage}}%",
-    "practiceCount": "{{count}} жаттығу сессиясы",
-    "practiceCount_plural": "{{count}} жаттығу сессиясы",
-    "noTranslation": "Аударма қолжетімсіз",
-    "showMore": "Көбірек көрсету",
-    "showLess": "Азырақ көрсету"
-  },
-  "emptyState": {
-    "noLearnedWords": {
-      "title": "Әлі үйренілген сөздер жоқ",
-      "message": "Жаттығуды жалғастырыңыз! 'Үйренілген' немесе 'меңгерілген' деп белгілеген сөздеріңіз осында пайда болады.",
-      "actionText": "Сөздерді үйренуді бастау"
-    },
-    "noFilterResults": {
-      "title": "Сүзгілеріңізге сәйкес сөздер жоқ",
-      "message": "Іздеу терминдеріңізді немесе сүзгі критерийлеріңізді түзетіп көріңіз.",
-      "actionText": "Сүзгілерді тазалау"
-    }
-  },
-  "viewModes": {
-    "grid": "Тор көрінісі",
-    "list": "Тізім көрінісі"
-  },
-  "sorting": {
-    "newest": "Алдымен жаңа",
-    "oldest": "Алдымен ескі",
-    "alphabetical": "Алфавит бойынша",
-    "mostPracticed": "Ең көп жаттығылған",
-    "leastPracticed": "Ең аз жаттығылған",
-    "highestAccuracy": "Ең жоғары дәлдік",
-    "lowestAccuracy": "Ең төмен дәлдік"
-  },
-  "achievements": {
-    "firstLearnedWord": "Алғашқы сөз үйренілді!",
-    "learningStreak": "{{days}} күн үздіксіз үйрену",
-    "wordsThisWeek": "Осы аптада {{count}} сөз үйренілді",
-    "perfectAccuracy": "Соңғы жаттығуларда мінсіз дәлдік"
   }
 }

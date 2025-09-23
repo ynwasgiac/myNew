@@ -9,7 +9,7 @@ interface QuickActionCardsProps {
 
 const QuickActionCards: React.FC<QuickActionCardsProps> = ({ review }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation('learning');
+  const { t } = useTranslation('quickActions');
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -288,7 +288,10 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
   navigateToPrevious,
   navigateToNext
 }) => {
-  const { t } = useTranslation('wordDetail');
+
+  const { t: tWordDetail } = useTranslation('wordDetail');
+  const { t: tCommon } = useTranslation('common');
+
   if (!navigationInfo || (!navigationInfo.hasPrevious && navigationInfo.isLoadingNext)) {
     return null;
   }
@@ -318,10 +321,10 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
             <div className="w-full p-3 rounded-lg border border-gray-200 bg-gray-100">
               <div className="flex items-center space-x-2 text-sm text-gray-400 mb-1">
                 <ChevronLeftIcon className="h-4 w-4" />
-                <span>{t('navigation.noPrevious')}</span>
+                <span>{tWordDetail('navigation.noPrevious')}</span>
               </div>
               <div className="text-gray-400">
-                {t('navigation.firstOrMissing')}
+                {tWordDetail('navigation.firstOrMissing')}
               </div>
             </div>
           )}
@@ -357,7 +360,7 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
             >
               <div className="flex items-center justify-end space-x-2 text-sm text-gray-500 mb-1">
                 <span>
-                  {navigationInfo.isLoadingNext ? t('common.loading') : t('navigation.tryId', { id: navigationInfo.nextWordId })}
+                  {navigationInfo.isLoadingNext ? tCommon('loading') : tWordDetail('navigation.tryId', { id: navigationInfo.nextWordId })}
                 </span>
                 {navigationInfo.isLoadingNext ? (
                   <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
@@ -366,7 +369,7 @@ const NavigationPreview: React.FC<NavigationPreviewProps> = ({
                 )}
               </div>
               <div className="text-gray-400">
-                {navigationInfo.isLoadingNext ? t('navigation.checking') : t('navigation.clickToTry')}
+                {navigationInfo.isLoadingNext ? tWordDetail('navigation.checking') : tWordDetail('navigation.clickToTry')}
               </div>
             </button>
           )}

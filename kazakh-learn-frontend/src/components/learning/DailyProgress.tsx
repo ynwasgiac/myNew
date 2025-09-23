@@ -14,7 +14,7 @@ interface DailyProgressData {
 }
 
 const DailyProgress: React.FC = () => {
-  const { t } = useTranslation('learning');
+  const { t } = useTranslation('dailyProgress');
 
   // Fetch daily progress from API
   const { 
