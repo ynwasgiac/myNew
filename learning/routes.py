@@ -2173,59 +2173,8 @@ async def start_quiz_session(
             db, current_user.id, "quiz", category_id, difficulty_level_id
         )
 
-        # Get learned words for quiz
-        learned_words = await UserWordProgressCRUD.get_user_learned_words(
-            db, current_user.id, category_id, difficulty_level_id, question_count * 3
-        )
-
-        if len(learned_words) < question_count:
-            raise HTTPException(
-                status_code=400,
-                detail="Not enough learned words for quiz"
-            )
-
         # Generate quiz questions from learned words
         quiz_questions = []
-        selected_words = learned_words[:question_count]
-
-        for word in selected_words:
-            # Get correct translation
-            correct_translation = "Unknown"
-            if word.kazakh_word.translations:
-                for translation in word.kazakh_word.translations:
-                    if translation.language.language_code == language_code:
-                        correct_translation = translation.translation
-                        break
-                if correct_translation == "Unknown" and word.kazakh_word.translations:
-                    correct_translation = word.kazakh_word.translations[0].translation
-
-            # Generate wrong options
-            wrong_options = []
-            for other_word in learned_words[question_count:question_count + 3]:
-                if other_word.kazakh_word.translations:
-                    for translation in other_word.kazakh_word.translations:
-                        if translation.language.language_code == language_code:
-                            wrong_options.append(translation.translation)
-                            break
-
-            # Ensure we have at least 3 wrong options
-            while len(wrong_options) < 3:
-                wrong_options.append("Option " + str(len(wrong_options) + 1))
-
-            # Create options (1 correct + 3 wrong)
-            all_options = [correct_translation] + wrong_options[:3]
-            import random
-            random.shuffle(all_options)
-            correct_answer_index = all_options.index(correct_translation)
-
-            quiz_questions.append({
-                "id": word.kazakh_word_id,
-                "kazakh_word": word.kazakh_word.kazakh_word,
-                "kazakh_cyrillic": word.kazakh_word.kazakh_cyrillic,
-                "options": all_options,
-                "correct_answer_index": correct_answer_index,
-                "correct_answer": correct_translation
-            })
 
         return {
             "session_id": session.id,

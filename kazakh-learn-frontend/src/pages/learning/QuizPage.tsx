@@ -121,37 +121,15 @@ const QuizPage: React.FC = () => {
       
       const questionCount = userPreferences.quiz_word_count || 9;
       
-      // console.log('🔍 QUIZ DEBUG:');
-      // console.log('  userPreferences:', userPreferences);
-      // console.log('  quiz_word_count from settings:', userPreferences.quiz_word_count);
-      // console.log('  questionCount (final):', questionCount);
-      
-      // console.log('🧠 Starting quiz generation with LEARNED words only...');
-      // console.log('Quiz parameters:', { 
-      //   questionCount, 
-      //   'userPreferences.quiz_word_count': userPreferences.quiz_word_count,
-      //   categoryId, 
-      //   difficultyLevelId 
-      // });
-
-      // console.log('🧠 Starting quiz generation with LEARNED words only...');
-      // console.log('Quiz parameters:', { questionCount, categoryId, difficultyLevelId });
-      
       try {
-        // 🆕 Use the new getLearnedWords function with correct parameters
-        // console.log('📚 Fetching learned words using new getLearnedWords function...');
-        
         const learnedWordsResponse = await learningAPI.getLearnedWords({
-          limit: 100, // Get all learned words
-          include_mastered: false, // Include mastered words for quiz
-          language_code: getUserLanguage(), // User's preferred language
+          limit: 100,
+          include_mastered: false,
+          language_code: getUserLanguage(),
           category_id: categoryId,
           difficulty_level_id: difficultyLevelId,
           offset: 0
         });
-        
-        // console.log('📊 Learned words response for quiz:', learnedWordsResponse);
-        // console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
         
         if (learnedWordsResponse.length === 0) {
           throw new Error('No learned words available for quiz. Please complete some learning modules first to unlock quiz mode.');
@@ -159,67 +137,46 @@ const QuizPage: React.FC = () => {
         
         // Convert to quiz word format
         const quizWords: QuizWord[] = learnedWordsResponse.map((wordData: any) => {
-          // The backend response is already in the correct format - no nested structure!
-          // console.log('🔍 Processing word data:', wordData);
-          
           return {
             id: wordData.id,
             kazakh_word: wordData.kazakh_word,
             kazakh_cyrillic: wordData.kazakh_cyrillic,
-            translation: wordData.translation, // Already in user's preferred language from backend
+            translation: wordData.translation,
             pronunciation: wordData.pronunciation,
             image_url: wordData.image_url,
-            difficulty_level: 1, // Backend returns string, we need number
+            difficulty_level: 1,
           };
         });
         
-        // console.log(`✅ Successfully converted ${quizWords.length} learned words for quiz`);
-        
-        // Check if we have enough words for quiz (need at least 4 for proper quiz)
         if (quizWords.length < 4) {
           throw new Error('Need at least 4 learned words to create a proper quiz. Please learn more words first.');
         }
         
-        // Limit the number of questions based on user preferences and available words
         const maxQuestions = Math.min(questionCount, quizWords.length);
         const selectedWords = quizWords
-          .sort(() => Math.random() - 0.5) // Shuffle array
+          .sort(() => Math.random() - 0.5)
           .slice(0, maxQuestions);
-        
-        // console.log(`🎲 Selected ${selectedWords.length} words for quiz out of ${quizWords.length} available`);
         
         // Generate quiz questions
         const questions: LocalQuizQuestion[] = selectedWords.map((word, index) => {
-          // console.log(`\n🔤 Generating question ${index + 1} for word: "${word.kazakh_word}"`);
-          
-          // Create wrong answers from other words
           const otherWords = quizWords.filter(w => w.id !== word.id);
           const wrongAnswers = otherWords
             .sort(() => Math.random() - 0.5)
             .slice(0, 3)
             .map(w => w.translation);
           
-          // Ensure we have exactly 3 wrong answers
           while (wrongAnswers.length < 3) {
             wrongAnswers.push(`Sample translation ${wrongAnswers.length + 1}`);
           }
           
-          // Create all options and shuffle
           const allOptions = [word.translation, ...wrongAnswers];
           const correctAnswer = Math.floor(Math.random() * 4);
           
-          // Place correct answer at the random position
           const finalOptions = [...allOptions];
           if (correctAnswer !== 0) {
             [finalOptions[0], finalOptions[correctAnswer]] = [finalOptions[correctAnswer], finalOptions[0]];
           }
           
-          // console.log(`   ✅ Correct answer: "${word.translation}"`);
-          // console.log(`   ❌ Wrong answers: ${wrongAnswers.join(', ')}`);
-          // console.log(`   🎲 All options: ${finalOptions.join(', ')}`);
-          // console.log(`   📍 Correct index: ${correctAnswer}`);
-          
-          // Verify we have exactly 4 options
           if (finalOptions.length !== 4) {
             console.error(`❌ ERROR: Expected 4 options, got ${finalOptions.length}`);
             throw new Error(`Quiz generation error: Expected 4 options, got ${finalOptions.length}`);
@@ -235,10 +192,32 @@ const QuizPage: React.FC = () => {
           };
         });
         
-        // console.log(`🎯 Generated ${questions.length} quiz questions from learned words`);
+        // =============================================
+        // ДОБАВЛЯЕМ СОЗДАНИЕ СЕССИИ В БАЗЕ ДАННЫХ
+        // =============================================
+        let sessionId: number;
+        
+        try {
+          // Пробуем создать сессию через endpoint /learning/quiz/start
+          const sessionResponse = await api.post('/learning/quiz/start', {
+            category_id: categoryId,
+            difficulty_level_id: difficultyLevelId,
+            question_count: questions.length,
+            language_code: getUserLanguage()
+          });
+          
+          sessionId = sessionResponse.data.session_id;
+          console.log('✅ Quiz session created in database:', sessionId);
+          
+        } catch (error) {
+          // Если endpoint не работает, используем случайный ID
+          console.warn('Could not create backend session, using local ID');
+          sessionId = Math.floor(Math.random() * 10000);
+        }
+        // =============================================
         
         return {
-          session_id: Math.floor(Math.random() * 10000),
+          session_id: sessionId,
           questions: questions,
           session_type: 'learned_quiz',
           total_questions: questions.length
@@ -250,7 +229,6 @@ const QuizPage: React.FC = () => {
       }
     },
     onSuccess: (data) => {
-      // console.log('🧠 Quiz generated successfully:', data);
       setSessionId(data.session_id);
       setQuestions(data.questions);
       setStartTime(Date.now());
