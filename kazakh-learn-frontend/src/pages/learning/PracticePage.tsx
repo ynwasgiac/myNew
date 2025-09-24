@@ -1,4 +1,4 @@
-// src/pages/learning/PracticePage.tsx
+// src/pages/learning/PracticePage.tsx - Updated to create session on first answer
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -57,6 +57,8 @@ const PracticePage: React.FC = () => {
   }[]>([]);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  // NEW: Track if session has been created
+  const [sessionCreated, setSessionCreated] = useState(false);
 
   // Hint system state
   const [hintHelper, setHintHelper] = useState<LetterHintHelper | null>(null);
@@ -86,24 +88,18 @@ const PracticePage: React.FC = () => {
   const practiceMethod: PracticeMethod = (userPreferences as any)?.practice_method || 'kaz_to_translation';
   const wordCount = userPreferences?.practice_word_count || 9;
 
-  // console.log('🎯 Practice method from settings:', practiceMethod);
-
-  // Start session mutation - using getLearnedWords
-  const startSessionMutation = useMutation({
+  // Generate practice questions mutation (without creating session)
+  const generatePracticeMutation = useMutation({
     mutationFn: async () => {
-      // console.log('🔍 Starting practice with practiceType:', practiceType);
-      // console.log('Category filter:', categoryId);
-      // console.log('Word count from settings:', wordCount);
-      
       try {
         const userLanguage = user?.main_language?.language_code || 'en';
 
-        // ТОЛЬКО ДЛЯ type=review используем новую логику
+        // For review type practice
         if (practiceType === 'review') {
-          console.log('📚 Fetching words for REVIEW...');
+          console.log('Fetching words for REVIEW...');
           
           const reviewWords = await learningAPI.getWordsForReview(wordCount, userLanguage);
-          console.log('📊 Review words response:', reviewWords);
+          console.log('Review words response:', reviewWords);
           
           if (reviewWords.length === 0) {
             throw new Error(t('practice.errors.noWordsAvailable'));
@@ -113,18 +109,16 @@ const PracticePage: React.FC = () => {
           const questions: ScenarioQuestion[] = reviewWords
             .slice(0, wordCount)
             .map(wordData => {
-              // Данные от /due-for-review имеют структуру: { kazakh_word: { translations: [...] } }
               const kazakhWord = (wordData as any).kazakh_word;
               
               if (!kazakhWord) {
-                console.log('⚠️ No kazakh_word data found');
+                console.log('No kazakh_word data found');
                 return null;
               }
               
-              // Ищем перевод на нужном языке
+              // Find translation in user's language
               let translation = '';
               if (kazakhWord.translations && Array.isArray(kazakhWord.translations)) {
-                // Ищем перевод на языке пользователя (ru)
                 const userLangTranslation = kazakhWord.translations.find(
                   (t: any) => t.language_code === userLanguage
                 );
@@ -132,14 +126,13 @@ const PracticePage: React.FC = () => {
                 if (userLangTranslation) {
                   translation = userLangTranslation.translation;
                 } else {
-                  // Fallback: ищем английский перевод
+                  // Fallback to English
                   const enTranslation = kazakhWord.translations.find(
                     (t: any) => t.language_code === 'en'
                   );
                   if (enTranslation) {
                     translation = enTranslation.translation;
                   } else if (kazakhWord.translations.length > 0) {
-                    // Последний fallback: используем первый доступный перевод
                     translation = kazakhWord.translations[0].translation;
                   }
                 }
@@ -152,10 +145,10 @@ const PracticePage: React.FC = () => {
                 translation: translation
               };
 
-              console.log('🔍 Processing review word:', word.kazakh_word, '→', word.translation, `(${userLanguage})`);
+              console.log('Processing review word:', word.kazakh_word, '→', word.translation, `(${userLanguage})`);
 
               if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
-                console.log('⚠️ Skipping word - no valid translation');
+                console.log('Skipping word - no valid translation');
                 return null;
               }
 
@@ -183,25 +176,17 @@ const PracticePage: React.FC = () => {
             throw new Error('No words with valid translations found for review');
           }
 
-          console.log('✅ Review session ready with', questions.length, 'questions');
+          console.log('Review practice ready with', questions.length, 'questions');
           
-          // Create practice session
-          const sessionData = await learningAPI.startPracticeSession({
+          return {
+            questions,
             session_type: 'review',
-            word_count: wordCount,
-            category_id: categoryId,
-            language_code: userLanguage
-          });
-
-          setSessionId(sessionData.session_id);
-          setScenarioQuestions(questions);
-          setQuestionStartTime(Date.now());
-
-          return { session: sessionData, questions };
+            total_questions: questions.length
+          };
         }
 
-        // ДЛЯ ОБЫЧНОЙ ПРАКТИКИ - ТОЧНО ОРИГИНАЛЬНАЯ ЛОГИКА
-        console.log('📚 Fetching learned words...');
+        // For regular practice
+        console.log('Fetching learned words...');
         
         const learnedWordsResponse = await learningAPI.getLearnedWords({
           category_id: categoryId,
@@ -210,8 +195,7 @@ const PracticePage: React.FC = () => {
           language_code: userLanguage
         });
         
-        // console.log('📊 Learned words response:', learnedWordsResponse);
-        console.log(`📈 Total learned words found: ${learnedWordsResponse.length}`);
+        console.log(`Total learned words found: ${learnedWordsResponse.length}`);
         
         if (learnedWordsResponse.length === 0) {
           throw new Error(t('practice.errors.noWordsAvailable'));
@@ -219,17 +203,15 @@ const PracticePage: React.FC = () => {
 
         // Shuffle for variety and limit to requested word count
         const shuffledWords = [...learnedWordsResponse].sort(() => Math.random() - 0.5);
-        
-        console.log(`🎲 Shuffled ${shuffledWords.length} words`);
+        console.log(`Shuffled ${shuffledWords.length} words`);
         
         // Take up to wordCount words
         const selectedWords = shuffledWords.slice(0, Math.min(wordCount, shuffledWords.length));
-        console.log(`✂️ Selected ${selectedWords.length} words for practice`);
+        console.log(`Selected ${selectedWords.length} words for practice`);
 
         // Create scenario questions from words
         const questions: ScenarioQuestion[] = selectedWords
           .map(wordData => {
-            // ИСПРАВЛЕНИЕ: правильная обработка структуры данных из getLearnedWords
             const word = {
               id: (wordData as any).id,
               kazakh_word: (wordData as any).kazakh_word,
@@ -239,7 +221,7 @@ const PracticePage: React.FC = () => {
 
             // Skip words without valid translation or kazakh word
             if (!word.translation || !word.kazakh_word || word.translation === 'No translation') {
-              console.log(`⚠️ Skipping word ${word.id}: invalid translation or kazakh word`);
+              console.log(`Skipping word ${word.id}: invalid translation or kazakh word`);
               return null;
             }
 
@@ -263,42 +245,71 @@ const PracticePage: React.FC = () => {
           })
           .filter(q => q !== null) as ScenarioQuestion[];
 
-        // console.log('✨ Generated scenario questions:', questions);
-        console.log('📊 Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
+        console.log('Valid questions created:', questions.length, 'out of', selectedWords.length, 'words');
 
         if (questions.length === 0) {
           throw new Error('No valid words with translations found for practice. Please check if learned words have proper translations.');
         }
 
+        return {
+          questions,
+          session_type: 'combined_scenarios',
+          total_questions: questions.length
+        };
+
+      } catch (error) {
+        console.error('Error generating practice questions:', error);
+        throw error;
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to generate practice questions:', error);
+      toast.error(error.message || t('practice.errors.sessionFailed'));
+    },
+    onSuccess: (data) => {
+      setScenarioQuestions(data.questions);
+      setQuestionStartTime(Date.now());
+      
+      const message = practiceType === 'review' ? t('practice.messages.reviewStarted') : t('practice.status.starting');
+      toast.success(message);
+    }
+  });
+
+  // Create session mutation (called on first answer)
+  const createSessionMutation = useMutation({
+    mutationFn: async () => {
+      try {
+        const userLanguage = user?.main_language?.language_code || 'en';
+        
         // Create practice session
         const sessionData = await learningAPI.startPracticeSession({
-          session_type: 'combined_scenarios',
+          session_type: practiceType === 'review' ? 'review' : 'combined_scenarios',
           word_count: wordCount,
           category_id: categoryId,
           language_code: userLanguage
         });
 
-        // console.log('✅ Practice session created:', sessionData);
-
-        setSessionId(sessionData.session_id);
-        setScenarioQuestions(questions);
-        setQuestionStartTime(Date.now());
-
-        return { session: sessionData, questions };
-
+        console.log('Practice session created in database:', sessionData.session_id);
+        return sessionData.session_id;
+        
       } catch (error) {
-        console.error('❌ Error starting practice session:', error);
-        throw error;
+        // If backend session creation fails, use random ID for local tracking
+        console.warn('Could not create backend session, using local ID:', error);
+        const localId = Math.floor(Math.random() * 10000);
+        return localId;
       }
     },
-    onError: (error: any) => {
-      console.error('Failed to start practice session:', error);
-      toast.error(error.message || t('practice.errors.sessionFailed'));
+    onSuccess: (sessionIdFromServer) => {
+      setSessionId(sessionIdFromServer);
+      setSessionCreated(true);
+      console.log('Practice session created with ID:', sessionIdFromServer);
     },
-    onSuccess: (data) => {
-      // console.log('✅ Session started successfully:', data);
-      const message = practiceType === 'review' ? t('practice.messages.reviewStarted') : t('practice.status.starting');
-      toast.success(message);
+    onError: (error) => {
+      console.error('Session creation error:', error);
+      // Even if session creation fails, continue with local ID
+      const fallbackId = Math.floor(Math.random() * 10000);
+      setSessionId(fallbackId);
+      setSessionCreated(true);
     }
   });
 
@@ -322,12 +333,12 @@ const PracticePage: React.FC = () => {
     }
   });
 
-  // Initialize session
+  // Initialize practice questions when component mounts
   useEffect(() => {
-    if (stats && !sessionId && userPreferences) {
-      startSessionMutation.mutate();
+    if (stats && scenarioQuestions.length === 0 && userPreferences) {
+      generatePracticeMutation.mutate();
     }
-  }, [stats, sessionId, userPreferences]);
+  }, [stats, scenarioQuestions.length, userPreferences]);
 
   const currentQuestion = scenarioQuestions[currentQuestionIndex];
 
@@ -407,7 +418,13 @@ const PracticePage: React.FC = () => {
 
   const handleSubmitAnswer = () => {
     const currentQuestion = scenarioQuestions[currentQuestionIndex];
-    if (!currentQuestion || !sessionId) return;
+    if (!currentQuestion) return;
+
+    // Create session on first answer only
+    if (!sessionCreated && currentQuestionIndex === 0) {
+      console.log('First answer submitted - creating session...');
+      createSessionMutation.mutate();
+    }
 
     const finalAnswer = userAnswer.trim();
     
@@ -434,7 +451,7 @@ const PracticePage: React.FC = () => {
       const userNormalized = normalizeKazakh(finalAnswer);
       const correctNormalized = normalizeKazakh(currentQuestion.correctAnswer);
       
-      console.log('🔍 Comparing answers:', {
+      console.log('Comparing answers:', {
         user: userNormalized,
         correct: correctNormalized,
         match: userNormalized === correctNormalized
@@ -445,22 +462,24 @@ const PracticePage: React.FC = () => {
 
     const responseTime = Date.now() - questionStartTime;
 
-    console.log('✅ Answer check result:', {
+    console.log('Answer check result:', {
       isCorrect,
       userAnswer: finalAnswer,
       correctAnswer: currentQuestion.correctAnswer,
       method: currentQuestion.method
     });
 
-    // Submit to backend
-    submitAnswerMutation.mutate({
-      sessionId,
-      wordId: currentQuestion.word.id,
-      wasCorrect: isCorrect,
-      userAnswer: finalAnswer,
-      correctAnswer: currentQuestion.correctAnswer,
-      responseTime,
-    });
+    // Submit to backend if session exists
+    if (sessionId) {
+      submitAnswerMutation.mutate({
+        sessionId,
+        wordId: currentQuestion.word.id,
+        wasCorrect: isCorrect,
+        userAnswer: finalAnswer,
+        correctAnswer: currentQuestion.correctAnswer,
+        responseTime,
+      });
+    }
 
     // Store result locally
     setSessionResults(prev => [...prev, {
@@ -496,15 +515,23 @@ const PracticePage: React.FC = () => {
 
   const handleSkip = () => {
     const currentQuestion = scenarioQuestions[currentQuestionIndex];
-    if (currentQuestion && sessionId) {
-      submitAnswerMutation.mutate({
-        sessionId,
-        wordId: currentQuestion.word.id,
-        wasCorrect: false,
-        userAnswer: 'skipped',
-        correctAnswer: currentQuestion.correctAnswer,
-        responseTime: Date.now() - questionStartTime,
-      });
+    if (currentQuestion) {
+      // Create session on first skip if not already created
+      if (!sessionCreated && currentQuestionIndex === 0) {
+        console.log('First question skipped - creating session...');
+        createSessionMutation.mutate();
+      }
+
+      if (sessionId) {
+        submitAnswerMutation.mutate({
+          sessionId,
+          wordId: currentQuestion.word.id,
+          wasCorrect: false,
+          userAnswer: 'skipped',
+          correctAnswer: currentQuestion.correctAnswer,
+          responseTime: Date.now() - questionStartTime,
+        });
+      }
 
       setSessionResults(prev => [...prev, {
         word_id: currentQuestion.word.id,
@@ -517,10 +544,33 @@ const PracticePage: React.FC = () => {
     handleNextQuestion();
   };
 
-  const handleFinishSession = () => {
-    if (!sessionId) return;
+  // Finish session mutation
+  const finishSessionMutation = useMutation({
+    mutationFn: async (params: { sessionId: number; duration: number }) => {
+      try {
+        return await learningAPI.finishPracticeSession(params.sessionId, params.duration);
+      } catch (error) {
+        console.error('Failed to finish practice session:', error);
+        // Don't throw error - we still want to navigate to results
+        return null;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Practice session finished successfully:', data);
+    },
+    onError: (error) => {
+      console.error('Error finishing session:', error);
+    }
+  });
 
+  const handleFinishSession = async () => {
     const duration = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Finish the session in the database if we have a session ID
+    if (sessionId) {
+      console.log('Finishing practice session in database...');
+      finishSessionMutation.mutate({ sessionId, duration });
+    }
     
     // Navigate to progress page with results
     const correct = sessionResults.filter(r => r.correct).length;
@@ -542,9 +592,21 @@ const PracticePage: React.FC = () => {
     });
   };
 
+  const handleRetakePractice = () => {
+    setScenarioQuestions([]);
+    setCurrentQuestionIndex(0);
+    setUserAnswer('');
+    setShowAnswer(false);
+    setSessionResults([]);
+    setStartTime(Date.now());
+    setSessionId(null);
+    setSessionCreated(false); // Reset session creation flag
+    generatePracticeMutation.mutate();
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Игнорируем если пользователь печатает в input/textarea
+      // Ignore if user is typing in input/textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -553,25 +615,23 @@ const PracticePage: React.FC = () => {
         e.preventDefault();
         
         if (showAnswer) {
-          // Если показан ответ, активируем кнопку "Next Question"
+          // If answer is shown, activate "Next Question" button
           handleNextQuestion();
         } else if (userAnswer.trim()) {
-          // Если ответ не показан, но есть введенный текст, проверяем ответ
+          // If answer is not shown but there's input text, check answer
           handleSubmitAnswer();
         }
       }
       
-      // Дополнительно: Escape для пропуска вопроса
+      // Additionally: Escape to skip question
       if (e.key === 'Escape' && !showAnswer) {
         e.preventDefault();
         handleSkip();
       }
     };
 
-    // Добавляем обработчик события
     window.addEventListener('keydown', handleKeyDown);
 
-    // Очищаем обработчик при размонтировании компонента
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -582,12 +642,12 @@ const PracticePage: React.FC = () => {
   const progress = scenarioQuestions.length > 0 ? ((currentQuestionIndex + 1) / scenarioQuestions.length) * 100 : 0;
 
   // Loading state
-  if (startSessionMutation.isPending || stats === undefined || userPreferences === undefined) {
+  if (generatePracticeMutation.isPending || stats === undefined || userPreferences === undefined) {
     return <LoadingSpinner fullScreen text={t('practice.status.loading')} />;
   }
 
   // Error state - specifically for no learned words
-  if (startSessionMutation.error || !currentQuestion) {
+  if (generatePracticeMutation.error || !currentQuestion) {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">📚</div>
@@ -614,6 +674,12 @@ const PracticePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <BookOpenIcon className="w-6 h-6 text-blue-600" />
           <h1 className="text-2xl font-bold text-gray-900">{t('practice.title')}</h1>
+          {/* Show session status indicator */}
+          {sessionCreated && sessionId && (
+            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+              Session #{sessionId}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-4">
@@ -711,6 +777,15 @@ const PracticePage: React.FC = () => {
                 {t('practice.session.skip')}
               </button>
             </div>
+
+            {/* Show session creation status on first question */}
+            {currentQuestionIndex === 0 && createSessionMutation.isPending && (
+              <div className="text-center">
+                <div className="text-sm text-gray-500">
+                  Creating session...
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center space-y-6">

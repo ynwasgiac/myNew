@@ -1,4 +1,4 @@
-// src/pages/learning/QuizPage.tsx - Updated to use getLearnedWords function
+// src/pages/learning/QuizPage.tsx - Updated to create session on first answer
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -82,6 +82,8 @@ const QuizPage: React.FC = () => {
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [sessionId, setSessionId] = useState<number | undefined>(undefined);
+  // NEW: Track if session has been created
+  const [sessionCreated, setSessionCreated] = useState(false);
 
   // Fetch user preferences using React Query
   const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery({
@@ -112,7 +114,7 @@ const QuizPage: React.FC = () => {
     queryFn: learningAPI.getStats,
   });
 
-  // 🎯 UPDATED: Use the new getLearnedWords function
+  // 🎯 UPDATED: Generate quiz questions without creating session
   const generateQuizMutation = useMutation({
     mutationFn: async () => {
       if (!userPreferences) {
@@ -193,31 +195,10 @@ const QuizPage: React.FC = () => {
         });
         
         // =============================================
-        // ДОБАВЛЯЕМ СОЗДАНИЕ СЕССИИ В БАЗЕ ДАННЫХ
-        // =============================================
-        let sessionId: number;
-        
-        try {
-          // Пробуем создать сессию через endpoint /learning/quiz/start
-          const sessionResponse = await api.post('/learning/quiz/start', {
-            category_id: categoryId,
-            difficulty_level_id: difficultyLevelId,
-            question_count: questions.length,
-            language_code: getUserLanguage()
-          });
-          
-          sessionId = sessionResponse.data.session_id;
-          console.log('✅ Quiz session created in database:', sessionId);
-          
-        } catch (error) {
-          // Если endpoint не работает, используем случайный ID
-          console.warn('Could not create backend session, using local ID');
-          sessionId = Math.floor(Math.random() * 10000);
-        }
+        // UPDATED: Don't create session yet, just return questions
         // =============================================
         
         return {
-          session_id: sessionId,
           questions: questions,
           session_type: 'learned_quiz',
           total_questions: questions.length
@@ -229,7 +210,6 @@ const QuizPage: React.FC = () => {
       }
     },
     onSuccess: (data) => {
-      setSessionId(data.session_id);
       setQuestions(data.questions);
       setStartTime(Date.now());
       
@@ -239,6 +219,42 @@ const QuizPage: React.FC = () => {
       console.error('❌ Quiz generation error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate quiz';
       toast.error(errorMessage);
+    }
+  });
+
+  // NEW: Create session mutation (called on first answer)
+  const createSessionMutation = useMutation({
+    mutationFn: async () => {
+      try {
+        // Try to create session through backend endpoint
+        const sessionResponse = await api.post('/learning/quiz/start', {
+          category_id: categoryId,
+          difficulty_level_id: difficultyLevelId,
+          question_count: questions.length,
+          language_code: getUserLanguage()
+        });
+        
+        // console.log('✅ Quiz session created in database:', sessionResponse.data.session_id);
+        return sessionResponse.data.session_id;
+        
+      } catch (error) {
+        // If backend endpoint doesn't work, use random ID for local tracking
+        console.warn('Could not create backend session, using local ID:', error);
+        const localId = Math.floor(Math.random() * 10000);
+        return localId;
+      }
+    },
+    onSuccess: (sessionIdFromServer) => {
+      setSessionId(sessionIdFromServer);
+      setSessionCreated(true);
+      console.log('✅ Session created with ID:', sessionIdFromServer);
+    },
+    onError: (error) => {
+      console.error('❌ Session creation error:', error);
+      // Even if session creation fails, continue with local ID
+      const fallbackId = Math.floor(Math.random() * 10000);
+      setSessionId(fallbackId);
+      setSessionCreated(true);
     }
   });
 
@@ -272,11 +288,6 @@ const QuizPage: React.FC = () => {
     }
   }, [stats, questions.length, isQuizComplete, userPreferences]);
 
-  // useEffect(() => {
-  //   console.log('QuizPage: userPreferences updated:', userPreferences);
-  //   console.log('QuizPage: quiz_word_count:', userPreferences?.quiz_word_count);
-  // }, [userPreferences]);
-
   // Event handlers
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
@@ -285,6 +296,14 @@ const QuizPage: React.FC = () => {
     if (selectedAnswer !== null) return; // Prevent multiple selections
     
     setSelectedAnswer(answerIndex);
+    
+    // =============================================
+    // NEW: Create session on first answer only
+    // =============================================
+    if (!sessionCreated && currentQuestionIndex === 0) {
+      // console.log('🎯 First answer selected - creating session...');
+      createSessionMutation.mutate();
+    }
     
     // Auto-advance to next question after a brief delay
     setTimeout(() => {
@@ -319,6 +338,12 @@ const QuizPage: React.FC = () => {
 
   const handleNextQuestion = () => {
     if (selectedAnswer === null || !currentQuestion) return;
+
+    // Create session on first answer if not already created
+    if (!sessionCreated && currentQuestionIndex === 0) {
+      console.log('🎯 First answer submitted - creating session...');
+      createSessionMutation.mutate();
+    }
 
     const timeSpent = Date.now() - startTime;
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
@@ -356,6 +381,8 @@ const QuizPage: React.FC = () => {
     setSelectedAnswer(null);
     setResults([]);
     setStartTime(Date.now());
+    setSessionId(undefined);
+    setSessionCreated(false); // Reset session creation flag
     generateQuizMutation.mutate();
   };
 
@@ -504,6 +531,12 @@ const QuizPage: React.FC = () => {
               <div className="flex items-center space-x-2 text-blue-600">
                 <BookOpenIcon className="w-5 h-5" />
                 <span className="font-medium">{t('header.session')}</span>
+                {/* Show session status indicator */}
+                {sessionCreated && sessionId && (
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                    Session #{sessionId}
+                  </span>
+                )}
               </div>
               <span className="text-gray-400">•</span>
               <span className="text-sm text-gray-600">
@@ -564,6 +597,12 @@ const QuizPage: React.FC = () => {
               <div className="text-lg font-medium text-blue-600">
                 {t('feedback.answerSelected')}
               </div>
+              {/* Show session creation status on first question */}
+              {currentQuestionIndex === 0 && createSessionMutation.isPending && (
+                <div className="text-sm text-gray-500 mt-2">
+                  Creating session...
+                </div>
+              )}
             </div>
           )}
 
