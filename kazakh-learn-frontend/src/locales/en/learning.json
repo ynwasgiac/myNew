@@ -97,6 +97,7 @@
     "needMoreMessage": "At least 3 words are required to start a learning session. You currently have {{count}}",
     "addingWords": "Adding words...",
     "addRandomWords": "Add random words",
+    "visitCategories": "Browse categories",
     "randomWordsHelp": "We will select words for you based on your daily goal and current settings. Only words with translations into your language will be added!"
   },
   "learningTips": {

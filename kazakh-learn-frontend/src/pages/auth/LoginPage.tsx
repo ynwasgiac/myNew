@@ -4,8 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation('loginPage');
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
   
@@ -20,7 +22,6 @@ const LoginPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -30,11 +31,11 @@ const LoginPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = t('usernameRequired');
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('passwordRequired');
     }
     
     setErrors(newErrors);
@@ -52,7 +53,6 @@ const LoginPage: React.FC = () => {
       await login(formData);
       navigate('/app/dashboard');
     } catch (error) {
-      // Error is handled by the auth context and displayed via toast
       console.error('Login failed:', error);
     }
   };
@@ -68,7 +68,7 @@ const LoginPage: React.FC = () => {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
-              Sign in to your account
+              {t('signInTitle')}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
               Or{' '}
@@ -76,7 +76,7 @@ const LoginPage: React.FC = () => {
                 to="/register"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
-                create a new account
+                {t('createAccount')}
               </Link>
             </p>
           </div>
@@ -86,7 +86,7 @@ const LoginPage: React.FC = () => {
               {/* Username Field */}
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
+                  {t('usernameLabel')}
                 </label>
                 <div className="mt-1">
                   <input
@@ -100,7 +100,7 @@ const LoginPage: React.FC = () => {
                     className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.username ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your username"
+                    placeholder={t('usernamePlaceholder')}
                   />
                   {errors.username && (
                     <p className="mt-1 text-sm text-red-600">{errors.username}</p>
@@ -111,7 +111,7 @@ const LoginPage: React.FC = () => {
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
+                  {t('passwordLabel')}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -125,7 +125,7 @@ const LoginPage: React.FC = () => {
                     className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10 ${
                       errors.password ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your password"
+                    placeholder={t('passwordPlaceholder')}
                   />
                   <button
                     type="button"
@@ -151,17 +151,17 @@ const LoginPage: React.FC = () => {
                   disabled={isLoading}
                   className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? t('signingIn') : t('signInButton')}
                 </button>
               </div>
             </form>
 
             {/* Demo Credentials */}
             <div className="mt-6 p-4 bg-gray-50 rounded-md">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">{t('demoCredentials')}</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <p><strong>Student:</strong> demo_student / password123</p>
-                <p><strong>Admin:</strong> demo_admin / password123</p>
+                <p><strong>{t('student')}:</strong> demo_student / password123</p>
+                <p><strong>{t('admin')}:</strong> demo_admin / password123</p>
               </div>
             </div>
           </div>
@@ -173,26 +173,26 @@ const LoginPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700">
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-white px-8">
-              <h1 className="text-4xl font-bold mb-4">Welcome to Kazakh Learn</h1>
+              <h1 className="text-4xl font-bold mb-4">{t('brandingTitle')}</h1>
               <p className="text-xl text-blue-100 mb-8">
-                Master the Kazakh language with our interactive learning platform
+                {t('brandingSubtitle')}
               </p>
               <div className="space-y-4 text-blue-100">
                 <div className="flex items-center justify-center space-x-2">
                   <span className="text-2xl">📚</span>
-                  <span>Comprehensive vocabulary</span>
+                  <span>{t('featureVocabulary')}</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <span className="text-2xl">🎯</span>
-                  <span>Personalized learning</span>
+                  <span>{t('featurePersonalized')}</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <span className="text-2xl">📊</span>
-                  <span>Track your progress</span>
+                  <span>{t('featureProgress')}</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <span className="text-2xl">🏆</span>
-                  <span>Achieve your goals</span>
+                  <span>{t('featureGoals')}</span>
                 </div>
               </div>
             </div>

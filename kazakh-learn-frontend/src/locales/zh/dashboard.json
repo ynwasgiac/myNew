@@ -1,0 +1,51 @@
+{
+  "greetings": {
+    "morning": "早上好",
+    "afternoon": "下午好",
+    "evening": "晚上好"
+  },
+  "welcome": {
+    "subtitle": "准备好继续学习哈萨克语的旅程了吗？",
+    "learningInterface": "学习界面: {{language}}",
+    "dayStreak": "天连续"
+  },
+  "stats": {
+    "totalWords": "总词汇量",
+    "wordsDueReview": "需要复习的词",
+    "accuracyRate": "准确率",
+    "sessionsThisWeek": "本周学习次数"
+  },
+  "quickActions": {
+    "title": "快速操作",
+    "startLearning": {
+      "name": "开始学习",
+      "description": "练习新词"
+    },
+    "takeQuiz": {
+      "name": "参加测试",
+      "description": "检查知识"
+    },
+    "reviewWords": {
+      "name": "复习单词",
+      "description": "练习单词"
+    },
+    "browseWords": {
+      "name": "浏览单词",
+      "description": "学习词典"
+    },
+    "browseGuides": {
+      "name": "浏览指南",
+      "description": "分组的词汇"
+    }
+  },
+  "learningProgress": {
+    "title": "学习进度",
+    "statuses": {
+      "new": "新的",
+      "learning": "学习中",
+      "review": "复习",
+      "learned": "已学会",
+      "mastered": "已掌握"
+    }
+  }
+}

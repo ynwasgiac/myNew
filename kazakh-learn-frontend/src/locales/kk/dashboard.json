@@ -1,47 +1,51 @@
 {
-    "greetings": {
-      "morning": "Қайырлы таң",
-      "afternoon": "Қайырлы күн",
-      "evening": "Қайырлы кеш"
+  "greetings": {
+    "morning": "Қайырлы таң",
+    "afternoon": "Қайырлы күн",
+    "evening": "Қайырлы кеш"
+  },
+  "welcome": {
+    "subtitle": "Қазақ тілін үйрену сапарыңызды жалғастыруға дайынсыз ба?",
+    "learningInterface": "Оқу интерфейсі: {{language}}",
+    "dayStreak": "күн қатарынан"
+  },
+  "stats": {
+    "totalWords": "Барлық сөздер",
+    "wordsDueReview": "Қайталанатын сөздер",
+    "accuracyRate": "Дәлдік",
+    "sessionsThisWeek": "Осы аптадағы сессиялар"
+  },
+  "quickActions": {
+    "title": "Жылдам әрекеттер",
+    "startLearning": {
+      "name": "Оқуды бастау",
+      "description": "Жаңа сөздерді жаттау"
     },
-    "welcome": {
-      "subtitle": "Қазақ тілін үйрену сапарыңызды жалғастыруға дайынсыз ба?",
-      "learningInterface": "Оқыту интерфейсі: {{language}}",
-      "dayStreak": "күн үздіксіз"
+    "takeQuiz": {
+      "name": "Тест тапсыру",
+      "description": "Білімді тексеру"
     },
-    "stats": {
-      "totalWords": "Барлық сөздер",
-      "wordsDueReview": "Қайталауға тиіс сөздер",
-      "accuracyRate": "Дәлдік дәрежесі",
-      "sessionsThisWeek": "Осы аптадағы сессиялар"
+    "reviewWords": {
+      "name": "Сөздерді қайталау",
+      "description": "Сөздерді жаттықтыру"
     },
-    "quickActions": {
-      "title": "Жылдам әрекеттер",
-      "startLearning": {
-        "name": "Үйренуді бастау",
-        "description": "Жаңа сөздерді жаттығу"
-      },
-      "takeQuiz": {
-        "name": "Викторина өту",
-        "description": "Білімді тексеру"
-      },
-      "reviewWords": {
-        "name": "Сөздерді қайталау",
-        "description": "Сақталған сөздерді жаттығу"
-      },
-      "browseWords": {
-        "name": "Сөздерді шолу",
-        "description": "Лексиканы зерттеу"
-      }
+    "browseWords": {
+      "name": "Сөздерді қарау",
+      "description": "Сөздікпен танысу"
     },
-    "learningProgress": {
-      "title": "Оқыту прогрессі",
-      "statuses": {
-        "new": "Жаңа",
-        "learning": "Үйренуде",
-        "review": "Қайталау",
-        "learned": "Үйренілген",
-        "mastered": "Меңгерілген"
-      }
+    "browseGuides": {
+      "name": "Гидтерді қарау",
+      "description": "Топтастырылған сөздер"
+    }
+  },
+  "learningProgress": {
+    "title": "Оқу барысы",
+    "statuses": {
+      "new": "Жаңа",
+      "learning": "Үйренілуде",
+      "review": "Қайталау",
+      "learned": "Үйренілген",
+      "mastered": "Меңгерілген"
     }
   }
+}

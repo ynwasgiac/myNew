@@ -1,0 +1,121 @@
+{
+  "navigation": {
+    "logo": "学习哈萨克语",
+    "features": "功能",
+    "about": "关于我们",
+    "reviews": "评价",
+    "signIn": "登录",
+    "getStarted": "开始",
+    "goToDashboard": "进入面板"
+  },
+  "hero": {
+    "title": "掌握哈萨克语",
+    "subtitle": "通过我们的互动平台学习哈萨克语，涵盖数千个单词、个性化课程和经过验证的学习方法。",
+    "startLearningFree": "免费开始学习",
+    "signIn": "登录",
+    "continueLearning": "继续学习",
+    "process": {
+      "learn": {
+        "title": "学习",
+        "description": "每天发现新单词"
+      },
+      "practice": {
+        "title": "练习",
+        "description": "互动练习"
+      },
+      "master": {
+        "title": "掌握",
+        "description": "实现流利"
+      }
+    }
+  },
+  "stats": {
+    "activeUsers": "活跃学员",
+    "kazakhWords": "哈萨克语单词",
+    "learningSessions": "学习课程",
+    "successRate": "成功率"
+  },
+  "features": {
+    "title": "为什么选择学习哈萨克语？",
+    "subtitle": "我们的平台结合现代技术与验证的语言学习方法，帮助您高效掌握哈萨克语。",
+    "vocabulary": {
+      "title": "丰富词汇",
+      "description": "学习数千个哈萨克语单词，包括翻译、发音和示例。"
+    },
+    "interactive": {
+      "title": "互动学习",
+      "description": "通过闪卡、小测验和间隔重复系统进行练习。"
+    },
+    "progress": {
+      "title": "进度追踪",
+      "description": "使用详细统计和成就跟踪您的学习之旅。"
+    },
+    "gamification": {
+      "title": "游戏化元素",
+      "description": "赚取积分，保持连续学习并与其他学员竞争。"
+    }
+  },
+  "howItWorks": {
+    "title": "如何运作",
+    "subtitle": "三步开启您的哈萨克语学习之旅",
+    "steps": {
+      "createAccount": {
+        "title": "创建账户",
+        "description": "免费注册并设置您的学习偏好和目标。"
+      },
+      "startLearning": {
+        "title": "开始学习",
+        "description": "从基础单词和短语开始，按自己的节奏进步。"
+      },
+      "trackProgress": {
+        "title": "追踪进度",
+        "description": "跟踪改进并在过程中庆祝成就。"
+      }
+    }
+  },
+  "testimonials": {
+    "title": "我们的学员怎么说",
+    "subtitle": "加入成千上万成功学习哈萨克语的人群",
+    "reviews": [
+      {
+        "content": "KazakhLearn 让学习哈萨克语变得容易得多。互动课程和进度追踪每天都激励着我！",
+        "author": "萨拉·约翰逊",
+        "role": "语言爱好者"
+      },
+      {
+        "content": "作为生活在哈萨克斯坦的人，这个应用帮助我更好地联系当地文化。强烈推荐！",
+        "author": "迈克·陈",
+        "role": "在阿拉木图的外籍人士"
+      },
+      {
+        "content": "发音功能和例句非常有用。我的哈萨克语水平有了极大提升！",
+        "author": "叶莲娜·彼得罗夫",
+        "role": "学生"
+      }
+    ]
+  },
+  "cta": {
+    "title": "准备好开始学习哈萨克语了吗？",
+    "subtitle": "加入我们的学习者社区，今天就开启您的哈萨克语掌握之旅。",
+    "getStartedFree": "免费开始",
+    "continueLearning": "继续学习"
+  },
+  "footer": {
+    "description": "最有效的在线学习哈萨克语方式。掌握词汇、改善发音并追踪学习进度。",
+    "madeWith": "用 ❤️ 为哈萨克语学习者打造",
+    "product": {
+      "title": "产品",
+      "features": "功能",
+      "pricing": "价格",
+      "mobileApp": "移动应用"
+    },
+    "support": {
+      "title": "支持",
+      "helpCenter": "帮助中心",
+      "contactUs": "联系我们",
+      "privacyPolicy": "隐私政策",
+      "termsOfService": "服务条款"
+    },
+    "copyright": "© 2024 学习哈萨克语。保留所有权利。"
+  }
+}

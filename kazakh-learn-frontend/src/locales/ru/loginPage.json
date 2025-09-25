@@ -1,0 +1,22 @@
+{
+    "signInTitle": "Войдите в свой аккаунт",
+    "createAccount": "создать новый аккаунт",
+    "usernameLabel": "Имя пользователя",
+    "usernamePlaceholder": "Введите имя пользователя",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "signInButton": "Войти",
+    "signingIn": "Вход...",
+    "demoCredentials": "Демо-данные:",
+    "student": "Студент",
+    "admin": "Администратор",
+    "usernameRequired": "Необходимо ввести имя пользователя",
+    "passwordRequired": "Необходимо ввести пароль",
+    "brandingTitle": "Добро пожаловать в Kazakh Learn",
+    "brandingSubtitle": "Освойте казахский язык с нашей интерактивной платформой",
+    "featureVocabulary": "Обширный словарный запас",
+    "featurePersonalized": "Персонализированное обучение",
+    "featureProgress": "Отслеживание прогресса",
+    "featureGoals": "Достижение целей"
+  }
+  

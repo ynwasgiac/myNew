@@ -5,7 +5,7 @@
     "question": "正在加载测试问题..."
   },
   "errors": {
-    "noLearnedWords": "没有可用于测试的已学单词",
+    "noLearnedWords": "暂无已学会的单词可用于测试。请先完成一些学习模块以解锁测试模式。",
     "noLearnedWordsDescription": "测试模式仅对已学单词开放。请先完成一些学习模块以解锁测试模式！",
     "needMoreWords": "创建测试至少需要 2 个已学单词。请先学习更多单词。",
     "generationFailed": "生成测试失败",

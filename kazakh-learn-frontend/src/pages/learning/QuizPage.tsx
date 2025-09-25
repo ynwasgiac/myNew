@@ -134,7 +134,7 @@ const QuizPage: React.FC = () => {
         });
         
         if (learnedWordsResponse.length === 0) {
-          throw new Error('No learned words available for quiz. Please complete some learning modules first to unlock quiz mode.');
+          throw new Error(t('errors.noLearnedWords'));
         }
         
         // Convert to quiz word format

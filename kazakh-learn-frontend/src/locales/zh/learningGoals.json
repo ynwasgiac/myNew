@@ -1,0 +1,61 @@
+{
+  "title": "学习目标",
+  "addNewGoal": "添加新目标",
+  "addGoal": "添加新目标",
+  "otherGoals": "其他目标",
+  "goalTypes": {
+    "daily_words": "每日单词",
+    "weekly_practice": "每周练习",
+    "category_mastery": "掌握类别",
+    "monthly_streak": "月度连续学习"
+  },
+  "goalUnits": {
+    "words": "个单词",
+    "sessions": "次课程"
+  },
+  "units": {
+    "days": "天"
+  },
+  "progress": {
+    "title": "进度",
+    "completed": "✓ 已完成",
+    "created": "创建于 {{date}}",
+    "due": "截止日期 {{date}}"
+  },
+  "noGoals": {
+    "title": "尚未设定目标",
+    "description": "设定学习目标，以便跟踪进度并保持学习动力！",
+    "createFirst": "创建第一个目标"
+  },
+  "createGoal": {
+    "title": "创建新目标",
+    "goalType": "目标类型",
+    "targetValue": "目标值",
+    "targetDate": "目标日期（可选）",
+    "targetPlaceholder": "请输入目标数值",
+    "creating": "正在创建...",
+    "create": "创建目标",
+    "cancel": "取消"
+  },
+  "goalTypeOptions": {
+    "daily_words": "每日单词",
+    "weekly_practice": "每周练习课程",
+    "category_mastery": "掌握类别",
+    "monthly_streak": "月度连续学习"
+  },
+  "quickGoals": {
+    "title": "快速目标",
+    "beginnerPace": {
+      "title": "5个单词/天",
+      "description": "适合初学者的节奏"
+    },
+    "dailyPractice": {
+      "title": "每日练习",
+      "description": "每周7次课程"
+    }
+  },
+  "messages": {
+    "goalCreated": "目标创建成功！",
+    "goalCreateFailed": "目标创建失败"
+  }
+}

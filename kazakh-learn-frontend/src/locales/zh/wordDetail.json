@@ -1,0 +1,142 @@
+{
+  "common": {
+    "none": "无"
+  },
+  "loading": {
+    "wordDetails": "正在加载单词详情..."
+  },
+  "errors": {
+    "wordNotFound": "未找到单词",
+    "wordNotFoundDescription": "似乎没有此ID的单词。请尝试相邻的ID或返回列表。"
+  },
+  "navigation": {
+    "backToWords": "返回单词",
+    "sequential": "顺序导航",
+    "id": "ID: {{id}}",
+    "prevTooltip": "上一个: {{word}} (ID: {{id}})",
+    "nextTooltip": "下一个: {{word}} (ID: {{id}})",
+    "firstOrMissing": "第一个单词或未找到单词",
+    "tryId": "尝试ID: {{id}}",
+    "checking": "正在检查单词是否存在...",
+    "clickToTry": "点击尝试下一个ID",
+    "previous": "上一个",
+    "next": "下一个",
+    "previousWord": "上一个: {{word}}",
+    "nextWord": "下一个: {{word}}",
+    "noPrevious": "没有上一个",
+    "noNext": "没有下一个",
+    "keyboardHint": "使用键盘方向键 ← → 导航",
+    "context": {
+      "browse": "查看所有单词",
+      "search": "“{{searchTerm}}” 搜索结果",
+      "category": "类别中的单词",
+      "learning": "学习中的单词"
+    }
+  },
+  "hints": {
+    "arrows": "使用 ← → 键根据ID导航单词",
+    "current": "当前: {{id}}",
+    "previous": "上一个: {{id}}",
+    "next": "下一个: {{id}}"
+  },
+  "actions": {
+    "shareWord": "分享单词",
+    "listen": "听",
+    "addToLearning": "添加到学习",
+    "removeFromLearning": "从学习中移除",
+    "markAsLearned": "标记为已学习",
+    "practiceThisWord": "练习此单词",
+    "browseWords": "浏览单词",
+    "saveNotes": "保存笔记",
+    "addToLearningList": "添加到学习列表",
+    "saving": "正在保存...",
+    "adding": "正在添加..."
+  },
+  "word": {
+    "also": "此外",
+    "level": "等级 {{level}}"
+  },
+  "status": {
+    "wantToLearn": "想学习",
+    "learning": "学习中",
+    "learned": "已学会",
+    "mastered": "已掌握",
+    "review": "复习"
+  },
+  "difficulty": {
+    "veryEasy": "非常容易",
+    "easy": "容易",
+    "medium": "中等",
+    "hard": "困难",
+    "veryHard": "非常困难"
+  },
+  "tabs": {
+    "overview": "概览",
+    "examples": "示例",
+    "myProgress": "我的进度"
+  },
+  "overview": {
+    "wordDetails": "单词详情",
+    "category": "类别",
+    "wordType": "单词类型",
+    "difficultyLevel": "难度等级",
+    "levelInfo": "等级 {{level}} - {{name}}",
+    "images": "图片",
+    "allTranslations": "所有翻译",
+    "pronunciations": "发音",
+    "playPronunciation": "播放发音",
+    "playAudio": "播放音频",
+    "playVariant": "播放: {{type}}"
+  },
+  "examples": {
+    "title": "使用示例",
+    "count": "总示例数: {{count}}",
+    "context": "上下文",
+    "otherTranslations": "其他翻译",
+    "noExamples": "该单词暂无示例",
+    "addSoon": "我们将很快添加示例"
+  },
+  "progress": {
+    "timesSeen": "看到次数",
+    "correctAnswers": "正确答案",
+    "accuracyRate": "准确率百分比",
+    "learningStatus": "学习状态",
+    "currentStatus": "当前状态",
+    "added": "已添加",
+    "firstLearned": "首次学习",
+    "lastPracticed": "上次练习",
+    "nextReview": "下次复习",
+    "spacedRepetition": "间隔重复",
+    "interval": "间隔",
+    "days": "{{count}} 天",
+    "days_other": "{{count}} 天",
+    "easeFactor": "容易系数",
+    "yourDifficultyRating": "您的难度评分",
+    "rateDifficulty": "评价难度",
+    "difficultyDescription": "记住这个单词对您来说有多难？",
+    "personalNotes": "个人笔记",
+    "notesPlaceholder": "添加您对此单词的个人笔记...",
+    "addToTrackDescription": "将此单词添加到学习列表以跟踪您的进度。",
+    "notTracking": "未进行跟踪"
+  },
+  "messages": {
+    "addedToLearning": "单词已添加到学习列表！",
+    "addToLearningError": "无法将单词添加到学习列表",
+    "removedFromLearning": "单词已从学习列表中移除！",
+    "removeFromLearningError": "无法从学习列表中移除单词",
+    "progressUpdated": "进度已更新！",
+    "progressUpdateError": "无法更新进度",
+    "audioError": "无法播放音频",
+    "audioNotAvailable": "该单词暂无音频",
+    "linkCopied": "链接已复制到剪贴板！",
+    "audioPlayed": "音频已播放"
+  },
+  "share": {
+    "title": "学习哈萨克语: {{word}}",
+    "text": "{{word}} 在哈萨克语中的意思是 “{{translation}}”"
+  },
+  "relatedWords": {
+    "title": "相关单词",
+    "comingSoon": "相关单词功能即将上线！"
+  }
+}

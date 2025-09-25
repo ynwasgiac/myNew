@@ -5,7 +5,7 @@
       "question": "Loading quiz question..."
     },
     "errors": {
-      "noLearnedWords": "No learned words available for quiz",
+      "noLearnedWords": "No learned words available for quiz. Please complete some learning modules first to unlock quiz mode.",
       "noLearnedWordsDescription": "Quiz mode is only available for already learned words. Complete some learning modules first to unlock quiz mode!",
       "needMoreWords": "At least 2 learned words are required to create a quiz. Please learn more words.",
       "generationFailed": "Failed to generate quiz",

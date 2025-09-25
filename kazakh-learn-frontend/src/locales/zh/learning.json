@@ -97,7 +97,8 @@
     "needMoreMessage": "开始学习至少需要 3 个单词。您现在有 {{count}}",
     "addingWords": "正在添加单词...",
     "addRandomWords": "添加随机单词",
-    "randomWordsHelp": "我们将根据您的每日目标和当前设置为您选择单词。只会添加有对应翻译的单词！"
+    "randomWordsHelp": "我们将根据您的每日目标和当前设置为您选择单词。只会添加有对应翻译的单词！",
+    "visitCategories": "浏览分类"
   },
   "learningTips": {
     "title": "学习提示",

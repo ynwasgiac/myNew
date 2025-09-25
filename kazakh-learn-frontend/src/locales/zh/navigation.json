@@ -1,0 +1,38 @@
+{
+  "header": {
+    "openSidebar": "打开侧边栏",
+    "searchWords": "搜索单词...",
+    "viewNotifications": "查看通知",
+    "openUserMenu": "打开用户菜单",
+    "learningIn": "学习语言：{{language}}"
+  },
+  "sidebar": {
+    "closeSidebar": "关闭侧边栏",
+    "appName": "学习哈萨克语",
+    "learningIn": "学习语言：{{language}}",
+    "motivation": {
+      "title": "继续学习吧！🚀",
+      "description": "每天练习以提高你的哈萨克语"
+    }
+  },
+  "menu": {
+    "dashboard": "控制面板",
+    "words": "单词",
+    "categories": "类别",
+    "learn": "学习",
+    "practice": "练习",
+    "quiz": "测试",
+    "progress": "进度",
+    "profile": "个人资料",
+    "settings": "设置"
+  },
+  "userMenu": {
+    "yourProfile": "你的资料",
+    "settings": "设置",
+    "signOut": "退出"
+  },
+  "search": {
+    "placeholder": "搜索单词...",
+    "shortcut": "⌘K"
+  }
+}

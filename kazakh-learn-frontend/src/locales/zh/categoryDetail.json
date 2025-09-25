@@ -1,0 +1,64 @@
+{
+  "loading": {
+    "category": "正在加载类别...",
+    "words": "正在加载单词..."
+  },
+  "errors": {
+    "categoryNotFound": "未找到类别",
+    "categoryNotFoundDescription": "您要查找的类别不存在或已被删除。"
+  },
+  "navigation": {
+    "backToCategories": "返回类别"
+  },
+  "actions": {
+    "browseCategories": "浏览类别",
+    "addToLearning": "添加到学习",
+    "practiceCategory": "练习此类别",
+    "takeQuiz": "参加测试",
+    "clearSearch": "清除搜索"
+  },
+  "selection": {
+    "selectedCount": "已选择 {{count}}"
+  },
+  "stats": {
+    "wordsCount": "{{count}} 个单词",
+    "inLearningList": "{{count}} 在学习列表中",
+    "categoryId": "类别ID: {{id}}"
+  },
+  "search": {
+    "placeholder": "在此类别中搜索单词..."
+  },
+  "view": {
+    "grid": "网格视图",
+    "list": "列表视图"
+  },
+  "filters": {
+    "title": "筛选器",
+    "difficultyLevel": "难度等级",
+    "allLevels": "所有等级",
+    "levels": {
+      "beginner": "等级 1 - 初学者",
+      "elementary": "等级 2 - 基础",
+      "intermediate": "等级 3 - 中级",
+      "advanced": "等级 4 - 高级",
+      "expert": "等级 5 - 专家"
+    },
+    "clear": "清除筛选"
+  },
+  "results": {
+    "searchResults": "找到 {{count}} 个结果",
+    "showing": "显示 {{count}} 个单词"
+  },
+  "emptyState": {
+    "noWordsFound": "未找到单词",
+    "noWordsInCategory": "此类别中没有单词",
+    "searchMessage": "没有单词符合您在此类别中的搜索 “{{searchTerm}}”。",
+    "categoryMessage": "此类别中暂时没有单词。"
+  },
+  "messages": {
+    "addedToLearning": "单词已添加到学习列表！",
+    "addToLearningError": "无法将单词添加到学习列表",
+    "removedFromLearning": "单词已从学习列表中删除！",
+    "removeFromLearningError": "无法从学习列表中删除单词"
+  }
+}

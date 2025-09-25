@@ -1,0 +1,56 @@
+{
+  "title": "最近活动",
+  "sessionTypes": {
+    "practice": "练习",
+    "quiz": "测试",
+    "review": "复习",
+    "session": "课程"
+  },
+  "sessionInfo": {
+    "words": "{{count}} 个单词",
+    "words_one": "{{count}} 个单词",
+    "words_few": "{{count}} 个单词",
+    "words_many": "{{count}} 个单词",
+    "words_other": "{{count}} 个单词",
+    "accuracy": "{{rate}}% 准确率",
+    "duration": {
+      "unknown": "未知",
+      "minutesSeconds": "{{minutes}}分 {{seconds}}秒",
+      "seconds": "{{seconds}}秒"
+    }
+  },
+  "timeAgo": {
+    "justNow": "刚刚",
+    "minutesAgo": "{{minutes}}分前",
+    "minutesAgo_one": "{{minutes}}分前",
+    "minutesAgo_few": "{{minutes}}分前",
+    "minutesAgo_many": "{{minutes}}分前",
+    "minutesAgo_other": "{{minutes}}分前",
+    "hoursAgo": "{{hours}}小时前",
+    "hoursAgo_one": "{{hours}}小时前",
+    "hoursAgo_few": "{{hours}}小时前",
+    "hoursAgo_many": "{{hours}}小时前",
+    "hoursAgo_other": "{{hours}}小时前",
+    "daysAgo": "{{days}}天前",
+    "daysAgo_one": "{{days}}天前",
+    "daysAgo_few": "{{days}}天前",
+    "daysAgo_many": "{{days}}天前",
+    "daysAgo_other": "{{days}}天前"
+  },
+  "sessionStatus": {
+    "completed": "课程已完成"
+  },
+  "actions": {
+    "viewAll": "查看所有活动",
+    "startLearning": "开始学习"
+  },
+  "noActivity": {
+    "title": "暂无最近活动",
+    "description": "开始学习后，您的活动将显示在这里！"
+  },
+  "summary": {
+    "wordsStudied": "学习的单词",
+    "correct": "正确",
+    "sessions": "课程"
+  }
+}

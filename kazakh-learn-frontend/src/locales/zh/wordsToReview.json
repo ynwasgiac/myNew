@@ -1,0 +1,32 @@
+{
+  "title": "需要复习的单词",
+  "actions": {
+    "reviewAll": "复习全部",
+    "startReviewSession": "开始复习课程",
+    "quickPractice": "快速练习",
+    "learnNewWords": "学习新单词",
+    "practiceAnyway": "仍然练习"
+  },
+  "wordInfo": {
+    "wordId": "单词ID: {{id}}",
+    "due": "到期时间: {{date}}",
+    "dueNow": "到期时间: 现在",
+    "moreWords": "+{{count}} 个单词需要复习",
+    "moreWords_one": "+{{count}} 个单词需要复习",
+    "moreWords_few": "+{{count}} 个单词需要复习",
+    "moreWords_many": "+{{count}} 个单词需要复习",
+    "moreWords_other": "+{{count}} 个单词需要复习"
+  },
+  "statuses": {
+    "want_to_learn": "想学习",
+    "learning": "学习中",
+    "learned": "已学会",
+    "mastered": "已掌握",
+    "review": "复习"
+  },
+  "emptyState": {
+    "title": "全部完成啦！🎉",
+    "description": "现在没有需要复习的单词。太棒了，你的学习进度没有落下！"
+  },
+  "accuracy": "{{rate}}% 准确率"
+}

@@ -26,6 +26,7 @@ import wordProgressEn from '../locales/en/wordProgress.json';
 import dailyProgressEn from '../locales/en/dailyProgress.json';
 import wordsAvailableEn from '../locales/en/wordsAvailable.json';
 import quickActionsEn from '../locales/en/quickActions.json';
+import loginPageEn from '../locales/en/loginPage.json';
 
 import categoriesKk from '../locales/kk/categories.json';
 import wordsKk from '../locales/kk/words.json';
@@ -52,6 +53,7 @@ import wordProgressKk from '../locales/kk/wordProgress.json';
 import dailyProgressKk from '../locales/kk/dailyProgress.json';
 import wordsAvailableKk from '../locales/kk/wordsAvailable.json';
 import quickActionsKk from '../locales/kk/quickActions.json';
+import loginPageKk from '../locales/kk/loginPage.json';
 
 import categoriesRu from '../locales/ru/categories.json';
 import wordsRu from '../locales/ru/words.json';
@@ -78,6 +80,34 @@ import wordProgressRu from '../locales/ru/wordProgress.json';
 import dailyProgressRu from '../locales/ru/dailyProgress.json';
 import wordsAvailableRu from '../locales/ru/wordsAvailable.json';
 import quickActionsRu from '../locales/ru/quickActions.json';
+import loginPageRu from '../locales/ru/loginPage.json';
+
+import dailyProgressZh from '../locales/zh/dailyProgress.json';
+import dashboardZh from '../locales/zh/dashboard.json';
+import learnedWordsZh from '../locales/zh/learnedWords.json';
+import learningZh from '../locales/zh/learning.json';
+import wordProgressZh from '../locales/zh/wordProgress.json';
+import practiceZh from '../locales/zh/practice.json';
+import quickActionsZh from '../locales/zh/quickActions.json';
+import quizZh from '../locales/zh/quiz.json';
+import weeklyProgressZh from '../locales/zh/weeklyProgress.json';
+import categoriesZh from '../locales/zh/categories.json';
+import wordsZh from '../locales/zh/words.json';
+import wordDetailZh from '../locales/zh/wordDetail.json';
+import categoryDetaillZh from '../locales/zh/categoryDetail.json';
+import notFoundZh from '../locales/zh/notFound.json';
+import progressZh from '../locales/zh/progress.json';
+import profileZh from '../locales/zh/profile.json';
+import settingsZh from '../locales/zh/settings.json';
+import homeZh from '../locales/zh/home.json';
+import learningGoalsZh from '../locales/zh/learningGoals.json';
+import recentActivityZh from '../locales/zh/recentActivity.json';
+import wordsToReviewZh from '../locales/zh/wordsToReview.json';
+import navigationZh from '../locales/zh/navigation.json';
+import guidesZh from '../locales/zh/guides.json';
+import commonZh from '../locales/zh/common.json';
+import wordsAvailableZh from '../locales/zh/wordsAvailable.json';
+import loginPageZh from '../locales/zh/loginPage.json';
 
 // Create the base resources
 const baseResources = {
@@ -106,7 +136,8 @@ const baseResources = {
     wordProgress: wordProgressEn,
     dailyProgress: dailyProgressEn,
     wordsAvailable: wordsAvailableEn,
-    quickActions: quickActionsEn
+    quickActions: quickActionsEn,
+    loginPage: loginPageEn
   },
   kk: {
     categories: categoriesKk,
@@ -133,7 +164,8 @@ const baseResources = {
     wordProgress: wordProgressKk,
     dailyProgress: dailyProgressKk,
     wordsAvailable: wordsAvailableKk,
-    quickActions: quickActionsKk
+    quickActions: quickActionsKk,
+    loginPage: loginPageKk
   },
   ru: {
     categories: categoriesRu,
@@ -160,8 +192,37 @@ const baseResources = {
     wordProgress: wordProgressRu,
     dailyProgress: dailyProgressRu,
     wordsAvailable: wordsAvailableRu,
-    quickActions: quickActionsRu
+    quickActions: quickActionsRu,
+    loginPage: loginPageRu
   },
+  zh: {
+    categories: categoriesZh,
+    words: wordsZh,
+    wordDetail: wordDetailZh,
+    categoryDetail: categoryDetaillZh,
+    notFound: notFoundZh,
+    progress: progressZh,
+    profile: profileZh,
+    settings: settingsZh,
+    home: homeZh,
+    learningGoals: learningGoalsZh,
+    recentActivity: recentActivityZh,
+    wordsToReview: wordsToReviewZh,
+    navigation: navigationZh,
+    guides: guidesZh,
+    common: commonZh,
+    dailyProgress: dailyProgressZh,
+    dashboard: dashboardZh,
+    learnedWords: learnedWordsZh,
+    learning: learningZh,
+    wordProgress: wordProgressZh,
+    practice: practiceZh,
+    quickActions: quickActionsZh,
+    quiz: quizZh,
+    weeklyProgress: weeklyProgressZh,
+    wordsAvailable: wordsAvailableZh,
+    loginPage: loginPageZh
+  }
 };
 
 // Export resources with locale variations to handle different formats
@@ -171,6 +232,7 @@ export const resources = {
   'en-US': baseResources.en,
   'en-GB': baseResources.en,
   'ru-RU': baseResources.ru,
+  'zh-ZH': baseResources.zh,
   'ru-KZ': baseResources.ru,
   'kk-KZ': baseResources.kk,
   'kk-Cyrl': baseResources.kk,
@@ -183,6 +245,7 @@ export const normalizeLocale = (locale: string): string => {
     'en': 'en',
     'ru': 'ru', 
     'kk': 'kk',
+    'zh': 'zh',
     'kz': 'kk', // Handle Kazakhstan country code
   };
   

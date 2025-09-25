@@ -1,0 +1,33 @@
+{
+  "loading": {
+    "progress": "正在加载您的进度..."
+  },
+  "page": {
+    "title": "您的学习进度"
+  },
+  "sessionComplete": {
+    "title": "课程已完成！",
+    "correct": "正确",
+    "incorrect": "错误",
+    "accuracy": "准确率",
+    "duration": "时长",
+    "minutesSuffix": "分"
+  },
+  "stats": {
+    "totalWords": "总词汇量",
+    "currentStreak": "当前连续学习",
+    "accuracyRate": "准确率百分比",
+    "wordsDueReview": "需要复习的单词"
+  },
+  "breakdown": {
+    "title": "学习状态分布",
+    "noData": "暂无进度数据。"
+  },
+  "status": {
+    "wantToLearn": "想学习",
+    "learning": "学习中",
+    "learned": "已学会",
+    "mastered": "已掌握",
+    "review": "复习"
+  }
+}

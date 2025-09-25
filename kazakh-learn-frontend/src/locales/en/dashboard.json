@@ -1,47 +1,51 @@
 {
-    "greetings": {
-      "morning": "Good morning",
-      "afternoon": "Good afternoon", 
-      "evening": "Good evening"
+  "greetings": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "welcome": {
+    "subtitle": "Ready to continue your journey in learning the Kazakh language?",
+    "learningInterface": "Learning interface: {{language}}",
+    "dayStreak": "days in a row"
+  },
+  "stats": {
+    "totalWords": "Total words",
+    "wordsDueReview": "Words for review",
+    "accuracyRate": "Accuracy",
+    "sessionsThisWeek": "Sessions this week"
+  },
+  "quickActions": {
+    "title": "Quick actions",
+    "startLearning": {
+      "name": "Start learning",
+      "description": "Practice new words"
     },
-    "welcome": {
-      "subtitle": "Ready to continue your Kazakh learning journey?",
-      "learningInterface": "Learning interface: {{language}}",
-      "dayStreak": "day streak"
+    "takeQuiz": {
+      "name": "Take a quiz",
+      "description": "Check your knowledge"
     },
-    "stats": {
-      "totalWords": "Total Words",
-      "wordsDueReview": "Words Due Review",
-      "accuracyRate": "Accuracy Rate",
-      "sessionsThisWeek": "Sessions This Week"
+    "reviewWords": {
+      "name": "Review words",
+      "description": "Practice words"
     },
-    "quickActions": {
-      "title": "Quick Actions",
-      "startLearning": {
-        "name": "Start Learning",
-        "description": "Practice new words"
-      },
-      "takeQuiz": {
-        "name": "Take Quiz", 
-        "description": "Test your knowledge"
-      },
-      "reviewWords": {
-        "name": "Review Words",
-        "description": "Practice saved words"
-      },
-      "browseWords": {
-        "name": "Browse Words",
-        "description": "Explore vocabulary"
-      }
+    "browseWords": {
+      "name": "Browse words",
+      "description": "Explore the dictionary"
     },
-    "learningProgress": {
-      "title": "Learning Progress",
-      "statuses": {
-        "new": "New",
-        "learning": "Learning",
-        "review": "Review",
-        "learned": "Learned",
-        "mastered": "Mastered"
-      }
+    "browseGuides": {
+      "name": "Browse guides",
+      "description": "Grouped words"
+    }
+  },
+  "learningProgress": {
+    "title": "Learning progress",
+    "statuses": {
+      "new": "New",
+      "learning": "In progress",
+      "review": "Review",
+      "learned": "Learned",
+      "mastered": "Mastered"
     }
   }
+}

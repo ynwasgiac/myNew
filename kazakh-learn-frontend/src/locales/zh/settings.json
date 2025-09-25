@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "设置"
+  },
+  "sections": {
+    "languagePreferences": "语言偏好",
+    "notifications": "通知",
+    "learningSettings": "学习设置"
+  },
+  "language": {
+    "interfaceLanguage": "界面语言",
+    "description": "将用于应用界面和单词翻译。",
+    "clearPreference": "清除偏好",
+    "languages": {
+      "english": "英语 (English)",
+      "russian": "俄语 (Russian)",
+      "kazakh": "哈萨克语 (Kazakh)"
+    }
+  },
+  "notifications": {
+    "dailyReminders": {
+      "title": "每日提醒",
+      "description": "接收每日练习提醒"
+    },
+    "reviewReminders": {
+      "title": "复习提醒",
+      "description": "在需要复习单词时接收通知"
+    },
+    "achievementNotifications": {
+      "title": "成就通知",
+      "description": "接收有关成就和重要里程碑的通知"
+    },
+    "comingSoon": "🚧 通知功能即将上线！"
+  },
+  "learning": {
+    "dailyGoal": "每日学习目标",
+    "sessionLength": "练习课程时长",
+    "goals": {
+      "5words": "每天5个单词",
+      "10words": "每天10个单词",
+      "15words": "每天15个单词",
+      "20words": "每天20个单词"
+    },
+    "sessions": {
+      "10words": "10个单词",
+      "15words": "15个单词",
+      "20words": "20个单词",
+      "25words": "25个单词"
+    },
+    "comingSoon": "🚧 高级学习设置即将上线！"
+  },
+  "messages": {
+    "languageUpdateFailed": "无法更新语言偏好"
+  }
+}

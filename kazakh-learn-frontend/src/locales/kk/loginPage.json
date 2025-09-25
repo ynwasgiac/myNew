@@ -1,0 +1,21 @@
+{
+  "signInTitle": "Жеке аккаунтқа кіріңіз",
+  "createAccount": "жаңа аккаунт жасаңыз",
+  "usernameLabel": "Пайдаланушы аты",
+  "usernamePlaceholder": "Пайдаланушы атыңызды енгізіңіз",
+  "passwordLabel": "Құпиясөз",
+  "passwordPlaceholder": "Құпиясөзіңізді енгізіңіз",
+  "signInButton": "Кіру",
+  "signingIn": "Кіріп жатыр...",
+  "demoCredentials": "Демо деректер:",
+  "student": "Студент",
+  "admin": "Әкімші",
+  "usernameRequired": "Пайдаланушы атын енгізу қажет",
+  "passwordRequired": "Құпиясөзді енгізу қажет",
+  "brandingTitle": "Kazakh Learn-ге қош келдіңіз",
+  "brandingSubtitle": "Қазақ тілін біздің интерактивті платформада меңгеріңіз",
+  "featureVocabulary": "Кең көлемді сөздік қоры",
+  "featurePersonalized": "Жеке бейімделген оқу",
+  "featureProgress": "Прогресті қадағалау",
+  "featureGoals": "Мақсаттарға қол жеткізу"
+}

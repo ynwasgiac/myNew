@@ -1,0 +1,48 @@
+{
+  "guides": {
+    "header": {
+      "title": "学习指南",
+      "subtitle": "结构化的学习路径，高效掌握哈萨克语词汇"
+    },
+    "search": {
+      "placeholder": "搜索指南..."
+    },
+    "difficulty": {
+      "all": "全部",
+      "beginner": "初级",
+      "intermediate": "中级",
+      "advanced": "高级"
+    },
+    "actions": {
+      "starting": "启动中...",
+      "start": "开始学习",
+      "continue": "继续学习",
+      "completed": "已完成"
+    },
+    "empty": {
+      "title": "未找到指南",
+      "filtered": "请尝试更改筛选条件",
+      "none": "学习指南暂不可用"
+    },
+    "progress": {
+      "title": "学习进度",
+      "words": "词",
+      "percentCompleted": "{{percent}}% 已完成"
+    },
+    "labels": {
+      "estimatedTime": "预计时间",
+      "wordCountShort": "词"
+    },
+    "toasts": {
+      "loginRequired": "请登录以开始学习",
+      "refreshHint": "如果没有出现新词，请刷新页面。",
+      "startFailed": "无法启动指南"
+    }
+  },
+  "learning": {
+    "error": {
+      "loadFailed": "无法加载指南",
+      "tryAgain": "请稍后再试"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "signInTitle": "Sign in to your account",
+  "createAccount": "create a new account",
+  "usernameLabel": "Username",
+  "usernamePlaceholder": "Enter your username",
+  "passwordLabel": "Password",
+  "passwordPlaceholder": "Enter your password",
+  "signInButton": "Sign in",
+  "signingIn": "Signing in...",
+  "demoCredentials": "Demo Credentials:",
+  "student": "Student",
+  "admin": "Admin",
+  "usernameRequired": "Username is required",
+  "passwordRequired": "Password is required",
+  "brandingTitle": "Welcome to Kazakh Learn",
+  "brandingSubtitle": "Master the Kazakh language with our interactive learning platform",
+  "featureVocabulary": "Comprehensive vocabulary",
+  "featurePersonalized": "Personalized learning",
+  "featureProgress": "Track your progress",
+  "featureGoals": "Achieve your goals"
+}

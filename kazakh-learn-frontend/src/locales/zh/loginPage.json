@@ -1,0 +1,21 @@
+{
+  "signInTitle": "登录您的账户",
+  "createAccount": "创建新账户",
+  "usernameLabel": "用户名",
+  "usernamePlaceholder": "请输入用户名",
+  "passwordLabel": "密码",
+  "passwordPlaceholder": "请输入密码",
+  "signInButton": "登录",
+  "signingIn": "正在登录...",
+  "demoCredentials": "演示账号：",
+  "student": "学生",
+  "admin": "管理员",
+  "usernameRequired": "请输入用户名",
+  "passwordRequired": "请输入密码",
+  "brandingTitle": "欢迎使用 Kazakh Learn",
+  "brandingSubtitle": "通过我们的互动学习平台掌握哈萨克语",
+  "featureVocabulary": "全面的词汇量",
+  "featurePersonalized": "个性化学习",
+  "featureProgress": "跟踪学习进度",
+  "featureGoals": "实现学习目标"
+}

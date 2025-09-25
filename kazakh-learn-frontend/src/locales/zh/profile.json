@@ -1,0 +1,25 @@
+{
+  "page": {
+    "title": "您的个人资料"
+  },
+  "sections": {
+    "accountDetails": "账户信息",
+    "learningPreferences": "学习设置"
+  },
+  "fields": {
+    "username": "用户名:",
+    "email": "电子邮件:",
+    "accountType": "账户类型:",
+    "status": "状态:",
+    "interfaceLanguage": "界面语言:",
+    "memberSince": "注册时间:",
+    "defaultLanguage": "英语 (默认)"
+  },
+  "status": {
+    "active": "活跃"
+  },
+  "comingSoon": {
+    "title": "更多个人资料功能即将上线！",
+    "description": "我们正在为您的个人资料添加成就徽章、学习连续天数、社交功能等更多内容。"
+  }
+}

@@ -376,7 +376,7 @@ const LearningModulePage: React.FC = () => {
                       className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md"
                     >
                       <PencilIcon className="h-5 w-5 mr-2" />
-                      {t('quickActions.visitCategories')}
+                      {t('mainAction.visitCategories')}
                     </button>
 
                     {/* NEW: Add Random Words button */}

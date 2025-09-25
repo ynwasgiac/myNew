@@ -7,7 +7,7 @@ import { resources } from './resources';
 const getUserLanguage = (): string => {
   // 1. First priority: Check localStorage for user's language preference
   const savedLanguage = localStorage.getItem('user-language');
-  if (savedLanguage && ['en', 'kk', 'ru'].includes(savedLanguage)) {
+  if (savedLanguage && ['en', 'kk', 'ru', 'zh'].includes(savedLanguage)) {
     // console.log(`Found saved language: ${savedLanguage}`);
     return savedLanguage;
   }
@@ -32,14 +32,14 @@ const getUserLanguage = (): string => {
   // 3. Third priority: Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const urlLang = urlParams.get('lang');
-  if (urlLang && ['en', 'kk', 'ru'].includes(urlLang)) {
+  if (urlLang && ['en', 'kk', 'ru', 'zh'].includes(urlLang)) {
     // console.log(`Found language from URL: ${urlLang}`);
     return urlLang;
   }
 
   // 4. Fourth priority: Browser language detection
   const browserLang = navigator.language.split('-')[0];
-  if (['en', 'kk', 'ru'].includes(browserLang)) {
+  if (['en', 'kk', 'ru', 'zh'].includes(browserLang)) {
     // console.log(`Using browser language: ${browserLang}`);
     return browserLang;
   }
@@ -58,9 +58,10 @@ i18n
     fallbackLng: {
       'ru-RU': ['ru', 'en'],
       'kk-KZ': ['kk', 'en'],
+      'zh-ZH': ['zh', 'en'],
       'default': ['en']
     },
-    ns: ['common', 'categories', 'words', 'wordDetail', 'categoryDetail', 'quickActions',
+    ns: ['common', 'categories', 'words', 'wordDetail', 'categoryDetail', 'quickActions', 'loginPage',
          'learning', 'practice', 'progress', 'quiz', 'notFound', 'learnedWords', 'weeklyProgress', 'wordProgress', 'dailyProgress','wordsAvailable'],
     defaultNS: 'common',
     interpolation: {
