@@ -2,7 +2,8 @@
 from operator import and_
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Response, Body
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -10,7 +11,7 @@ from datetime import datetime
 from database.guide_crud import (
     LearningGuideCRUD, UserGuideCRUD, GuideWordSearchCRUD
 )
-from database.learning_models import LearningStatus, DifficultyRating, GuideStatus, UserLearningSession
+from database.learning_models import LearningStatus, DifficultyRating, GuideStatus, UserLearningSession, GuideTranslation
 
 from database import get_db
 from database.learning_crud import (
@@ -1295,36 +1296,79 @@ async def get_learning_guides(
         current_user: User = Depends(get_current_user)
 ):
     """
-    Получить список доступных путеводителей из базы данных
+    Получить список доступных путеводителей из базы данных с переводами
+    Optimized version with single query for translations
     """
     try:
-        # Get guides with user progress
-        guides_with_progress = await UserGuideCRUD.get_guides_with_progress(
-            db, current_user.id, difficulty
+        # Get user's language preference
+        user_language_code = current_user.main_language.language_code if current_user.main_language else 'en'
+        
+        # Get language ID for translations
+        lang_query = select(Language).where(Language.language_code == user_language_code)
+        lang_result = await db.execute(lang_query)
+        user_language = lang_result.scalar_one_or_none()
+        
+        # Build guides query with translations preloaded
+        guides_query = (
+            select(LearningGuide)
+            .options(selectinload(LearningGuide.translations))
+            .where(LearningGuide.is_active == True)
         )
         
-        # Format response
+        if difficulty:
+            guides_query = guides_query.where(LearningGuide.difficulty_level == difficulty)
+        
+        guides_query = guides_query.order_by(LearningGuide.sort_order, LearningGuide.id)
+        
+        result = await db.execute(guides_query)
+        guides = result.scalars().all()
+        
+        # Format response with translations
         formatted_guides = []
-        for item in guides_with_progress:
-            guide = item['guide']
-            progress = item['progress']
+        for guide in guides:
+            # Get user progress for this guide
+            progress = await UserGuideCRUD.get_user_guide_progress(db, current_user.id, guide.id)
+            
+            # Calculate progress stats
+            words_completed = progress.words_completed if progress else 0
+            total_words_added = progress.total_words_added if progress else 0
+            completion_percentage = (
+                (words_completed / total_words_added * 100)
+                if total_words_added > 0
+                else 0
+            )
+            status = progress.status if progress else GuideStatus.NOT_STARTED
+            
+            # Get translation for the user's language
+            translated_title = guide.title
+            translated_description = guide.description
+            translated_topics = guide.topics or []
+            
+            # Find translation for user's language
+            if user_language and user_language_code != 'en':
+                for translation in guide.translations:
+                    if translation.language_id == user_language.id:
+                        translated_title = translation.translated_title or guide.title
+                        translated_description = translation.translated_description or guide.description
+                        translated_topics = translation.translated_topics or guide.topics or []
+                        break
             
             formatted_guides.append({
-                'id': guide.id,  # ✅ ИСПРАВЛЕНО: используем guide.id (число), а не guide.guide_key
-                'title': guide.title,
-                'description': guide.description,
+                'id': guide.id,
+                'title': translated_title,  # Use translated title
+                'description': translated_description,  # Use translated description
                 'icon': guide.icon_name,
                 'color': guide.color,
                 'difficulty': guide.difficulty_level,
                 'estimated_time': f"{guide.estimated_minutes} мин" if guide.estimated_minutes else "30 мин",
                 'word_count': guide.target_word_count,
-                'topics': guide.topics or [],
+                'topics': translated_topics,  # Use translated topics
                 'keywords': guide.keywords or [],
-                'status': item['status'].value if item['status'] else 'not_started',
+                'status': status.value if status else 'not_started',
                 'progress': {
-                    'words_completed': item['words_completed'],
-                    'total_words_added': item['total_words_added'],
-                    'completion_percentage': item['completion_percentage']
+                    'words_completed': words_completed,
+                    'total_words_added': total_words_added,
+                    'completion_percentage': completion_percentage
                 },
                 'last_accessed': progress.last_accessed_at.isoformat() if progress and progress.last_accessed_at else None
             })
@@ -1332,25 +1376,51 @@ async def get_learning_guides(
         return formatted_guides
         
     except Exception as e:
-        print(f"Error getting guides: {e}")
+        print(f"Error getting guides with translations: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to get learning guides")
 
 
 @router.post("/guides/{guide_id}/start")
 async def start_learning_guide(
-        guide_id: int,  # ✅ ИСПРАВЛЕНО: принимаем int вместо str
+        guide_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    """Начать изучение путеводителя"""
+    """Начать изучение путеводителя с поддержкой переводов"""
     try:
-        # Get guide by ID (не по guide_key)
-        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)  # ✅ ИСПРАВЛЕНО
+        # Get guide by ID
+        guide = await LearningGuideCRUD.get_guide_by_id(db, guide_id)
         if not guide:
             raise HTTPException(status_code=404, detail="Guide not found")
         
         if not guide.is_active:
             raise HTTPException(status_code=400, detail="Guide is not active")
+        
+        # Get translated title for user's language
+        user_language_code = current_user.main_language.language_code if current_user.main_language else 'en'
+        translated_title = guide.title  # Default to English title
+        
+        if user_language_code != 'en':
+            # Get language
+            lang_query = select(Language).where(Language.language_code == user_language_code)
+            lang_result = await db.execute(lang_query)
+            user_language = lang_result.scalar_one_or_none()
+            
+            if user_language:
+                # Get translation
+                translation_query = select(GuideTranslation).where(
+                    and_(
+                        GuideTranslation.guide_id == guide.id,
+                        GuideTranslation.language_id == user_language.id
+                    )
+                )
+                translation_result = await db.execute(translation_query)
+                translation = translation_result.scalar_one_or_none()
+                
+                if translation and translation.translated_title:
+                    translated_title = translation.translated_title
         
         # Check if already started
         progress = await UserGuideCRUD.get_user_guide_progress(
@@ -1359,9 +1429,9 @@ async def start_learning_guide(
         
         if progress and progress.status != GuideStatus.NOT_STARTED:
             return {
-                "message": f"Guide '{guide.title}' already started",
+                "message": f"Guide '{translated_title}' already started",
                 "guide_id": guide_id,
-                "guide_title": guide.title,
+                "guide_title": translated_title,
                 "status": progress.status.value
             }
         
@@ -1374,45 +1444,58 @@ async def start_learning_guide(
                 detail="Guide has no words assigned. Please contact administrator."
             )
         
+        # [Rest of the function remains the same...]
+        
         # Add words to user's learning list
         added_count = 0
         already_added = 0
+        total_words = len(guide_words)
         
         for word_item in guide_words:
             word = word_item['word']
             
-            try:
-                # Check if word already in user's learning list
-                existing = await UserWordProgressCRUD.get_user_word_progress(
-                    db, current_user.id, word.id
-                )
-                
-                if not existing:
-                    await UserWordProgressCRUD.add_word_to_learning_list(
-                        db, current_user.id, word.id, LearningStatus.WANT_TO_LEARN
-                    )
-                    added_count += 1
-                else:
-                    already_added += 1
-                    
-            except Exception as e:
-                print(f"Warning: Could not add word {word.id}: {e}")
+            # Check if word is already in user's learning list
+            existing = await UserWordProgressCRUD.get_user_word_progress(
+                db, current_user.id, word.id
+            )
+            
+            if existing:
+                already_added += 1
+                continue
+            
+            # Add word to user's learning list
+            await UserWordProgressCRUD.add_word_to_learning(
+                db, current_user.id, word.id
+            )
+            added_count += 1
         
-        # Update guide progress
-        total_words = len(guide_words)
-        await UserGuideCRUD.update_guide_progress(
-            db, current_user.id, guide.id, 
-            words_completed=0, 
-            total_words_added=total_words
-        )
+        # Create or update user guide progress
+        if not progress:
+            progress = await UserGuideCRUD.create_or_update_progress(
+                db,
+                user_id=current_user.id,
+                guide_id=guide.id,
+                status=GuideStatus.IN_PROGRESS
+            )
+        else:
+            progress = await UserGuideCRUD.update_progress(
+                db,
+                progress_id=progress.id,
+                status=GuideStatus.IN_PROGRESS,
+                total_words_added=total_words
+            )
+        
+        # Commit all changes
+        await db.commit()
         
         return {
-            "message": f"Guide '{guide.title}' started successfully",
+            "message": f"Started guide '{translated_title}'. {added_count} words added to your learning list.",
             "guide_id": guide_id,
-            "guide_title": guide.title,
+            "guide_title": translated_title,  # Return translated title
             "words_found": total_words,
             "words_added": added_count,
             "words_already_in_list": already_added,
+            "next_step": "Go to Learning Module to start practicing these words",
             "progress": {
                 "status": "in_progress",
                 "words_completed": 0,
@@ -1424,7 +1507,7 @@ async def start_learning_guide(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error starting guide: {e}")
+        print(f"❌ Error starting guide: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to start guide: {str(e)}")
